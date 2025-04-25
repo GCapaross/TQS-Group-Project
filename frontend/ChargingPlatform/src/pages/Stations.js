@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import Map from '../components/Map';
 
 function Stations() {
   const [stations, setStations] = useState([]);
@@ -27,6 +28,9 @@ function Stations() {
   return (
     <div>
       <h1>Charging Stations</h1>
+      <div style={{ marginBottom: '20px' }}>
+        <Map stations={stations} />
+      </div>
       {stations.map(station => (
         <div key={station.id} className="station-card">
           <h3>{station.name}</h3>
