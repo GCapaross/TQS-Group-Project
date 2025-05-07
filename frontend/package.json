@@ -22,11 +22,6 @@
     "eject": "react-scripts eject",
     "prepare": "husky"
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
-  },
   "lint-staged": {
     "*.{ts,tsx}": [
       "prettier --write",
