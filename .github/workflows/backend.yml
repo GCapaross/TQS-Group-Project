@@ -6,6 +6,8 @@ on:
       - "chargingplatform/**"
   pull_request:
     branches: [dev, main]
+    paths:
+      -"chargingplatform/**"
     types: [opened, synchronize, reopened]
 jobs:
   build:
