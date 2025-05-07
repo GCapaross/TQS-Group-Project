@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
 
     defaults:
-      runn:
+      run:
         working-directory: ./frontend
 
     steps:
