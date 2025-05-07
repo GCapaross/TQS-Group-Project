@@ -1,9 +1,18 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import Map from "../components/Map";
 
+interface Station {
+  id: number;
+  name: string;
+  location: string;
+  status: string;
+  availableSlots: number;
+  maxSlots: number;
+  pricePerkWh: number;
+}
 function Stations() {
-  const [stations, setStations] = useState([]);
+  const [stations, setStations] = useState<Station[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -47,7 +56,7 @@ function Stations() {
           <p>
             Available Slots: {station.availableSlots} / {station.maxSlots}
           </p>
-          <p>Price per kWh: ${station.pricePerKwh}</p>
+          <p>Price per kWh: ${station.pricePerkWh}</p>
         </div>
       ))}
     </div>
