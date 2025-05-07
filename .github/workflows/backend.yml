@@ -1,7 +1,7 @@
 name: SonarQube
 on:
   push:
-    branches: [dev]
+    branches: [main, dev]
     paths:
       - "chargingplatform/**"
   pull_request:
