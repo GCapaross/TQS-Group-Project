@@ -10,7 +10,7 @@ function Stations() {
     const fetchStations = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:8080/api/charging-stations",
+          "http://localhost:8080/api/charging-stations"
         );
         setStations(response.data);
       } catch (error) {
