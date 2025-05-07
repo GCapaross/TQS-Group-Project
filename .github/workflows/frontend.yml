@@ -1,0 +1,48 @@
+name: Build Frontend
+
+on:
+  push:
+    branches: [dev, main]
+    paths:
+      - "frontend/**"
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./frontend
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Cache node modules
+        id: cache-npm
+        uses: actions/cache@v4
+        env:
+          cache-name: cache-web-node-modules
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ env.cache-name }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-${{ env.cache-name }}-
+
+      - if: ${{ steps.cache-npm.outputs.cache-hit != 'true' }}
+        name: List the state of node modules
+        continue-on-error: true
+        run: npm list
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run eslint
+        run: npm run lint
+
+      - name: Build the vite project
+        run: npm run build
