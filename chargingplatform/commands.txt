@@ -1,0 +1,1 @@
+mvn verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=GCapaross_TQS-Group-Project    
