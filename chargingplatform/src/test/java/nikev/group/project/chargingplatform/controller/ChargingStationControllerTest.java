@@ -12,6 +12,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -45,6 +46,10 @@ class ChargingStationControllerTest {
         station.setMaxSlots(4);
         station.setAvailableSlots(2);
         station.setPricePerKwh(0.5);
+        station.setConnectorTypes(Arrays.asList("CCS", "Type 2"));
+        station.setChargingSpeedKw(50.0);
+        station.setCarrierNetwork("Test Network");
+        station.setAverageRating(4.5);
     }
 
     @Test
@@ -71,6 +76,50 @@ class ChargingStationControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("Test Station"))
                 .andExpect(jsonPath("$.location").value("Test Location"));
+    }
+
+    @Test
+    void getNearbyStations_ShouldReturnStationsInRadius() throws Exception {
+        // Given
+        when(chargingStationService.findNearbyStations(40.7128, -74.0060, 10.0))
+                .thenReturn(Arrays.asList(station));
+
+        // When/Then
+        mockMvc.perform(get("/api/charging-stations/nearby")
+                .param("latitude", "40.7128")
+                .param("longitude", "-74.0060")
+                .param("radiusKm", "10.0"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].name").value("Test Station"))
+                .andExpect(jsonPath("$[0].location").value("Test Location"));
+    }
+
+    @Test
+    void searchStations_WithFilters_ShouldReturnFilteredStations() throws Exception {
+        // Given
+        List<String> connectorTypes = Arrays.asList("CCS", "Type 2");
+        when(chargingStationService.searchStations(
+                eq(connectorTypes),
+                eq(50.0),
+                eq("Test Network"),
+                eq(4.0),
+                eq(40.7128),
+                eq(-74.0060),
+                eq(10.0)))
+                .thenReturn(Arrays.asList(station));
+
+        // When/Then
+        mockMvc.perform(get("/api/charging-stations/search")
+                .param("connectorTypes", "CCS", "Type 2")
+                .param("minChargingSpeed", "50.0")
+                .param("carrierNetwork", "Test Network")
+                .param("minRating", "4.0")
+                .param("latitude", "40.7128")
+                .param("longitude", "-74.0060")
+                .param("radiusKm", "10.0"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].name").value("Test Station"))
+                .andExpect(jsonPath("$[0].location").value("Test Location"));
     }
 
     @Test
