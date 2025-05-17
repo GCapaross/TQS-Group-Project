@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/charging-stations")
@@ -23,6 +24,27 @@ public class ChargingStationController {
     @GetMapping("/{id}")
     public ResponseEntity<ChargingStation> getChargingStationById(@PathVariable Long id) {
         return ResponseEntity.ok(chargingStationService.getChargingStationById(id));
+    }
+
+    @GetMapping("/nearby")
+    public ResponseEntity<List<ChargingStation>> getNearbyStations(
+            @RequestParam double latitude,
+            @RequestParam double longitude,
+            @RequestParam(defaultValue = "10.0") double radiusKm) {
+        return ResponseEntity.ok(chargingStationService.findNearbyStations(latitude, longitude, radiusKm));
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<ChargingStation>> searchStations(
+            @RequestParam(required = false) List<String> connectorTypes,
+            @RequestParam(required = false) Double minChargingSpeed,
+            @RequestParam(required = false) String carrierNetwork,
+            @RequestParam(required = false) Double minRating,
+            @RequestParam(required = false) Double latitude,
+            @RequestParam(required = false) Double longitude,
+            @RequestParam(required = false) Double radiusKm) {
+        return ResponseEntity.ok(chargingStationService.searchStations(
+            connectorTypes, minChargingSpeed, carrierNetwork, minRating, latitude, longitude, radiusKm));
     }
 
     @PostMapping
