@@ -15,16 +15,22 @@ public class UserController {
 
     @PostMapping("/register")
     public ResponseEntity<User> registerUser(@RequestBody User user) {
-        if (user.getEmail() == null || user.getPassword() == null) {
+        if (user.getEmail() == null || user.getPassword() == null || user.getName() == null) {
             return ResponseEntity.badRequest().build();
         }
-        return ResponseEntity.ok(userService.registerUser(user));
+        try {
+            User registeredUser = userService.registerUser(user);
+            return ResponseEntity.ok(registeredUser);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @PostMapping("/login")
     public ResponseEntity<User> login(@RequestBody LoginRequest loginRequest) {
         try {
-            return ResponseEntity.ok(userService.login(loginRequest.getEmail(), loginRequest.getPassword()));
+            User user = userService.login(loginRequest.getEmail(), loginRequest.getPassword());
+            return ResponseEntity.ok(user);
         } catch (RuntimeException e) {
             return ResponseEntity.status(401).build();
         }
@@ -33,7 +39,8 @@ public class UserController {
     @PutMapping("/{id}")
     public ResponseEntity<User> updateProfile(@PathVariable Long id, @RequestBody User updatedUser) {
         try {
-            return ResponseEntity.ok(userService.updateProfile(id, updatedUser));
+            User user = userService.updateProfile(id, updatedUser);
+            return ResponseEntity.ok(user);
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
         }
