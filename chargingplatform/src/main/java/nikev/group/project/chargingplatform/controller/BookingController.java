@@ -20,7 +20,17 @@ public class BookingController {
             @RequestHeader("Authorization") String token,
             @RequestBody BookingRequest request) {
         try {
-            // Extract user ID from token (you'll need to implement this)
+            // Validate token
+            if (token == null || !token.startsWith("Bearer ")) {
+                return ResponseEntity.badRequest().build();
+            }
+
+            // Validate request
+            if (request == null || !isValidBookingRequest(request)) {
+                return ResponseEntity.badRequest().build();
+            }
+
+            // Extract user ID from token
             Long userId = extractUserIdFromToken(token);
             
             ChargingSession session = bookingService.bookSlot(
@@ -41,7 +51,17 @@ public class BookingController {
             @RequestHeader("Authorization") String token,
             @PathVariable Long id) {
         try {
-            // Extract user ID from token (you'll need to implement this)
+            // Validate token
+            if (token == null || !token.startsWith("Bearer ")) {
+                return ResponseEntity.badRequest().build();
+            }
+
+            // Validate booking ID
+            if (id == null) {
+                return ResponseEntity.badRequest().build();
+            }
+
+            // Extract user ID from token
             Long userId = extractUserIdFromToken(token);
             
             bookingService.cancelBooking(id);
@@ -49,6 +69,28 @@ public class BookingController {
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().build();
         }
+    }
+
+    private boolean isValidBookingRequest(BookingRequest request) {
+        if (request.getStationId() == null || 
+            request.getStartTime() == null || 
+            request.getEndTime() == null) {
+            return false;
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        
+        // Check if start time is in the future
+        if (request.getStartTime().isBefore(now)) {
+            return false;
+        }
+
+        // Check if end time is after start time
+        if (request.getEndTime().isBefore(request.getStartTime())) {
+            return false;
+        }
+
+        return true;
     }
 
     private Long extractUserIdFromToken(String token) {
