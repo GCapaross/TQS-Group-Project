@@ -12,7 +12,6 @@ import {
   Alert,
   CircularProgress,
   Grid,
-  Paper,
   Chip
 } from '@mui/material';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
@@ -196,7 +195,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ station, open, onClose, onBoo
               </Typography>
               <Grid container spacing={1} sx={{ mb: 3 }}>
                 {availableSlots.map((slot, index) => (
-                  <Grid item xs={12} sm={6} md={4} key={index}>
+                  <Grid key={index}> {/* To rewiew - was causing error */ }
                     <Chip
                       label={`${slot.start.toLocaleTimeString()} - ${slot.end.toLocaleTimeString()}`}
                       color={slot.isAvailable ? 'success' : 'error'}
