@@ -99,6 +99,68 @@ class BookingControllerTest {
     }
 
     @Test
+    void createBooking_WithInvalidToken_ReturnsBadRequest() {
+        // Act
+        ResponseEntity<ChargingSession> response = bookingController.createBooking(
+            "Invalid token",
+            createBookingRequest(testStation.getId(), startTime, endTime)
+        );
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(400, response.getStatusCodeValue());
+        assertNull(response.getBody());
+    }
+
+    @Test
+    void createBooking_WithNullRequest_ReturnsBadRequest() {
+        // Act
+        ResponseEntity<ChargingSession> response = bookingController.createBooking(
+            "Bearer test-token",
+            null
+        );
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(400, response.getStatusCodeValue());
+        assertNull(response.getBody());
+    }
+
+    @Test
+    void createBooking_WithInvalidTimeRange_ReturnsBadRequest() {
+        // Arrange
+        LocalDateTime invalidEndTime = startTime.minusHours(1); // End time before start time
+
+        // Act
+        ResponseEntity<ChargingSession> response = bookingController.createBooking(
+            "Bearer test-token",
+            createBookingRequest(testStation.getId(), startTime, invalidEndTime)
+        );
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(400, response.getStatusCodeValue());
+        assertNull(response.getBody());
+    }
+
+    @Test
+    void createBooking_WithPastStartTime_ReturnsBadRequest() {
+        // Arrange
+        LocalDateTime pastStartTime = LocalDateTime.now().minusHours(1);
+
+        // Act
+        ResponseEntity<ChargingSession> response = bookingController.createBooking(
+            "Bearer test-token",
+            createBookingRequest(testStation.getId(), pastStartTime, endTime)
+        );
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(400, response.getStatusCodeValue());
+        assertNull(response.getBody());
+    }
+
+    @Test
     void cancelBooking_Success() {
         // Arrange
         doNothing().when(bookingService).cancelBooking(any());
@@ -125,6 +187,32 @@ class BookingControllerTest {
         ResponseEntity<Void> response = bookingController.cancelBooking(
             "Bearer test-token",
             testSession.getId()
+        );
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(400, response.getStatusCodeValue());
+    }
+
+    @Test
+    void cancelBooking_WithInvalidToken_ReturnsBadRequest() {
+        // Act
+        ResponseEntity<Void> response = bookingController.cancelBooking(
+            "Invalid token",
+            testSession.getId()
+        );
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(400, response.getStatusCodeValue());
+    }
+
+    @Test
+    void cancelBooking_WithNullId_ReturnsBadRequest() {
+        // Act
+        ResponseEntity<Void> response = bookingController.cancelBooking(
+            "Bearer test-token",
+            null
         );
 
         // Assert
