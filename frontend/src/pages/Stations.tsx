@@ -95,7 +95,7 @@ const Stations: React.FC = () => {
                 />
                 <Grid container spacing={3}>
                     {filteredStations.map((station) => (
-                        <Grid item xs={12} sm={6} md={4} key={station.id}>
+                        <Grid key={station.id}>
                             <Card
                                 sx={{
                                     height: '100%',
@@ -108,7 +108,7 @@ const Stations: React.FC = () => {
                                         transition: 'all 0.3s ease-in-out'
                                     }
                                 }}
-                                onClick={() => navigate(`/stations/${station.id}`)}
+                                onClick={() => navigate(`/stations/${station.id}/book`)}
                             >
                                 <CardContent>
                                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
