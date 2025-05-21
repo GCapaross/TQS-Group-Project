@@ -38,7 +38,7 @@ public class DataInitializer implements CommandLineRunner {
             lisbonCentral.setLocation("Avenida da Liberdade, Lisbon");
             lisbonCentral.setLatitude(38.7223);
             lisbonCentral.setLongitude(-9.1393);
-            lisbonCentral.setStatus("AVAILABLE");
+            lisbonCentral.setStatus(ChargingStation.StationStatus.AVAILABLE);
             lisbonCentral.setMaxSlots(8);
             lisbonCentral.setAvailableSlots(8);
             lisbonCentral.setPricePerKwh(0.35);
@@ -54,7 +54,7 @@ public class DataInitializer implements CommandLineRunner {
             portoStation.setLocation("Ribeira, Porto");
             portoStation.setLatitude(41.1408);
             portoStation.setLongitude(-8.6161);
-            portoStation.setStatus("AVAILABLE");
+            portoStation.setStatus(ChargingStation.StationStatus.AVAILABLE);
             portoStation.setMaxSlots(6);
             portoStation.setAvailableSlots(6);
             portoStation.setPricePerKwh(0.32);
@@ -70,7 +70,7 @@ public class DataInitializer implements CommandLineRunner {
             faroStation.setLocation("Faro International Airport");
             faroStation.setLatitude(37.0144);
             faroStation.setLongitude(-7.9659);
-            faroStation.setStatus("AVAILABLE");
+            faroStation.setStatus(ChargingStation.StationStatus.AVAILABLE);
             faroStation.setMaxSlots(4);
             faroStation.setAvailableSlots(4);
             faroStation.setPricePerKwh(0.38);
@@ -86,7 +86,7 @@ public class DataInitializer implements CommandLineRunner {
             coimbraStation.setLocation("University of Coimbra");
             coimbraStation.setLatitude(40.2089);
             coimbraStation.setLongitude(-8.4257);
-            coimbraStation.setStatus("AVAILABLE");
+            coimbraStation.setStatus(ChargingStation.StationStatus.AVAILABLE);
             coimbraStation.setMaxSlots(4);
             coimbraStation.setAvailableSlots(4);
             coimbraStation.setPricePerKwh(0.30);

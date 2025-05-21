@@ -20,7 +20,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { ChargingStation } from '../types/ChargingStation';
 import { useAuth } from '../contexts/AuthContext';
-import QRCode from 'qrcode.react';
+import { QRCodeSVG } from 'qrcode.react';
 
 interface BookingFormProps {
   station: ChargingStation;
@@ -102,8 +102,8 @@ const BookingForm: React.FC<BookingFormProps> = ({ station, open, onClose, onBoo
     setLoading(true);
 
     try {
-      const response = await onBook(startTime, endTime, estimatedEnergy);
-      setBookingId(response.id);
+      await onBook(startTime, endTime, estimatedEnergy);
+      setBookingId(crypto.randomUUID());
       setShowConfirmation(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to book time slot');
@@ -118,7 +118,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ station, open, onClose, onBoo
         Booking Confirmed!
       </Typography>
       <Box sx={{ my: 3 }}>
-        <QRCode value={bookingId || ''} size={200} />
+        <QRCodeSVG value={bookingId || ''} size={200} />
       </Box>
       <Typography variant="body1" gutterBottom>
         Booking ID: {bookingId}
@@ -196,7 +196,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ station, open, onClose, onBoo
               </Typography>
               <Grid container spacing={1} sx={{ mb: 3 }}>
                 {availableSlots.map((slot, index) => (
-                  <Grid item key={index}>
+                  <Grid item xs={12} sm={6} md={4} key={index}>
                     <Chip
                       label={`${slot.start.toLocaleTimeString()} - ${slot.end.toLocaleTimeString()}`}
                       color={slot.isAvailable ? 'success' : 'error'}
@@ -206,6 +206,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ station, open, onClose, onBoo
                           setEndTime(slot.end);
                         }
                       }}
+                      sx={{ m: 0.5 }}
                     />
                   </Grid>
                 ))}

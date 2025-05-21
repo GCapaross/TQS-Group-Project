@@ -12,7 +12,8 @@ import {
 } from '@mui/material';
 import { useAuth } from '../contexts/AuthContext';
 import BookingForm from '../components/BookingForm';
-import { ChargingStation } from '../types/ChargingStation';
+import { chargingStationApi, bookingApi } from '../services/api';
+import { ChargingStation } from '../types/api';
 
 const BookingPage: React.FC = () => {
   const { stationId } = useParams<{ stationId: string }>();
@@ -26,15 +27,14 @@ const BookingPage: React.FC = () => {
 
   useEffect(() => {
     const fetchStation = async () => {
+      if (!stationId) return;
+      
       try {
-        const response = await fetch(`/api/stations/${stationId}`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch station details');
-        }
-        const data = await response.json();
+        const data = await chargingStationApi.getById(parseInt(stationId));
         setStation(data);
       } catch (err) {
         setError('Error loading station details');
+        console.error('Error fetching station:', err);
       } finally {
         setLoading(false);
       }
@@ -49,29 +49,20 @@ const BookingPage: React.FC = () => {
       return;
     }
 
+    if (!stationId) return;
+
     try {
-      const response = await fetch('/api/bookings', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({
-          stationId,
-          startTime,
-          endTime,
-          estimatedEnergy
-        })
+      await bookingApi.create({
+        stationId: parseInt(stationId),
+        startTime: startTime.toISOString(),
+        endTime: endTime.toISOString(),
+        estimatedEnergy
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to book time slot');
-      }
-
-      const bookingData = await response.json();
       setShowSuccess(true);
-      return bookingData;
+      // Refresh station data to update available slots
+      const updatedStation = await chargingStationApi.getById(parseInt(stationId));
+      setStation(updatedStation);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to book time slot');
       throw err;
@@ -137,6 +128,7 @@ const BookingPage: React.FC = () => {
               variant="contained"
               size="large"
               onClick={() => setIsBookingFormOpen(true)}
+              disabled={station.status !== 'AVAILABLE' || station.availableSlots === 0}
               sx={{
                 width: '100%',
                 py: 2,
@@ -146,7 +138,8 @@ const BookingPage: React.FC = () => {
                 }
               }}
             >
-              Book Now
+              {station.status !== 'AVAILABLE' ? 'Station Unavailable' :
+               station.availableSlots === 0 ? 'No Slots Available' : 'Book Now'}
             </Button>
           </Box>
         </Box>
