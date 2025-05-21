@@ -1,6 +1,5 @@
 package nikev.group.project.chargingplatform.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import nikev.group.project.chargingplatform.model.ChargingSession;
 import nikev.group.project.chargingplatform.model.User;
 import nikev.group.project.chargingplatform.service.BookingService;
@@ -17,6 +16,9 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import nikev.group.project.chargingplatform.model.ChargingStation;
+
+
 class BookingControllerTest {
 
     @Mock
@@ -27,6 +29,7 @@ class BookingControllerTest {
 
     private User testUser;
     private ChargingStation testStation;
+    private ChargingSession testSession;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
 
