@@ -1,0 +1,89 @@
+package nikev.group.project.chargingplatform.controller;
+
+import nikev.group.project.chargingplatform.model.ChargingSession;
+import nikev.group.project.chargingplatform.service.BookingService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
+
+@RestController
+@RequestMapping("/api/bookings")
+public class BookingController {
+
+    @Autowired
+    private BookingService bookingService;
+
+    @PostMapping
+    public ResponseEntity<ChargingSession> createBooking(
+            @RequestHeader("Authorization") String token,
+            @RequestBody BookingRequest request) {
+        try {
+            // Extract user ID from token (you'll need to implement this)
+            Long userId = extractUserIdFromToken(token);
+            
+            ChargingSession session = bookingService.bookSlot(
+                request.getStationId(),
+                userId,
+                request.getStartTime(),
+                request.getEndTime()
+            );
+            
+            return ResponseEntity.ok(session);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> cancelBooking(
+            @RequestHeader("Authorization") String token,
+            @PathVariable Long id) {
+        try {
+            // Extract user ID from token (you'll need to implement this)
+            Long userId = extractUserIdFromToken(token);
+            
+            bookingService.cancelBooking(id);
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    private Long extractUserIdFromToken(String token) {
+        // TODO: Implement proper JWT token validation and user ID extraction
+        // For now, return a default user ID for testing
+        return 1L;
+    }
+
+    public static class BookingRequest {
+        private Long stationId;
+        private LocalDateTime startTime;
+        private LocalDateTime endTime;
+
+        public Long getStationId() {
+            return stationId;
+        }
+
+        public void setStationId(Long stationId) {
+            this.stationId = stationId;
+        }
+
+        public LocalDateTime getStartTime() {
+            return startTime;
+        }
+
+        public void setStartTime(LocalDateTime startTime) {
+            this.startTime = startTime;
+        }
+
+        public LocalDateTime getEndTime() {
+            return endTime;
+        }
+
+        public void setEndTime(LocalDateTime endTime) {
+            this.endTime = endTime;
+        }
+    }
+} 

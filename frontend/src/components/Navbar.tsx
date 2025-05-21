@@ -1,9 +1,18 @@
 import React from 'react';
 import { AppBar, Toolbar, Button, Box, Typography } from '@mui/material';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import ElectricBoltIcon from '@mui/icons-material/ElectricBolt';
+import { useAuth } from '../contexts/AuthContext';
 
 const Navbar: React.FC = () => {
+    const navigate = useNavigate();
+    const { isAuthenticated, logout } = useAuth();
+
+    const handleLogout = () => {
+        logout();
+        navigate('/');
+    };
+
     return (
         <AppBar 
             position="fixed" 
@@ -57,6 +66,58 @@ const Navbar: React.FC = () => {
                     <Button component={RouterLink} to="/map" color="inherit">
                         Map View
                     </Button>
+                </Box>
+
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    {isAuthenticated ? (
+                        <Button 
+                            onClick={handleLogout}
+                            color="inherit"
+                            variant="outlined"
+                            sx={{ 
+                                borderColor: 'white',
+                                '&:hover': {
+                                    borderColor: 'white',
+                                    backgroundColor: 'rgba(255, 255, 255, 0.1)'
+                                }
+                            }}
+                        >
+                            Logout
+                        </Button>
+                    ) : (
+                        <>
+                            <Button 
+                                component={RouterLink} 
+                                to="/login" 
+                                color="inherit"
+                                variant="outlined"
+                                sx={{ 
+                                    borderColor: 'white',
+                                    '&:hover': {
+                                        borderColor: 'white',
+                                        backgroundColor: 'rgba(255, 255, 255, 0.1)'
+                                    }
+                                }}
+                            >
+                                Login
+                            </Button>
+                            <Button 
+                                component={RouterLink} 
+                                to="/register" 
+                                color="inherit"
+                                variant="contained"
+                                sx={{ 
+                                    ml: 2,
+                                    background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+                                    '&:hover': {
+                                        background: 'linear-gradient(45deg, #1976D2 30%, #1E88E5 90%)'
+                                    }
+                                }}
+                            >
+                                Register
+                            </Button>
+                        </>
+                    )}
                 </Box>
             </Toolbar>
         </AppBar>
