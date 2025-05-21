@@ -1,6 +1,5 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
 import { Box, Typography, Container } from '@mui/material';
 import PersonIcon from '@mui/icons-material/Person';
 import BusinessIcon from '@mui/icons-material/Business';
@@ -10,8 +9,6 @@ interface AccountTypeSelectionProps {
 }
 
 const AccountTypeSelection: React.FC<AccountTypeSelectionProps> = ({ onSelect }) => {
-  const navigate = useNavigate();
-
   const cardVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0 },
