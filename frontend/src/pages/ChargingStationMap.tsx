@@ -61,7 +61,7 @@ const ChargingStationMap: React.FC = () => {
     }, []);
 
     const handleStationClick = (stationId: number) => {
-        navigate(`/stations/${stationId}`);
+        navigate(`/stations/${stationId}/book`);
     };
 
     if (loading) {
