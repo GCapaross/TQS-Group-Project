@@ -41,8 +41,8 @@ public class ChargingStationController {
         return ResponseEntity.ok(chargingStationService.findNearbyStations(latitude, longitude, radiusKm));
     }
 
-@GetMapping("/search")
-public ResponseEntity<List<ChargingStation>> searchStations(
+    @PostMapping("/search")
+    public ResponseEntity<List<ChargingStation>> searchStations(
             @RequestBody SearchStationDTO searchStationRequest) {
         return ResponseEntity.ok(chargingStationService.searchStations(searchStationRequest));
     }
