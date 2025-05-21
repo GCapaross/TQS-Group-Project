@@ -11,7 +11,7 @@
     "*.{ts,tsx,js,jsx,html,css}": [
       "cd frontend && prettier --write"
     ],
-    "*.{java}": [
+    "*.java": [
       "cd backend && prettier --write"
     ]
   },
