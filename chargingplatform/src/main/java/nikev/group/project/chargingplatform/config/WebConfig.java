@@ -12,6 +12,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.Customizer;
+import org.springframework.http.HttpMethod;
+
 
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
@@ -20,15 +22,13 @@ public class WebConfig implements WebMvcConfigurer {
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.addAllowedOriginPattern("*");
-        configuration.setAllowedMethods(List.of("GET", "POST", "PATCH", "PUT", "DELETE"));
+        configuration.setAllowedOriginPatterns(List.of("http://localhost:5173"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-
         source.registerCorsConfiguration("/**", configuration);
-
         return source;
     }
 
@@ -38,8 +38,16 @@ public class WebConfig implements WebMvcConfigurer {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("*").permitAll()
-                );
+                    .requestMatchers(HttpMethod.POST, "/api/users/login").permitAll()
+                    .requestMatchers(HttpMethod.GET,
+                        "/v3/api-docs",
+                        "/v3/api-docs/**",
+                        "/swagger-ui.html",
+                        "/swagger-ui/**"
+                    ).permitAll()
+                    .anyRequest().permitAll() // To change to authenticated requests
+                )
+                .httpBasic(Customizer.withDefaults());
         return http.build();
     }
 }      
