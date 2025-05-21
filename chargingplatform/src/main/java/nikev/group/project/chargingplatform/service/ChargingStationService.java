@@ -1,5 +1,6 @@
 package nikev.group.project.chargingplatform.service;
 
+import nikev.group.project.chargingplatform.DTOs.SearchStationDTO;
 import nikev.group.project.chargingplatform.model.ChargingStation;
 import nikev.group.project.chargingplatform.repository.ChargingStationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,39 +43,33 @@ public class ChargingStationService {
     }
 
     public List<ChargingStation> searchStations(
-            List<String> connectorTypes,
-            Double minChargingSpeed,
-            String carrierNetwork,
-            Double minRating,
-            Double latitude,
-            Double longitude,
-            Double radiusKm) {
+            SearchStationDTO searchStation) {
         
         return chargingStationRepository.findAll((root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
             
-            if (connectorTypes != null && !connectorTypes.isEmpty()) {
-                predicates.add(root.get("connectorTypes").in(connectorTypes));
+            if (searchStation.getConnectorTypes() != null && !searchStation.getConnectorTypes().isEmpty()) {
+                predicates.add(root.get("connectorTypes").in(searchStation.getConnectorTypes()));
             }
             
-            if (minChargingSpeed != null) {
-                predicates.add(cb.greaterThanOrEqualTo(root.get("chargingSpeedKw"), minChargingSpeed));
+            if (searchStation.getMinChargingSpeed() != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("chargingSpeedKw"), searchStation.getMinChargingSpeed()));
             }
             
-            if (carrierNetwork != null) {
-                predicates.add(cb.equal(root.get("carrierNetwork"), carrierNetwork));
+            if (searchStation.getCarrierNetwork() != null) {
+                predicates.add(cb.equal(root.get("carrierNetwork"), searchStation.getCarrierNetwork()));
             }
             
-            if (minRating != null) {
-                predicates.add(cb.greaterThanOrEqualTo(root.get("averageRating"), minRating));
+            if (searchStation.getMinRating() != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("averageRating"), searchStation.getMinRating()));
             }
             
-            if (latitude != null && longitude != null && radiusKm != null) {
-                double radiusDegrees = radiusKm / 111.0;
+            if (searchStation.getLatitude() != null && searchStation.getLongitude() != null && searchStation.getRadiusKm() != null) {
+                double radiusDegrees = searchStation.getRadiusKm() / 111.0;
                 predicates.add(cb.between(root.get("latitude"), 
-                    latitude - radiusDegrees, latitude + radiusDegrees));
+                    searchStation.getLatitude() - radiusDegrees, searchStation.getLatitude() + radiusDegrees));
                 predicates.add(cb.between(root.get("longitude"), 
-                    longitude - radiusDegrees, longitude + radiusDegrees));
+                    searchStation.getLongitude() - radiusDegrees, searchStation.getLongitude() + radiusDegrees));
             }
             
             return cb.and(predicates.toArray(new Predicate[0]));

@@ -15,6 +15,8 @@ public class User {
     private String name;
     private String email;
     private String password;
+
+    // Add role
     
     @OneToMany(mappedBy = "user")
     private List<ChargingSession> chargingSessions;

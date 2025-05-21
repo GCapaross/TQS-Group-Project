@@ -147,15 +147,17 @@ public class BookingServiceTest {
         booking.setId(1L);
         booking.setChargingStation(station);
         booking.setStatus("BOOKED");
+        station.setAvailableSlots(1); // Set initial available slots to 1
 
         when(chargingSessionRepository.findById(1L)).thenReturn(Optional.of(booking));
+        when(chargingStationRepository.save(any())).thenAnswer(i -> i.getArguments()[0]);
 
         // Act
         bookingService.cancelBooking(1L);
 
         // Assert
         assertEquals(ChargingStation.StationStatus.AVAILABLE, station.getStatus());
-        assertEquals(2, station.getAvailableSlots());
+        assertEquals(2, station.getAvailableSlots()); // Should be 2 after cancellation
         verify(chargingSessionRepository).delete(booking);
     }
 } 

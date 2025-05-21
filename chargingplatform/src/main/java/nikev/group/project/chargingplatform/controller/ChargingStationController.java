@@ -1,10 +1,15 @@
 package nikev.group.project.chargingplatform.controller;
 
 import nikev.group.project.chargingplatform.model.ChargingStation;
+import nikev.group.project.chargingplatform.model.User;
 import nikev.group.project.chargingplatform.service.ChargingStationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import jakarta.validation.Valid;
+
+import nikev.group.project.chargingplatform.DTOs.SearchStationDTO;
 
 import java.util.List;
 import java.util.Map;
@@ -22,7 +27,9 @@ public class ChargingStationController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ChargingStation> getChargingStationById(@PathVariable Long id) {
+    public ResponseEntity<ChargingStation> getChargingStationById( 
+        @PathVariable Long id
+    ) {
         return ResponseEntity.ok(chargingStationService.getChargingStationById(id));
     }
 
@@ -34,17 +41,10 @@ public class ChargingStationController {
         return ResponseEntity.ok(chargingStationService.findNearbyStations(latitude, longitude, radiusKm));
     }
 
-    @GetMapping("/search")
-    public ResponseEntity<List<ChargingStation>> searchStations(
-            @RequestParam(required = false) List<String> connectorTypes,
-            @RequestParam(required = false) Double minChargingSpeed,
-            @RequestParam(required = false) String carrierNetwork,
-            @RequestParam(required = false) Double minRating,
-            @RequestParam(required = false) Double latitude,
-            @RequestParam(required = false) Double longitude,
-            @RequestParam(required = false) Double radiusKm) {
-        return ResponseEntity.ok(chargingStationService.searchStations(
-            connectorTypes, minChargingSpeed, carrierNetwork, minRating, latitude, longitude, radiusKm));
+@GetMapping("/search")
+public ResponseEntity<List<ChargingStation>> searchStations(
+            @RequestBody SearchStationDTO searchStationRequest) {
+        return ResponseEntity.ok(chargingStationService.searchStations(searchStationRequest));
     }
 
     @PostMapping
