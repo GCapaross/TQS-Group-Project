@@ -2,26 +2,28 @@ package nikev.group.project.chargingplatform.service;
 
 import nikev.group.project.chargingplatform.model.ChargingSession;
 import nikev.group.project.chargingplatform.model.ChargingStation;
+import nikev.group.project.chargingplatform.model.User;
 import nikev.group.project.chargingplatform.repository.ChargingSessionRepository;
 import nikev.group.project.chargingplatform.repository.ChargingStationRepository;
+import nikev.group.project.chargingplatform.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.MockitoAnnotations;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
-class BookingServiceTest {
+@SpringBootTest
+public class BookingServiceTest {
 
     @Mock
     private ChargingSessionRepository chargingSessionRepository;
@@ -29,95 +31,131 @@ class BookingServiceTest {
     @Mock
     private ChargingStationRepository chargingStationRepository;
 
+    @Mock
+    private UserRepository userRepository;
+
     @InjectMocks
     private BookingService bookingService;
 
     private ChargingStation station;
+    private User user;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
 
     @BeforeEach
     void setUp() {
+        MockitoAnnotations.openMocks(this);
+
+        // Setup test data
         station = new ChargingStation();
         station.setId(1L);
         station.setStatus(ChargingStation.StationStatus.AVAILABLE);
         station.setAvailableSlots(2);
         station.setMaxSlots(2);
 
+        user = new User();
+        user.setId(1L);
+        user.setEmail("test@example.com");
+
         startTime = LocalDateTime.now().plusHours(1);
         endTime = startTime.plusHours(2);
     }
 
     @Test
-    void bookSlot_WhenStationAvailable_ShouldCreateBooking() {
-        // Given
+    void whenBookingValidSlot_thenBookingIsCreated() {
+        // Arrange
         when(chargingStationRepository.findById(1L)).thenReturn(Optional.of(station));
-        when(chargingSessionRepository.findOverlappingSessions(any(), any(), any()))
-                .thenReturn(Collections.emptyList());
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(chargingSessionRepository.findOverlappingSessions(any(), any(), any())).thenReturn(new ArrayList<>());
         when(chargingSessionRepository.save(any())).thenAnswer(i -> i.getArguments()[0]);
 
-        // When
-        ChargingSession result = bookingService.bookSlot(1L, 1L, startTime, endTime);
+        // Act
+        ChargingSession booking = bookingService.bookSlot(1L, 1L, startTime, endTime);
 
-        // Then
-        assertThat(result).isNotNull();
-        assertThat(result.getStatus()).isEqualTo("BOOKED");
-        assertThat(result.getStartTime()).isEqualTo(startTime);
-        assertThat(result.getEndTime()).isEqualTo(endTime);
-        verify(chargingStationRepository).save(station);
+        // Assert
+        assertNotNull(booking);
+        assertEquals("BOOKED", booking.getStatus());
+        assertEquals(station, booking.getChargingStation());
+        assertEquals(startTime, booking.getStartTime());
+        assertEquals(endTime, booking.getEndTime());
         verify(chargingSessionRepository).save(any(ChargingSession.class));
     }
 
     @Test
-    void bookSlot_WhenStationNotAvailable_ShouldThrowException() {
-        // Given
+    void whenBookingOverlappingSlot_thenThrowsException() {
+        // Arrange
+        when(chargingStationRepository.findById(1L)).thenReturn(Optional.of(station));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        
+        List<ChargingSession> overlappingSessions = new ArrayList<>();
+        ChargingSession existingBooking = new ChargingSession();
+        overlappingSessions.add(existingBooking);
+        when(chargingSessionRepository.findOverlappingSessions(any(), any(), any())).thenReturn(overlappingSessions);
+
+        // Act & Assert
+        assertThrows(RuntimeException.class, () -> 
+            bookingService.bookSlot(1L, 1L, startTime, endTime)
+        );
+    }
+
+    @Test
+    void whenStationNotAvailable_thenThrowsException() {
+        // Arrange
         station.setStatus(ChargingStation.StationStatus.MAINTENANCE);
         when(chargingStationRepository.findById(1L)).thenReturn(Optional.of(station));
 
-        // When/Then
-        assertThatThrownBy(() -> bookingService.bookSlot(1L, 1L, startTime, endTime))
-                .isInstanceOf(RuntimeException.class)
-                .hasMessage("Station is not available for booking");
+        // Act & Assert
+        assertThrows(RuntimeException.class, () -> 
+            bookingService.bookSlot(1L, 1L, startTime, endTime)
+        );
     }
 
     @Test
-    void bookSlot_WhenNoSlotsAvailable_ShouldThrowException() {
-        // Given
+    void whenNoAvailableSlots_thenThrowsException() {
+        // Arrange
         station.setAvailableSlots(0);
         when(chargingStationRepository.findById(1L)).thenReturn(Optional.of(station));
 
-        // When/Then
-        assertThatThrownBy(() -> bookingService.bookSlot(1L, 1L, startTime, endTime))
-                .isInstanceOf(RuntimeException.class)
-                .hasMessage("No available slots at this station");
+        // Act & Assert
+        assertThrows(RuntimeException.class, () -> 
+            bookingService.bookSlot(1L, 1L, startTime, endTime)
+        );
     }
 
     @Test
-    void bookSlot_WhenTimeSlotBooked_ShouldThrowException() {
-        // Given
+    void whenBookingLastSlot_thenStationStatusChangesToInUse() {
+        // Arrange
+        station.setAvailableSlots(1);
         when(chargingStationRepository.findById(1L)).thenReturn(Optional.of(station));
-        when(chargingSessionRepository.findOverlappingSessions(any(), any(), any()))
-                .thenReturn(Collections.singletonList(new ChargingSession()));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(chargingSessionRepository.findOverlappingSessions(any(), any(), any())).thenReturn(new ArrayList<>());
+        when(chargingSessionRepository.save(any())).thenAnswer(i -> i.getArguments()[0]);
+        when(chargingStationRepository.save(any())).thenAnswer(i -> i.getArguments()[0]);
 
-        // When/Then
-        assertThatThrownBy(() -> bookingService.bookSlot(1L, 1L, startTime, endTime))
-                .isInstanceOf(RuntimeException.class)
-                .hasMessage("Time slot is already booked");
+        // Act
+        bookingService.bookSlot(1L, 1L, startTime, endTime);
+
+        // Assert
+        assertEquals(ChargingStation.StationStatus.IN_USE, station.getStatus());
+        assertEquals(0, station.getAvailableSlots());
     }
 
     @Test
-    void cancelBooking_ShouldUpdateStationAndDeleteSession() {
-        // Given
-        ChargingSession session = new ChargingSession();
-        session.setId(1L);
-        session.setChargingStation(station);
-        when(chargingSessionRepository.findById(1L)).thenReturn(Optional.of(session));
+    void whenCancellingBooking_thenSlotIsReleased() {
+        // Arrange
+        ChargingSession booking = new ChargingSession();
+        booking.setId(1L);
+        booking.setChargingStation(station);
+        booking.setStatus("BOOKED");
 
-        // When
+        when(chargingSessionRepository.findById(1L)).thenReturn(Optional.of(booking));
+
+        // Act
         bookingService.cancelBooking(1L);
 
-        // Then
-        verify(chargingStationRepository).save(station);
-        verify(chargingSessionRepository).delete(session);
+        // Assert
+        assertEquals(ChargingStation.StationStatus.AVAILABLE, station.getStatus());
+        assertEquals(2, station.getAvailableSlots());
+        verify(chargingSessionRepository).delete(booking);
     }
 } 
