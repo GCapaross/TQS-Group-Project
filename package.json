@@ -12,7 +12,7 @@
       "cd frontend && prettier --write"
     ],
     "*.java": [
-      "cd backend && prettier --write"
+      "prettier --plugin=prettier-plugin-java --write"
     ]
   },
   "dependencies": {
