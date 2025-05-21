@@ -2,14 +2,20 @@ FROM eclipse-temurin:21-jdk-alpine
 
 WORKDIR /app
 
+# Install Maven
+RUN apk add --no-cache maven
+
 COPY .mvn/ .mvn
 COPY mvnw pom.xml ./
 
-RUN ./mvnw dependency:go-offline
+# Download dependencies
+RUN mvn dependency:go-offline
 
+# Copy source code
 COPY src ./src
 
-RUN ./mvnw package -DskipTests
+# Build the application
+RUN mvn clean package -DskipTests
 
 EXPOSE 8080
 
