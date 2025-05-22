@@ -99,7 +99,7 @@ const Home: React.FC = () => {
                 {/* Features Grid */}
                 <Grid container spacing={4} sx={{ mb: 8 }}>
                     {features.map((feature, index) => (
-                        <Grid component="div" key={index} xs={12} sm={6} md={3}>
+                        <Grid component="div" key={index}>
                             <motion.div
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Box, TextField, Button, Typography, Paper, Container } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { api } from '../services/api';
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
@@ -38,24 +39,18 @@ const LoginPage: React.FC = () => {
     }
     
     try {
-      const response = await fetch('/api/users/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
+      const response = await api.post('/users/login', formData);
       
-      if (response.ok) {
-        const data = await response.json();
+      if (response.status === 200) {
+        const data = await response.data;
         login(data.token);
         navigate('/');
       } else {
-        const data = await response.json();
-        setErrors({ submit: data.message || 'Login failed' });
+        const data = await response.data;
+        setErrors({ submit: data || 'Login failed' });
       }
     } catch (error) {
-      setErrors({ submit: 'An error occurred during login' });
+      setErrors({ submit: 'An error occurred during login: ' + error });
     }
   };
 

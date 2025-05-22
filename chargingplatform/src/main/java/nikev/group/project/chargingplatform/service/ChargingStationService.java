@@ -85,7 +85,7 @@ public class ChargingStationService {
         chargingStation.setName(chargingStationDetails.getName());
         chargingStation.setLocation(chargingStationDetails.getLocation());
         chargingStation.setStatus(chargingStationDetails.getStatus());
-        chargingStation.setLatitude(chargingStationDetails.getLatitude());
+        chargingStation.setLatitude(chargingStationDetails.getLatitude());      
         chargingStation.setLongitude(chargingStationDetails.getLongitude());
         chargingStation.setConnectorTypes(chargingStationDetails.getConnectorTypes());
         chargingStation.setChargingSpeedKw(chargingStationDetails.getChargingSpeedKw());
