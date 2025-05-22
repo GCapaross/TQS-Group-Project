@@ -89,7 +89,8 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ accountType }) => {
         setErrors({ submit: data.message || 'Registration failed' });
       }
     } catch (error) {
-      setErrors({ submit: 'An error occurred during registration' });
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      setErrors({ submit: `An error occurred during registration: ${errorMessage}` });
     }
   };
 

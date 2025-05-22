@@ -50,7 +50,7 @@ const LoginPage: React.FC = () => {
         setErrors({ submit: data || 'Login failed' });
       }
     } catch (error) {
-      setErrors({ submit: 'An error occurred during login' });
+      setErrors({ submit: 'An error occurred during login: ' + error });
     }
   };
 

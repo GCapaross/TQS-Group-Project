@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { ChargingStation, Booking, ApiResponse } from '../types/api';
+import { ChargingStation, Booking } from '../types/api';
 
 const API_BASE_URL = 'http://localhost:8080/api';
 
