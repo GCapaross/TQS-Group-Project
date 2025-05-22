@@ -72,4 +72,9 @@ public class BookingService {
         chargingStationRepository.save(station);
         chargingSessionRepository.delete(session);
     }
+
+    public ChargingSession getBooking(Long sessionId) {
+        return chargingSessionRepository.findById(sessionId)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+    }
 } 

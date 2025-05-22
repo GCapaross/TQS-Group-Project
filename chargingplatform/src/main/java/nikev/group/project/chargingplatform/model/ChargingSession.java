@@ -2,7 +2,10 @@ package nikev.group.project.chargingplatform.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+
 import java.time.LocalDateTime;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Data
 @Entity
@@ -18,6 +21,7 @@ public class ChargingSession {
     
     @ManyToOne
     @JoinColumn(name = "charging_station_id")
+    @JsonIgnore
     private ChargingStation chargingStation;
     
     private LocalDateTime startTime;

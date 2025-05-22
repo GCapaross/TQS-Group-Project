@@ -2,7 +2,10 @@ package nikev.group.project.chargingplatform.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Data
 @Entity
@@ -30,8 +33,26 @@ public class ChargingStation {
     @Column(name = "price_per_kwh")
     private double pricePerKwh;
     
+    @ElementCollection
+    @CollectionTable(name = "station_connector_types", joinColumns = @JoinColumn(name = "station_id"))
+    @Column(name = "connector_type")
+    private List<String> connectorTypes;
+    
+    @Column(name = "charging_speed_kw")
+    private double chargingSpeedKw;
+    
+    @Column(name = "carrier_network")
+    private String carrierNetwork;
+    
+    @Column(name = "average_rating")
+    private double averageRating;
+    
     @OneToMany(mappedBy = "chargingStation")
+    @JsonIgnore
     private List<ChargingSession> chargingSessions;
+    
+    @OneToMany(mappedBy = "chargingStation", cascade = CascadeType.ALL)
+    private List<StationReview> reviews;
     
     public enum StationStatus {
         AVAILABLE,

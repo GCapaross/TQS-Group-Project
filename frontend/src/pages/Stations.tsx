@@ -1,66 +1,164 @@
-import { useState, useEffect } from "react";
-import axios from "axios";
-import Map from "../components/Map";
+import React, { useState, useEffect } from 'react';
+import {
+    Box,
+    Container,
+    Grid,
+    Card,
+    CardContent,
+    Typography,
+    Chip,
+    Rating,
+    CircularProgress,
+    Alert,
+    TextField,
+    InputAdornment
+} from '@mui/material';
+import { Search as SearchIcon } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
+import { chargingStationApi } from '../services/api';
+import { ChargingStation } from '../types/api';
 
-interface Station {
-  id: number;
-  name: string;
-  location: string;
-  status: string;
-  availableSlots: number;
-  maxSlots: number;
-  pricePerkWh: number;
-}
-function Stations() {
-  const [stations, setStations] = useState<Station[]>([]);
-  const [loading, setLoading] = useState(true);
+const Stations: React.FC = () => {
+    const [stations, setStations] = useState<ChargingStation[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [searchQuery, setSearchQuery] = useState('');
+    const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchStations = async () => {
-      try {
-        const response = await axios.get(
-          "http://localhost:8080/api/charging-stations"
-        );
-        setStations(response.data);
-      } catch (error) {
-        console.error("Error fetching stations:", error);
-      } finally {
-        setLoading(false);
-      }
+    useEffect(() => {
+        const fetchStations = async () => {
+            try {
+                const data = await chargingStationApi.getAll();
+                setStations(data);
+            } catch (err) {
+                setError('Failed to load charging stations');
+                console.error('Error fetching stations:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchStations();
+    }, []);
+
+    const filteredStations = stations.filter(station =>
+        station.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        station.location.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    const getStatusColor = (status: string) => {
+        switch (status) {
+            case 'AVAILABLE': return 'success';
+            case 'IN_USE': return 'warning';
+            case 'MAINTENANCE': return 'error';
+            case 'OUT_OF_SERVICE': return 'default';
+            default: return 'default';
+        }
     };
 
-    fetchStations();
-  }, []);
+    if (loading) {
+        return (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+                <CircularProgress />
+            </Box>
+        );
+    }
 
-  if (loading) {
-    return <div>Loading stations...</div>;
-  }
+    if (error) {
+        return (
+            <Container maxWidth="lg" sx={{ mt: 4 }}>
+                <Alert severity="error">{error}</Alert>
+            </Container>
+        );
+    }
 
-  return (
-    <div>
-      <h1>Charging Stations</h1>
-      <div style={{ marginBottom: "20px" }}>
-        <Map stations={stations} />
-      </div>
-      {stations.map((station) => (
-        <div key={station.id} className="station-card">
-          <h3>{station.name}</h3>
-
-          <p>Location: {station.location}</p>
-          <p>
-            Status:{" "}
-            <span className={`status-${station.status.toLowerCase()}`}>
-              {station.status}
-            </span>
-          </p>
-          <p>
-            Available Slots: {station.availableSlots} / {station.maxSlots}
-          </p>
-          <p>Price per kWh: ${station.pricePerkWh}</p>
-        </div>
-      ))}
-    </div>
-  );
-}
+    return (
+        <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+            <Box sx={{ mb: 4 }}>
+                <Typography variant="h4" component="h1" gutterBottom>
+                    Charging Stations
+                </Typography>
+                <TextField
+                    fullWidth
+                    variant="outlined"
+                    placeholder="Search stations by name or location..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    InputProps={{
+                        startAdornment: (
+                            <InputAdornment position="start">
+                                <SearchIcon />
+                            </InputAdornment>
+                        ),
+                    }}
+                    sx={{ mb: 4 }}
+                />
+                <Grid container spacing={3}>
+                    {filteredStations.map((station) => (
+                        <Grid key={station.id}>
+                            <Card
+                                sx={{
+                                    height: '100%',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    cursor: 'pointer',
+                                    '&:hover': {
+                                        boxShadow: 6,
+                                        transform: 'translateY(-4px)',
+                                        transition: 'all 0.3s ease-in-out'
+                                    }
+                                }}
+                                onClick={() => navigate(`/stations/${station.id}/book`)}
+                            >
+                                <CardContent>
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                                        <Typography variant="h6" component="h2" gutterBottom>
+                                            {station.name}
+                                        </Typography>
+                                        <Chip
+                                            label={station.status}
+                                            color={getStatusColor(station.status)}
+                                            size="small"
+                                        />
+                                    </Box>
+                                    <Typography variant="body2" color="text.secondary" paragraph>
+                                        {station.location}
+                                    </Typography>
+                                    <Box sx={{ mb: 2 }}>
+                                        <Typography variant="body2">
+                                            Available Slots: {station.availableSlots}/{station.maxSlots}
+                                        </Typography>
+                                        <Typography variant="body2">
+                                            Price: ${station.pricePerKwh}/kWh
+                                        </Typography>
+                                        <Typography variant="body2">
+                                            Speed: {station.chargingSpeedKw} kW
+                                        </Typography>
+                                    </Box>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                        <Rating value={station.averageRating} precision={0.5} readOnly size="small" />
+                                        <Typography variant="body2" color="text.secondary">
+                                            ({station.averageRating})
+                                        </Typography>
+                                    </Box>
+                                    <Box sx={{ mt: 2, display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                                        {station.connectorTypes.map((type) => (
+                                            <Chip
+                                                key={type}
+                                                label={type}
+                                                size="small"
+                                                variant="outlined"
+                                            />
+                                        ))}
+                                    </Box>
+                                </CardContent>
+                            </Card>
+                        </Grid>
+                    ))}
+                </Grid>
+            </Box>
+        </Container>
+    );
+};
 
 export default Stations;
