@@ -1,9 +1,21 @@
 {
   "devDependencies": {
-    "husky": "^9.1.7"
+    "husky": "^9.1.7",
+    "prettier-plugin-java": "^2.6.7"
   },
   "scripts": {
     "prepare": "husky",
-    "validate:frontend": "cd frontend && npx lint-staged"
+    "format-code": "npx lint-staged"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx,html,css}": [
+      "cd frontend && prettier --write"
+    ],
+    "*.java": [
+      "prettier --plugin=prettier-plugin-java --write"
+    ]
+  },
+  "dependencies": {
+    "lint-staged": "^16.0.0"
   }
 }
