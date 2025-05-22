@@ -2,7 +2,10 @@ package nikev.group.project.chargingplatform.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Data
 @Entity
@@ -45,6 +48,7 @@ public class ChargingStation {
     private double averageRating;
     
     @OneToMany(mappedBy = "chargingStation")
+    @JsonIgnore
     private List<ChargingSession> chargingSessions;
     
     @OneToMany(mappedBy = "chargingStation", cascade = CascadeType.ALL)
