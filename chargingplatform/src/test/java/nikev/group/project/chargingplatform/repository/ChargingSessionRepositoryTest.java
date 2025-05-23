@@ -1,7 +1,7 @@
 package nikev.group.project.chargingplatform.repository;
 
 import nikev.group.project.chargingplatform.model.ChargingSession;
-import nikev.group.project.chargingplatform.model.ChargingStation;
+import nikev.group.project.chargingplatform.model.Station;
 import nikev.group.project.chargingplatform.model.User;
 import nikev.group.project.chargingplatform.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,17 +41,17 @@ class ChargingSessionRepositoryTest {
     @Autowired
     private UserRepository userRepository;
 
-    private ChargingStation station;
+    private Station station;
     private User user;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
 
     @BeforeEach
     void setUp() {
-        station = new ChargingStation();
+        station = new Station();
         station.setName("Test Station");
         station.setLocation("Test Location");
-        station.setStatus(ChargingStation.StationStatus.AVAILABLE);
+        station.setStatus(Station.StationStatus.AVAILABLE);
         station = chargingStationRepository.save(station);
 
         user = new User();

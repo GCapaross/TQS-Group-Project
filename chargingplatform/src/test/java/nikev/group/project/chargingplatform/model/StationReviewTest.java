@@ -13,7 +13,7 @@ class StationReviewTest {
         User user = new User();
         user.setId(1L);
 
-        ChargingStation station = new ChargingStation();
+        Station station = new Station();
         station.setId(1L);
 
         StationReview review = new StationReview();

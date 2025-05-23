@@ -11,7 +11,7 @@ class ChargingSessionTest {
     @Test
     void testChargingSessionCreation() {
         // Given
-        ChargingStation station = new ChargingStation();
+        Station station = new Station();
         station.setId(1L);
         station.setPricePerKwh(0.5);
 

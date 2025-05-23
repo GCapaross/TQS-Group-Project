@@ -27,7 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 
-import nikev.group.project.chargingplatform.model.ChargingStation;
+import nikev.group.project.chargingplatform.model.Station;
 
 @WebMvcTest(BookingController.class)
 @AutoConfigureMockMvc(addFilters = false) // Disable Spring Security filters for tests
@@ -42,7 +42,7 @@ class BookingControllerTest {
     private WebApplicationContext context;
 
     private User testUser;
-    private ChargingStation testStation;
+    private Station testStation;
     private ChargingSession testSession;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
@@ -59,10 +59,10 @@ class BookingControllerTest {
         testUser.setName("Test User");
         testUser.setEmail("test@example.com");
 
-        testStation = new ChargingStation();
+        testStation = new Station();
         testStation.setId(1L);
         testStation.setName("Test Station");
-        testStation.setStatus(ChargingStation.StationStatus.AVAILABLE);
+        testStation.setStatus(Station.StationStatus.AVAILABLE);
         testStation.setAvailableSlots(5);
 
         testSession = new ChargingSession();

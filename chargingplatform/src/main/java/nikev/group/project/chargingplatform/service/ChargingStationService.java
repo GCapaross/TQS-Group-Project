@@ -1,7 +1,7 @@
 package nikev.group.project.chargingplatform.service;
 
 import nikev.group.project.chargingplatform.DTOs.SearchStationDTO;
-import nikev.group.project.chargingplatform.model.ChargingStation;
+import nikev.group.project.chargingplatform.model.Station;
 import nikev.group.project.chargingplatform.repository.ChargingStationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,16 +18,16 @@ public class ChargingStationService {
     @Autowired
     private ChargingStationRepository chargingStationRepository;
 
-    public List<ChargingStation> getAllChargingStations() {
+    public List<Station> getAllChargingStations() {
         return chargingStationRepository.findAll();
     }
 
-    public ChargingStation getChargingStationById(Long id) {
+    public Station getChargingStationById(Long id) {
         return chargingStationRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Charging station not found with id: " + id));
     }
 
-    public List<ChargingStation> findNearbyStations(double latitude, double longitude, double radiusKm) {
+    public List<Station> findNearbyStations(double latitude, double longitude, double radiusKm) {
         // Using Haversine formula to calculate distance
         return chargingStationRepository.findAll((root, query, cb) -> {
             // Convert radius from km to degrees (approximate)
@@ -42,7 +42,7 @@ public class ChargingStationService {
         });
     }
 
-    public List<ChargingStation> searchStations(
+    public List<Station> searchStations(
             SearchStationDTO searchStation) {
         
         return chargingStationRepository.findAll((root, query, cb) -> {
@@ -76,12 +76,12 @@ public class ChargingStationService {
         });
     }
 
-    public ChargingStation createChargingStation(ChargingStation chargingStation) {
+    public Station createChargingStation(Station chargingStation) {
         return chargingStationRepository.save(chargingStation);
     }
 
-    public ChargingStation updateChargingStation(Long id, ChargingStation chargingStationDetails) {
-        ChargingStation chargingStation = getChargingStationById(id);
+    public Station updateChargingStation(Long id, Station chargingStationDetails) {
+        Station chargingStation = getChargingStationById(id);
         chargingStation.setName(chargingStationDetails.getName());
         chargingStation.setLocation(chargingStationDetails.getLocation());
         chargingStation.setStatus(chargingStationDetails.getStatus());

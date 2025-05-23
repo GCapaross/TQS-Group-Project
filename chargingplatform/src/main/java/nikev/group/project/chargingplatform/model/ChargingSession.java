@@ -22,7 +22,7 @@ public class ChargingSession {
     @ManyToOne
     @JoinColumn(name = "charging_station_id")
     @JsonIgnore
-    private ChargingStation chargingStation;
+    private Station chargingStation;
     
     private LocalDateTime startTime;
     private LocalDateTime endTime;

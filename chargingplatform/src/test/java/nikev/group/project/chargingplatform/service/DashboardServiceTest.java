@@ -1,7 +1,7 @@
 package nikev.group.project.chargingplatform.service;
 
 import nikev.group.project.chargingplatform.model.ChargingSession;
-import nikev.group.project.chargingplatform.model.ChargingStation;
+import nikev.group.project.chargingplatform.model.Station;
 import nikev.group.project.chargingplatform.model.User;
 import nikev.group.project.chargingplatform.repository.ChargingSessionRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,12 +29,12 @@ class DashboardServiceTest {
 
     private ChargingSession session1;
     private ChargingSession session2;
-    private ChargingStation station;
+    private Station station;
     private User user;
 
     @BeforeEach
     void setUp() {
-        station = new ChargingStation();
+        station = new Station();
         station.setId(1L);
 
         user = new User();

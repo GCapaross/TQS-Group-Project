@@ -1,7 +1,7 @@
 package nikev.group.project.chargingplatform.service;
 
 import nikev.group.project.chargingplatform.model.ChargingSession;
-import nikev.group.project.chargingplatform.model.ChargingStation;
+import nikev.group.project.chargingplatform.model.Station;
 import nikev.group.project.chargingplatform.model.User;
 import nikev.group.project.chargingplatform.repository.ChargingSessionRepository;
 import nikev.group.project.chargingplatform.repository.ChargingStationRepository;
@@ -23,10 +23,10 @@ public class BookingService {
 
     @Transactional
     public ChargingSession bookSlot(Long stationId, Long userId, LocalDateTime startTime, LocalDateTime endTime) {
-        ChargingStation station = chargingStationRepository.findById(stationId)
+        Station station = chargingStationRepository.findById(stationId)
                 .orElseThrow(() -> new RuntimeException("Charging station not found"));
         
-        if (station.getStatus() != ChargingStation.StationStatus.AVAILABLE) {
+        if (station.getStatus() != Station.StationStatus.AVAILABLE) {
             throw new RuntimeException("Station is not available for booking");
         }
         
@@ -50,7 +50,7 @@ public class BookingService {
         
         station.setAvailableSlots(station.getAvailableSlots() - 1);
         if (station.getAvailableSlots() == 0) {
-            station.setStatus(ChargingStation.StationStatus.IN_USE);
+            station.setStatus(Station.StationStatus.IN_USE);
         }
         
         chargingStationRepository.save(station);
@@ -62,11 +62,11 @@ public class BookingService {
         ChargingSession session = chargingSessionRepository.findById(sessionId)
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
         
-        ChargingStation station = session.getChargingStation();
+        Station station = session.getChargingStation();
         station.setAvailableSlots(station.getAvailableSlots() + 1);
         
-        if (station.getStatus() == ChargingStation.StationStatus.IN_USE) {
-            station.setStatus(ChargingStation.StationStatus.AVAILABLE);
+        if (station.getStatus() == Station.StationStatus.IN_USE) {
+            station.setStatus(Station.StationStatus.AVAILABLE);
         }
         
         chargingStationRepository.save(station);

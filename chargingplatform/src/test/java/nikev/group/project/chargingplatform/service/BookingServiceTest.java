@@ -1,7 +1,7 @@
 package nikev.group.project.chargingplatform.service;
 
 import nikev.group.project.chargingplatform.model.ChargingSession;
-import nikev.group.project.chargingplatform.model.ChargingStation;
+import nikev.group.project.chargingplatform.model.Station;
 import nikev.group.project.chargingplatform.model.User;
 import nikev.group.project.chargingplatform.repository.ChargingSessionRepository;
 import nikev.group.project.chargingplatform.repository.ChargingStationRepository;
@@ -37,7 +37,7 @@ public class BookingServiceTest {
     @InjectMocks
     private BookingService bookingService;
 
-    private ChargingStation station;
+    private Station station;
     private User user;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
@@ -47,9 +47,9 @@ public class BookingServiceTest {
         MockitoAnnotations.openMocks(this);
 
         // Setup test data
-        station = new ChargingStation();
+        station = new Station();
         station.setId(1L);
-        station.setStatus(ChargingStation.StationStatus.AVAILABLE);
+        station.setStatus(Station.StationStatus.AVAILABLE);
         station.setAvailableSlots(2);
         station.setMaxSlots(2);
 
@@ -101,7 +101,7 @@ public class BookingServiceTest {
     @Test
     void whenStationNotAvailable_thenThrowsException() {
         // Arrange
-        station.setStatus(ChargingStation.StationStatus.MAINTENANCE);
+        station.setStatus(Station.StationStatus.MAINTENANCE);
         when(chargingStationRepository.findById(1L)).thenReturn(Optional.of(station));
 
         // Act & Assert
@@ -136,7 +136,7 @@ public class BookingServiceTest {
         bookingService.bookSlot(1L, 1L, startTime, endTime);
 
         // Assert
-        assertEquals(ChargingStation.StationStatus.IN_USE, station.getStatus());
+        assertEquals(Station.StationStatus.IN_USE, station.getStatus());
         assertEquals(0, station.getAvailableSlots());
     }
 
@@ -156,7 +156,7 @@ public class BookingServiceTest {
         bookingService.cancelBooking(1L);
 
         // Assert
-        assertEquals(ChargingStation.StationStatus.AVAILABLE, station.getStatus());
+        assertEquals(Station.StationStatus.AVAILABLE, station.getStatus());
         assertEquals(2, station.getAvailableSlots()); // Should be 2 after cancellation
         verify(chargingSessionRepository).delete(booking);
     }

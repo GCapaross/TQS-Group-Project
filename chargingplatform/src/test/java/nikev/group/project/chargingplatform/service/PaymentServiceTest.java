@@ -1,7 +1,7 @@
 package nikev.group.project.chargingplatform.service;
 
 import nikev.group.project.chargingplatform.model.ChargingSession;
-import nikev.group.project.chargingplatform.model.ChargingStation;
+import nikev.group.project.chargingplatform.model.Station;
 import nikev.group.project.chargingplatform.repository.ChargingSessionRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,11 +25,11 @@ class PaymentServiceTest {
     private PaymentService paymentService;
 
     private ChargingSession session;
-    private ChargingStation station;
+    private Station station;
 
     @BeforeEach
     void setUp() {
-        station = new ChargingStation();
+        station = new Station();
         station.setPricePerKwh(0.5);
 
         session = new ChargingSession();

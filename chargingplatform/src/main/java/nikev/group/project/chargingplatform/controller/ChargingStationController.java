@@ -1,6 +1,6 @@
 package nikev.group.project.chargingplatform.controller;
 
-import nikev.group.project.chargingplatform.model.ChargingStation;
+import nikev.group.project.chargingplatform.model.Station;
 import nikev.group.project.chargingplatform.model.User;
 import nikev.group.project.chargingplatform.service.ChargingStationService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,19 +22,19 @@ public class ChargingStationController {
     private ChargingStationService chargingStationService;
 
     @GetMapping
-    public ResponseEntity<List<ChargingStation>> getAllChargingStations() {
+    public ResponseEntity<List<Station>> getAllChargingStations() {
         return ResponseEntity.ok(chargingStationService.getAllChargingStations());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ChargingStation> getChargingStationById( 
+    public ResponseEntity<Station> getChargingStationById( 
         @PathVariable Long id
     ) {
         return ResponseEntity.ok(chargingStationService.getChargingStationById(id));
     }
 
     @GetMapping("/nearby")
-    public ResponseEntity<List<ChargingStation>> getNearbyStations(
+    public ResponseEntity<List<Station>> getNearbyStations(
             @RequestParam double latitude,
             @RequestParam double longitude,
             @RequestParam(defaultValue = "10.0") double radiusKm) {
@@ -42,20 +42,20 @@ public class ChargingStationController {
     }
 
     @PostMapping("/search")
-    public ResponseEntity<List<ChargingStation>> searchStations(
+    public ResponseEntity<List<Station>> searchStations(
             @RequestBody SearchStationDTO searchStationRequest) {
         return ResponseEntity.ok(chargingStationService.searchStations(searchStationRequest));
     }
 
     @PostMapping
-    public ResponseEntity<ChargingStation> createChargingStation(@RequestBody ChargingStation chargingStation) {
+    public ResponseEntity<Station> createChargingStation(@RequestBody Station chargingStation) {
         return ResponseEntity.ok(chargingStationService.createChargingStation(chargingStation));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ChargingStation> updateChargingStation(
+    public ResponseEntity<Station> updateChargingStation(
             @PathVariable Long id,
-            @RequestBody ChargingStation chargingStation) {
+            @RequestBody Station chargingStation) {
         return ResponseEntity.ok(chargingStationService.updateChargingStation(id, chargingStation));
     }
 

@@ -1,7 +1,7 @@
 package nikev.group.project.chargingplatform.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import nikev.group.project.chargingplatform.model.ChargingStation;
+import nikev.group.project.chargingplatform.model.Station;
 import nikev.group.project.chargingplatform.service.ChargingStationService;
 import nikev.group.project.chargingplatform.DTOs.SearchStationDTO;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,15 +38,15 @@ class ChargingStationControllerTest {
     @MockitoBean
     private ChargingStationService chargingStationService;
 
-    private ChargingStation station;
+    private Station station;
 
     @BeforeEach
     void setUp() {
-        station = new ChargingStation();
+        station = new Station();
         station.setId(1L);
         station.setName("Test Station");
         station.setLocation("Test Location");
-        station.setStatus(ChargingStation.StationStatus.AVAILABLE);
+        station.setStatus(Station.StationStatus.AVAILABLE);
         station.setLatitude(40.7128);
         station.setLongitude(-74.0060);
         station.setMaxSlots(4);
@@ -119,7 +119,7 @@ class ChargingStationControllerTest {
 
     @Test
     void createChargingStation_ShouldReturnCreatedStation() throws Exception {
-        when(chargingStationService.createChargingStation(any(ChargingStation.class)))
+        when(chargingStationService.createChargingStation(any(Station.class)))
                 .thenReturn(station);
 
         mockMvc.perform(post("/api/charging-stations")
@@ -132,7 +132,7 @@ class ChargingStationControllerTest {
 
     @Test
     void updateChargingStation_ShouldReturnUpdatedStation() throws Exception {
-        when(chargingStationService.updateChargingStation(any(Long.class), any(ChargingStation.class)))
+        when(chargingStationService.updateChargingStation(any(Long.class), any(Station.class)))
                 .thenReturn(station);
 
         mockMvc.perform(put("/api/charging-stations/1")

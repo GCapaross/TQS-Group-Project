@@ -18,7 +18,7 @@ public class StationReview {
     
     @ManyToOne
     @JoinColumn(name = "station_id")
-    private ChargingStation chargingStation;
+    private Station chargingStation;
     
     private int rating;
     private String comment;

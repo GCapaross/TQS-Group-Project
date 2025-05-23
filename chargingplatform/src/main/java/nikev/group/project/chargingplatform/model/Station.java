@@ -9,8 +9,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Data
 @Entity
-@Table(name = "charging_stations")
-public class ChargingStation {
+@Table(name = "stations")
+public class Station {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -18,17 +18,9 @@ public class ChargingStation {
     private String name;
     private String location;
     
-    @Enumerated(EnumType.STRING)
-    private StationStatus status;
     
     private double latitude;
     private double longitude;
-    
-    @Column(name = "max_slots")
-    private int maxSlots;
-    
-    @Column(name = "available_slots")
-    private int availableSlots;
     
     @Column(name = "price_per_kwh")
     private double pricePerKwh;
@@ -40,12 +32,6 @@ public class ChargingStation {
     
     @Column(name = "charging_speed_kw")
     private double chargingSpeedKw;
-    
-    @Column(name = "carrier_network")
-    private String carrierNetwork;
-    
-    @Column(name = "average_rating")
-    private double averageRating;
     
     @OneToMany(mappedBy = "chargingStation")
     @JsonIgnore

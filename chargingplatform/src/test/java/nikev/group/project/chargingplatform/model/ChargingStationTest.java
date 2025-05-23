@@ -11,11 +11,11 @@ class ChargingStationTest {
     @Test
     void testChargingStationCreation() {
         // Given
-        ChargingStation station = new ChargingStation();
+        Station station = new Station();
         station.setId(1L);
         station.setName("Test Station");
         station.setLocation("Test Location");
-        station.setStatus(ChargingStation.StationStatus.AVAILABLE);
+        station.setStatus(Station.StationStatus.AVAILABLE);
         station.setLatitude(40.7128);
         station.setLongitude(-74.0060);
         station.setMaxSlots(4);
@@ -30,7 +30,7 @@ class ChargingStationTest {
         assertThat(station.getId()).isEqualTo(1L);
         assertThat(station.getName()).isEqualTo("Test Station");
         assertThat(station.getLocation()).isEqualTo("Test Location");
-        assertThat(station.getStatus()).isEqualTo(ChargingStation.StationStatus.AVAILABLE);
+        assertThat(station.getStatus()).isEqualTo(Station.StationStatus.AVAILABLE);
         assertThat(station.getLatitude()).isEqualTo(40.7128);
         assertThat(station.getLongitude()).isEqualTo(-74.0060);
         assertThat(station.getMaxSlots()).isEqualTo(4);
@@ -45,29 +45,29 @@ class ChargingStationTest {
     @Test
     void testChargingStationStatusTransitions() {
         // Given
-        ChargingStation station = new ChargingStation();
+        Station station = new Station();
         station.setName("Test Station");
         station.setLocation("Test Location");
-        station.setStatus(ChargingStation.StationStatus.AVAILABLE);
+        station.setStatus(Station.StationStatus.AVAILABLE);
 
         // When
-        station.setStatus(ChargingStation.StationStatus.IN_USE);
+        station.setStatus(Station.StationStatus.IN_USE);
 
         // Then
-        assertThat(station.getStatus()).isEqualTo(ChargingStation.StationStatus.IN_USE);
+        assertThat(station.getStatus()).isEqualTo(Station.StationStatus.IN_USE);
     }
 
     @Test
     void testChargingStationEquality() {
         // Given
-        ChargingStation station1 = new ChargingStation();
+        Station station1 = new Station();
         station1.setId(1L);
         station1.setName("Test Station");
         station1.setConnectorTypes(Arrays.asList("CCS", "Type 2"));
         station1.setChargingSpeedKw(50.0);
         station1.setCarrierNetwork("Test Network");
 
-        ChargingStation station2 = new ChargingStation();
+        Station station2 = new Station();
         station2.setId(1L);
         station2.setName("Test Station");
         station2.setConnectorTypes(Arrays.asList("CCS", "Type 2"));
@@ -82,7 +82,7 @@ class ChargingStationTest {
     @Test
     void testChargingStationReviews() {
         // Given
-        ChargingStation station = new ChargingStation();
+        Station station = new Station();
         station.setId(1L);
 
         StationReview review1 = new StationReview();
