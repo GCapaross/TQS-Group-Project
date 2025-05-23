@@ -6,7 +6,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class ChargingStationTest {
+class StationTest {
 
     @Test
     void testChargingStationCreation() {
@@ -15,31 +15,21 @@ class ChargingStationTest {
         station.setId(1L);
         station.setName("Test Station");
         station.setLocation("Test Location");
-        station.setStatus(Station.StationStatus.AVAILABLE);
         station.setLatitude(40.7128);
         station.setLongitude(-74.0060);
-        station.setMaxSlots(4);
-        station.setAvailableSlots(2);
         station.setPricePerKwh(0.5);
-        station.setConnectorTypes(Arrays.asList("CCS", "Type 2"));
-        station.setChargingSpeedKw(50.0);
-        station.setCarrierNetwork("Test Network");
-        station.setAverageRating(4.5);
+        station.setSupportedConnectors(Arrays.asList("CCS", "Type 2"));
+        station.setTimetable("24/7");
 
         // Then
         assertThat(station.getId()).isEqualTo(1L);
         assertThat(station.getName()).isEqualTo("Test Station");
         assertThat(station.getLocation()).isEqualTo("Test Location");
-        assertThat(station.getStatus()).isEqualTo(Station.StationStatus.AVAILABLE);
         assertThat(station.getLatitude()).isEqualTo(40.7128);
         assertThat(station.getLongitude()).isEqualTo(-74.0060);
-        assertThat(station.getMaxSlots()).isEqualTo(4);
-        assertThat(station.getAvailableSlots()).isEqualTo(2);
         assertThat(station.getPricePerKwh()).isEqualTo(0.5);
-        assertThat(station.getConnectorTypes()).containsExactly("CCS", "Type 2");
-        assertThat(station.getChargingSpeedKw()).isEqualTo(50.0);
-        assertThat(station.getCarrierNetwork()).isEqualTo("Test Network");
-        assertThat(station.getAverageRating()).isEqualTo(4.5);
+        assertThat(station.getSupportedConnectors()).containsExactly("CCS", "Type 2");
+        assertThat(station.getTimetable()).isEqualTo("24/7");
     }
 
     @Test
@@ -48,13 +38,12 @@ class ChargingStationTest {
         Station station = new Station();
         station.setName("Test Station");
         station.setLocation("Test Location");
-        station.setStatus(Station.StationStatus.AVAILABLE);
 
         // When
-        station.setStatus(Station.StationStatus.IN_USE);
+        station.setStatus("IN_USE");
 
         // Then
-        assertThat(station.getStatus()).isEqualTo(Station.StationStatus.IN_USE);
+        assertThat(station.getStatus()).isEqualTo("IN_USE");
     }
 
     @Test
@@ -63,14 +52,14 @@ class ChargingStationTest {
         Station station1 = new Station();
         station1.setId(1L);
         station1.setName("Test Station");
-        station1.setConnectorTypes(Arrays.asList("CCS", "Type 2"));
+        station1.setSupportedConnectors(Arrays.asList("CCS", "Type 2"));
         station1.setChargingSpeedKw(50.0);
         station1.setCarrierNetwork("Test Network");
 
         Station station2 = new Station();
         station2.setId(1L);
         station2.setName("Test Station");
-        station2.setConnectorTypes(Arrays.asList("CCS", "Type 2"));
+        station2.setSupportedConnectors(Arrays.asList("CCS", "Type 2"));
         station2.setChargingSpeedKw(50.0);
         station2.setCarrierNetwork("Test Network");
 
@@ -103,4 +92,4 @@ class ChargingStationTest {
         assertThat(station.getReviews().get(0)).isEqualTo(review1);
         assertThat(station.getReviews().get(1)).isEqualTo(review2);
     }
-} 
+}

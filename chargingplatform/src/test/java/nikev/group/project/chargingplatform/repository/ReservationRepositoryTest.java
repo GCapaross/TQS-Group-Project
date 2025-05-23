@@ -24,7 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Testcontainers
 @ActiveProfiles("test")
-class ChargingSessionRepositoryTest {
+class ReservationRepositoryTest {
 
     @Container
     private static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:latest")
@@ -51,13 +51,13 @@ class ChargingSessionRepositoryTest {
         station = new Station();
         station.setName("Test Station");
         station.setLocation("Test Location");
-        station.setStatus(Station.StationStatus.AVAILABLE);
+        station.setLatitude(40.7128);
+        station.setLongitude(-74.0060);
         station = chargingStationRepository.save(station);
 
         user = new User();
         user.setName("Test User");
         user.setEmail("test@example.com");
-        user.setPassword("hashedPassword123");
         user = userRepository.save(user);
 
         startTime = LocalDateTime.now().plusHours(1);
@@ -145,4 +145,4 @@ class ChargingSessionRepositoryTest {
         assertThat(overlapping).hasSize(1);
         assertThat(overlapping.get(0)).isEqualTo(existingSession);
     }
-} 
+}

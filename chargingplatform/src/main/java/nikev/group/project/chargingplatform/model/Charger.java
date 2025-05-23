@@ -27,11 +27,15 @@ public class Charger {
     @Column(name = "charging_speed_kw")
     private double chargingSpeedKw;
 
-    public enum ChargerStatus {
+    public static enum ChargerStatus {
         AVAILABLE,      // Charger is free and operational
         CHARGING,       // Charger is currently in use
         RESERVED,       // Charger is reserved for a user
         OUT_OF_SERVICE, // Charger is not operational (e.g., broken)
         MAINTENANCE     // Charger is under maintenance
+    }
+
+    public ChargerStatus getStatus() {
+        return status;
     }
 }

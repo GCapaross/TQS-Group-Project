@@ -3,7 +3,6 @@ package nikev.group.project.chargingplatform.controller;
 import nikev.group.project.chargingplatform.model.Reservation;
 import nikev.group.project.chargingplatform.model.User;
 import nikev.group.project.chargingplatform.service.BookingService;
-import nikev.group.project.chargingplatform.DTOs.BookingRequestDTO;
 
 import org.flywaydb.core.internal.util.JsonUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,6 +17,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -28,31 +28,29 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 
 import nikev.group.project.chargingplatform.model.Station;
+import nikev.group.project.chargingplatform.DTOs.BookingRequestDTO;
 
 @WebMvcTest(BookingController.class)
 @AutoConfigureMockMvc(addFilters = false) // Disable Spring Security filters for tests
 class BookingControllerTest {
     @Autowired
     private MockMvc mockMvc;
-    
+
     @MockitoBean
     private BookingService bookingService;
-    
+
     @Autowired
     private WebApplicationContext context;
 
     private User testUser;
     private Station testStation;
-    private Reservation testSession;
+    private Reservation testReservation;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
 
     @BeforeEach
     void setUp() {
-        // Setup MockMvc with security disabled
-        mockMvc = MockMvcBuilders
-            .webAppContextSetup(context)
-            .build();
+        mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
 
         testUser = new User();
         testUser.setId(1L);
@@ -62,14 +60,16 @@ class BookingControllerTest {
         testStation = new Station();
         testStation.setId(1L);
         testStation.setName("Test Station");
-        testStation.setStatus(Station.StationStatus.AVAILABLE);
-        testStation.setAvailableSlots(5);
+        testStation.setLocation("Test Location");
+        testStation.setPricePerKwh(0.25);
+        testStation.setSupportedConnectors(Arrays.asList("CCS", "Type 2"));
+        testStation.setTimetable("24/7");
 
-        testSession = new Reservation();
-        testSession.setId(1L);
-        testSession.setUser(testUser);
-        testSession.setChargingStation(testStation);
-        testSession.setStatus("BOOKED");
+        testReservation = new Reservation();
+        testReservation.setId(1L);
+        testReservation.setUser(testUser);
+        testReservation.setStation(testStation);
+        testReservation.setStatus("BOOKED");
 
         startTime = LocalDateTime.now().plusHours(1);
         endTime = startTime.plusHours(2);
@@ -77,27 +77,21 @@ class BookingControllerTest {
 
     @Test
     void createBooking_Success() throws Exception {
-        // Arrange
-        when(bookingService.bookSlot(any(), any(), any(), any())).thenReturn(testSession);
+        when(bookingService.bookSlot(any(), any(), any(), any())).thenReturn(testReservation);
 
-        // Act & Assert with MockMvc
-        mockMvc.perform(
-            post("/api/bookings")
+        mockMvc.perform(post("/api/bookings")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(JsonUtils.toJson(new BookingRequestDTO(testStation.getId(), startTime, endTime)))
-        )
-        .andDo(print())
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.status").value("BOOKED"));
-        
-        // Verify service was called
+                .content(JsonUtils.toJson(new BookingRequestDTO(testStation.getId(), startTime, endTime))))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value("BOOKED"));
+
         verify(bookingService, times(1)).bookSlot(any(), any(), any(), any());
     }
 
     @Test
     void createBooking_WhenServiceThrowsException_ReturnsBadRequest() throws Exception {
-        when(bookingService.bookSlot(any(), any(), any(), any()))
-            .thenThrow(new RuntimeException("Booking failed"));
+        when(bookingService.bookSlot(any(), any(), any(), any())).thenThrow(new RuntimeException("Booking failed"));
 
         mockMvc.perform(post("/api/bookings")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -113,11 +107,11 @@ class BookingControllerTest {
             .andDo(print())
             .andExpect(status().isBadRequest());
     }
-    
+
     @Test
     void createBooking_WithInvalidTimeRange_ReturnsBadRequest() throws Exception {
         LocalDateTime invalidEndTime = startTime.minusHours(1);
-        
+
         mockMvc.perform(post("/api/bookings")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(JsonUtils.toJson(new BookingRequestDTO(testStation.getId(), startTime, invalidEndTime))))
@@ -127,10 +121,8 @@ class BookingControllerTest {
 
     @Test
     void createBooking_WithPastStartTime_ReturnsBadRequest() throws Exception {
-        // Arrange
         LocalDateTime pastStartTime = LocalDateTime.now().minusHours(1);
 
-        // Act & Assert
         mockMvc.perform(post("/api/bookings")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(JsonUtils.toJson(new BookingRequestDTO(testStation.getId(), pastStartTime, endTime))))
@@ -140,27 +132,21 @@ class BookingControllerTest {
 
     @Test
     void cancelBooking_Success() throws Exception {
-        // Arrange
         doNothing().when(bookingService).cancelBooking(any());
 
-        // Act & Assert
-        mockMvc.perform(delete("/api/bookings/" + testSession.getId())
+        mockMvc.perform(delete("/api/bookings/" + testReservation.getId())
                 .contentType(MediaType.APPLICATION_JSON))
             .andDo(print())
             .andExpect(status().isNoContent());
-        
-        // Verify service was called
-        verify(bookingService, times(1)).cancelBooking(testSession.getId());
+
+        verify(bookingService, times(1)).cancelBooking(testReservation.getId());
     }
 
     @Test
     void cancelBooking_WhenServiceThrowsException_ReturnsBadRequest() throws Exception {
-        // Arrange
-        doThrow(new RuntimeException("Cancellation failed"))
-            .when(bookingService).cancelBooking(any());
+        doThrow(new RuntimeException("Cancellation failed")).when(bookingService).cancelBooking(any());
 
-        // Act & Assert
-        mockMvc.perform(delete("/api/bookings/" + testSession.getId())
+        mockMvc.perform(delete("/api/bookings/" + testReservation.getId())
                 .contentType(MediaType.APPLICATION_JSON))
             .andDo(print())
             .andExpect(status().isBadRequest());
@@ -168,7 +154,6 @@ class BookingControllerTest {
 
     @Test
     void cancelBooking_WithNullId_ReturnsBadRequest() throws Exception {
-        // Testing with a non-numeric value which should cause validation failure
         mockMvc.perform(delete("/api/bookings/null")
                 .contentType(MediaType.APPLICATION_JSON))
             .andDo(print())

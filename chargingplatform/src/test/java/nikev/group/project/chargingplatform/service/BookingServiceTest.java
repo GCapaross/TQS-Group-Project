@@ -3,8 +3,8 @@ package nikev.group.project.chargingplatform.service;
 import nikev.group.project.chargingplatform.model.Reservation;
 import nikev.group.project.chargingplatform.model.Station;
 import nikev.group.project.chargingplatform.model.User;
-import nikev.group.project.chargingplatform.repository.ChargingSessionRepository;
-import nikev.group.project.chargingplatform.repository.ChargingStationRepository;
+import nikev.group.project.chargingplatform.repository.ReservationRepository;
+import nikev.group.project.chargingplatform.repository.ReservationRepository;
 import nikev.group.project.chargingplatform.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,6 +15,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -49,12 +50,17 @@ public class BookingServiceTest {
         // Setup test data
         station = new Station();
         station.setId(1L);
-        station.setStatus(Station.StationStatus.AVAILABLE);
-        station.setAvailableSlots(2);
-        station.setMaxSlots(2);
+        station.setName("Test Station");
+        station.setLocation("Test Location");
+        station.setLatitude(40.7128);
+        station.setLongitude(-74.0060);
+        station.setPricePerKwh(0.5);
+        station.setSupportedConnectors(Arrays.asList("CCS", "Type 2"));
+        station.setTimetable("24/7");
 
         user = new User();
         user.setId(1L);
+        user.setName("Test User");
         user.setEmail("test@example.com");
 
         startTime = LocalDateTime.now().plusHours(1);
@@ -160,4 +166,4 @@ public class BookingServiceTest {
         assertEquals(2, station.getAvailableSlots()); // Should be 2 after cancellation
         verify(chargingSessionRepository).delete(booking);
     }
-} 
+}

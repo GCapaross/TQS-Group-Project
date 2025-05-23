@@ -21,7 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Testcontainers
 @ActiveProfiles("test")
-class ChargingStationRepositoryTest {
+class StationRepositoryTest {
 
     @Container
     private static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:latest")
@@ -38,16 +38,11 @@ class ChargingStationRepositoryTest {
         Station station = new Station();
         station.setName("Test Station");
         station.setLocation("Test Location");
-        station.setStatus(Station.StationStatus.AVAILABLE);
         station.setLatitude(40.7128);
         station.setLongitude(-74.0060);
-        station.setMaxSlots(4);
-        station.setAvailableSlots(2);
         station.setPricePerKwh(0.5);
-        station.setConnectorTypes(Arrays.asList("CCS", "Type 2"));
-        station.setChargingSpeedKw(50.0);
-        station.setCarrierNetwork("Test Network");
-        station.setAverageRating(4.5);
+        station.setSupportedConnectors(Arrays.asList("CCS", "Type 2"));
+        station.setTimetable("24/7");
 
         // When
         Station saved = chargingStationRepository.save(station);
@@ -57,11 +52,6 @@ class ChargingStationRepositoryTest {
         assertThat(found).isPresent();
         assertThat(found.get().getName()).isEqualTo("Test Station");
         assertThat(found.get().getLocation()).isEqualTo("Test Location");
-        assertThat(found.get().getStatus()).isEqualTo(Station.StationStatus.AVAILABLE);
-        assertThat(found.get().getConnectorTypes()).containsExactly("CCS", "Type 2");
-        assertThat(found.get().getChargingSpeedKw()).isEqualTo(50.0);
-        assertThat(found.get().getCarrierNetwork()).isEqualTo("Test Network");
-        assertThat(found.get().getAverageRating()).isEqualTo(4.5);
     }
 
     @Test
@@ -154,4 +144,4 @@ class ChargingStationRepositoryTest {
         assertThat(filteredStations).hasSize(1);
         assertThat(filteredStations.get(0).getName()).isEqualTo("Test Station");
     }
-} 
+}

@@ -2,7 +2,7 @@ package nikev.group.project.chargingplatform.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import nikev.group.project.chargingplatform.model.Station;
-import nikev.group.project.chargingplatform.service.ChargingStationService;
+import nikev.group.project.chargingplatform.service.StationService;
 import nikev.group.project.chargingplatform.DTOs.SearchStationDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,9 +25,9 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(ChargingStationController.class)
+@WebMvcTest(StationController.class)
 @AutoConfigureMockMvc(addFilters = false)
-class ChargingStationControllerTest {
+class StationControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -36,7 +36,7 @@ class ChargingStationControllerTest {
     private ObjectMapper objectMapper;
 
     @MockitoBean
-    private ChargingStationService chargingStationService;
+    private StationService stationService;
 
     private Station station;
 
@@ -46,22 +46,16 @@ class ChargingStationControllerTest {
         station.setId(1L);
         station.setName("Test Station");
         station.setLocation("Test Location");
-        station.setStatus(Station.StationStatus.AVAILABLE);
         station.setLatitude(40.7128);
         station.setLongitude(-74.0060);
-        station.setMaxSlots(4);
-        station.setAvailableSlots(2);
         station.setPricePerKwh(0.5);
-        station.setConnectorTypes(Arrays.asList("CCS", "Type 2"));
-        station.setChargingSpeedKw(50.0);
-        station.setCarrierNetwork("Test Network");
-        station.setAverageRating(4.5);
+        station.setSupportedConnectors(Arrays.asList("CCS", "Type 2"));
+        station.setTimetable("24/7");
     }
 
     @Test
-    void getAllChargingStations_ShouldReturnAllStations() throws Exception {
-        when(chargingStationService.getAllChargingStations())
-                .thenReturn(Arrays.asList(station));
+    void getAllStations_ShouldReturnAllStations() throws Exception {
+        when(stationService.getAllStations()).thenReturn(Arrays.asList(station));
 
         mockMvc.perform(get("/api/charging-stations"))
                 .andExpect(status().isOk())
@@ -70,9 +64,8 @@ class ChargingStationControllerTest {
     }
 
     @Test
-    void getChargingStationById_WhenExists_ShouldReturnStation() throws Exception {
-        when(chargingStationService.getChargingStationById(1L))
-                .thenReturn(station);
+    void getStationById_WhenExists_ShouldReturnStation() throws Exception {
+        when(stationService.getStationById(1L)).thenReturn(station);
 
         mockMvc.perform(get("/api/charging-stations/1"))
                 .andExpect(status().isOk())
@@ -82,7 +75,7 @@ class ChargingStationControllerTest {
 
     @Test
     void getNearbyStations_ShouldReturnStationsInRadius() throws Exception {
-        when(chargingStationService.findNearbyStations(40.7128, -74.0060, 10.0))
+        when(stationService.findNearbyStations(40.7128, -74.0060, 10.0))
                 .thenReturn(Arrays.asList(station));
 
         mockMvc.perform(get("/api/charging-stations/nearby")
@@ -96,18 +89,19 @@ class ChargingStationControllerTest {
 
     @Test
     void searchStations_WithFilters_ShouldReturnFilteredStations() throws Exception {
-        List<String> connectorTypes = Arrays.asList("CCS", "Type 2");
         SearchStationDTO searchStationDTO = new SearchStationDTO();
-        searchStationDTO.setConnectorTypes(connectorTypes);
-        searchStationDTO.setMinChargingSpeed(50.0);
-        searchStationDTO.setCarrierNetwork("Test Network");
-        searchStationDTO.setMinRating(4.0);
+        searchStationDTO.setSupportedConnectors(Arrays.asList("CCS", "Type 2"));
+        searchStationDTO.setMinPricePerKwh(0.4);
+        searchStationDTO.setMaxPricePerKwh(0.6);
+        searchStationDTO.setName("Test Station");
+        searchStationDTO.setLocation("Test Location");
         searchStationDTO.setLatitude(40.7128);
         searchStationDTO.setLongitude(-74.0060);
         searchStationDTO.setRadiusKm(10.0);
 
-        when(chargingStationService.searchStations(any(SearchStationDTO.class)))
+        when(stationService.searchStations(any(SearchStationDTO.class)))
                 .thenReturn(Arrays.asList(station));
+
         mockMvc.perform(post("/api/charging-stations/search")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(searchStationDTO)))
@@ -115,12 +109,10 @@ class ChargingStationControllerTest {
                 .andExpect(jsonPath("$[0].name").value("Test Station"))
                 .andExpect(jsonPath("$[0].location").value("Test Location"));
     }
-        
 
     @Test
-    void createChargingStation_ShouldReturnCreatedStation() throws Exception {
-        when(chargingStationService.createChargingStation(any(Station.class)))
-                .thenReturn(station);
+    void createStation_ShouldReturnCreatedStation() throws Exception {
+        when(stationService.createStation(any(Station.class))).thenReturn(station);
 
         mockMvc.perform(post("/api/charging-stations")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -131,9 +123,8 @@ class ChargingStationControllerTest {
     }
 
     @Test
-    void updateChargingStation_ShouldReturnUpdatedStation() throws Exception {
-        when(chargingStationService.updateChargingStation(any(Long.class), any(Station.class)))
-                .thenReturn(station);
+    void updateStation_ShouldReturnUpdatedStation() throws Exception {
+        when(stationService.updateStation(any(Long.class), any(Station.class))).thenReturn(station);
 
         mockMvc.perform(put("/api/charging-stations/1")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -144,10 +135,10 @@ class ChargingStationControllerTest {
     }
 
     @Test
-    void deleteChargingStation_ShouldReturnNoContent() throws Exception {
+    void deleteStation_ShouldReturnNoContent() throws Exception {
         mockMvc.perform(delete("/api/charging-stations/1"))
                 .andExpect(status().isNoContent());
 
-        verify(chargingStationService).deleteChargingStation(1L);
+        verify(stationService).deleteStation(1L);
     }
-} 
+}

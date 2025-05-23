@@ -6,5 +6,5 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface ChargingStationRepository extends JpaRepository<Station, Long>, JpaSpecificationExecutor<Station> {
-} 
+public interface StationRepository extends JpaRepository<Station, Long>, JpaSpecificationExecutor<Station> {
+}

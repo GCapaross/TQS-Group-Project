@@ -48,4 +48,10 @@ public class Station {
     @OneToMany(mappedBy = "chargingStation")
     @JsonIgnore
     private List<Reservation> chargingSessions;
+
+    public boolean hasAvailableCharger() {
+        return this.chargers != null
+            && this.chargers.stream()
+                       .anyMatch(c -> c.getStatus() == Charger.ChargerStatus.AVAILABLE);
+    }
 }
