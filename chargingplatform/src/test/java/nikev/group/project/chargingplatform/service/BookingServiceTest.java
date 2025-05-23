@@ -1,6 +1,6 @@
 package nikev.group.project.chargingplatform.service;
 
-import nikev.group.project.chargingplatform.model.ChargingSession;
+import nikev.group.project.chargingplatform.model.Reservation;
 import nikev.group.project.chargingplatform.model.Station;
 import nikev.group.project.chargingplatform.model.User;
 import nikev.group.project.chargingplatform.repository.ChargingSessionRepository;
@@ -70,7 +70,7 @@ public class BookingServiceTest {
         when(chargingSessionRepository.save(any())).thenAnswer(i -> i.getArguments()[0]);
 
         // Act
-        ChargingSession booking = bookingService.bookSlot(1L, 1L, startTime, endTime);
+        Reservation booking = bookingService.bookSlot(1L, 1L, startTime, endTime);
 
         // Assert
         assertNotNull(booking);
@@ -78,7 +78,7 @@ public class BookingServiceTest {
         assertEquals(station, booking.getChargingStation());
         assertEquals(startTime, booking.getStartTime());
         assertEquals(endTime, booking.getEndTime());
-        verify(chargingSessionRepository).save(any(ChargingSession.class));
+        verify(chargingSessionRepository).save(any(Reservation.class));
     }
 
     @Test
@@ -87,8 +87,8 @@ public class BookingServiceTest {
         when(chargingStationRepository.findById(1L)).thenReturn(Optional.of(station));
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         
-        List<ChargingSession> overlappingSessions = new ArrayList<>();
-        ChargingSession existingBooking = new ChargingSession();
+        List<Reservation> overlappingSessions = new ArrayList<>();
+        Reservation existingBooking = new Reservation();
         overlappingSessions.add(existingBooking);
         when(chargingSessionRepository.findOverlappingSessions(any(), any(), any())).thenReturn(overlappingSessions);
 
@@ -143,7 +143,7 @@ public class BookingServiceTest {
     @Test
     void whenCancellingBooking_thenSlotIsReleased() {
         // Arrange
-        ChargingSession booking = new ChargingSession();
+        Reservation booking = new Reservation();
         booking.setId(1L);
         booking.setChargingStation(station);
         booking.setStatus("BOOKED");

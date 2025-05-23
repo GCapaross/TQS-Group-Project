@@ -1,6 +1,6 @@
 package nikev.group.project.chargingplatform.service;
 
-import nikev.group.project.chargingplatform.model.ChargingSession;
+import nikev.group.project.chargingplatform.model.Reservation;
 import nikev.group.project.chargingplatform.repository.ChargingSessionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,14 +17,14 @@ public class DashboardService {
     private ChargingSessionRepository chargingSessionRepository;
 
     public Map<String, Object> getUserConsumptionStats(Long userId) {
-        List<ChargingSession> sessions = chargingSessionRepository.findByUserId(userId);
+        List<Reservation> sessions = chargingSessionRepository.findByUserId(userId);
         
         double totalEnergyConsumed = sessions.stream()
-                .mapToDouble(ChargingSession::getEnergyConsumed)
+                .mapToDouble(Reservation::getEnergyConsumed)
                 .sum();
         
         double totalCost = sessions.stream()
-                .mapToDouble(ChargingSession::getCost)
+                .mapToDouble(Reservation::getCost)
                 .sum();
         
         long totalSessions = sessions.size();
@@ -38,14 +38,14 @@ public class DashboardService {
     }
 
     public Map<String, Object> getStationStats(Long stationId) {
-        List<ChargingSession> sessions = chargingSessionRepository.findByChargingStationId(stationId);
+        List<Reservation> sessions = chargingSessionRepository.findByChargingStationId(stationId);
         
         double totalEnergyDelivered = sessions.stream()
-                .mapToDouble(ChargingSession::getEnergyConsumed)
+                .mapToDouble(Reservation::getEnergyConsumed)
                 .sum();
         
         double totalRevenue = sessions.stream()
-                .mapToDouble(ChargingSession::getCost)
+                .mapToDouble(Reservation::getCost)
                 .sum();
         
         long totalSessions = sessions.size();
@@ -59,19 +59,19 @@ public class DashboardService {
     }
 
     public Map<String, Object> getAggregateStats() {
-        List<ChargingSession> allSessions = chargingSessionRepository.findAll();
+        List<Reservation> allSessions = chargingSessionRepository.findAll();
         
         double totalEnergy = allSessions.stream()
-                .mapToDouble(ChargingSession::getEnergyConsumed)
+                .mapToDouble(Reservation::getEnergyConsumed)
                 .sum();
         
         double totalRevenue = allSessions.stream()
-                .mapToDouble(ChargingSession::getCost)
+                .mapToDouble(Reservation::getCost)
                 .sum();
         
         Map<String, Long> sessionsByStatus = allSessions.stream()
                 .collect(Collectors.groupingBy(
-                    ChargingSession::getStatus,
+                    Reservation::getStatus,
                     Collectors.counting()
                 ));
         

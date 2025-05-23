@@ -21,7 +21,7 @@ class ChargingSessionTest {
         LocalDateTime startTime = LocalDateTime.now();
         LocalDateTime endTime = startTime.plusHours(2);
 
-        ChargingSession session = new ChargingSession();
+        Reservation session = new Reservation();
         session.setId(1L);
         session.setChargingStation(station);
         session.setUser(user);
@@ -45,7 +45,7 @@ class ChargingSessionTest {
     @Test
     void testChargingSessionStatusTransitions() {
         // Given
-        ChargingSession session = new ChargingSession();
+        Reservation session = new Reservation();
         session.setStatus("BOOKED");
 
         // When
@@ -64,11 +64,11 @@ class ChargingSessionTest {
     @Test
     void testChargingSessionEquality() {
         // Given
-        ChargingSession session1 = new ChargingSession();
+        Reservation session1 = new Reservation();
         session1.setId(1L);
         session1.setStatus("COMPLETED");
 
-        ChargingSession session2 = new ChargingSession();
+        Reservation session2 = new Reservation();
         session2.setId(1L);
         session2.setStatus("COMPLETED");
 
@@ -83,7 +83,7 @@ class ChargingSessionTest {
         LocalDateTime startTime = LocalDateTime.now();
         LocalDateTime endTime = startTime.plusHours(2);
 
-        ChargingSession session = new ChargingSession();
+        Reservation session = new Reservation();
         session.setStartTime(startTime);
         session.setEndTime(endTime);
 

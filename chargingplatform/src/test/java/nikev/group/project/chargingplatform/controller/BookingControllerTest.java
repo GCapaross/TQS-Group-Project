@@ -1,6 +1,6 @@
 package nikev.group.project.chargingplatform.controller;
 
-import nikev.group.project.chargingplatform.model.ChargingSession;
+import nikev.group.project.chargingplatform.model.Reservation;
 import nikev.group.project.chargingplatform.model.User;
 import nikev.group.project.chargingplatform.service.BookingService;
 import nikev.group.project.chargingplatform.DTOs.BookingRequestDTO;
@@ -43,7 +43,7 @@ class BookingControllerTest {
 
     private User testUser;
     private Station testStation;
-    private ChargingSession testSession;
+    private Reservation testSession;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
 
@@ -65,7 +65,7 @@ class BookingControllerTest {
         testStation.setStatus(Station.StationStatus.AVAILABLE);
         testStation.setAvailableSlots(5);
 
-        testSession = new ChargingSession();
+        testSession = new Reservation();
         testSession.setId(1L);
         testSession.setUser(testUser);
         testSession.setChargingStation(testStation);

@@ -1,6 +1,6 @@
 package nikev.group.project.chargingplatform.controller;
 
-import nikev.group.project.chargingplatform.model.ChargingSession;
+import nikev.group.project.chargingplatform.model.Reservation;
 import nikev.group.project.chargingplatform.service.BookingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +19,7 @@ public class BookingController {
     private BookingService bookingService;
 
     @PostMapping
-    public ResponseEntity<ChargingSession> createBooking(
+    public ResponseEntity<Reservation> createBooking(
         @NotNull @RequestBody(required=true) BookingRequestDTO request
     ) {
         try {
@@ -29,7 +29,7 @@ public class BookingController {
 
             Long userId = 1L;
 
-            ChargingSession session = bookingService.bookSlot(
+            Reservation session = bookingService.bookSlot(
                     request.getStationId(),
                     userId,
                     request.getStartTime(),

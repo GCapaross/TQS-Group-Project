@@ -1,6 +1,6 @@
 package nikev.group.project.chargingplatform.service;
 
-import nikev.group.project.chargingplatform.model.ChargingSession;
+import nikev.group.project.chargingplatform.model.Reservation;
 import nikev.group.project.chargingplatform.model.Station;
 import nikev.group.project.chargingplatform.model.User;
 import nikev.group.project.chargingplatform.repository.ChargingSessionRepository;
@@ -27,8 +27,8 @@ class DashboardServiceTest {
     @InjectMocks
     private DashboardService dashboardService;
 
-    private ChargingSession session1;
-    private ChargingSession session2;
+    private Reservation session1;
+    private Reservation session2;
     private Station station;
     private User user;
 
@@ -40,7 +40,7 @@ class DashboardServiceTest {
         user = new User();
         user.setId(1L);
 
-        session1 = new ChargingSession();
+        session1 = new Reservation();
         session1.setId(1L);
         session1.setChargingStation(station);
         session1.setUser(user);
@@ -48,7 +48,7 @@ class DashboardServiceTest {
         session1.setCost(5.0);
         session1.setStatus("COMPLETED");
 
-        session2 = new ChargingSession();
+        session2 = new Reservation();
         session2.setId(2L);
         session2.setChargingStation(station);
         session2.setUser(user);
@@ -60,7 +60,7 @@ class DashboardServiceTest {
     @Test
     void getUserConsumptionStats_ShouldReturnCorrectStats() {
         // Given
-        List<ChargingSession> sessions = Arrays.asList(session1, session2);
+        List<Reservation> sessions = Arrays.asList(session1, session2);
         when(chargingSessionRepository.findByUserId(1L)).thenReturn(sessions);
 
         // When
@@ -70,13 +70,13 @@ class DashboardServiceTest {
         assertThat(stats.get("totalEnergyConsumed")).isEqualTo(25.0);
         assertThat(stats.get("totalCost")).isEqualTo(12.5);
         assertThat(stats.get("totalSessions")).isEqualTo(2L);
-        assertThat((List<ChargingSession>) stats.get("sessions")).hasSize(2);
+        assertThat((List<Reservation>) stats.get("sessions")).hasSize(2);
     }
 
     @Test
     void getStationStats_ShouldReturnCorrectStats() {
         // Given
-        List<ChargingSession> sessions = Arrays.asList(session1, session2);
+        List<Reservation> sessions = Arrays.asList(session1, session2);
         when(chargingSessionRepository.findByChargingStationId(1L)).thenReturn(sessions);
 
         // When
@@ -86,13 +86,13 @@ class DashboardServiceTest {
         assertThat(stats.get("totalEnergyDelivered")).isEqualTo(25.0);
         assertThat(stats.get("totalRevenue")).isEqualTo(12.5);
         assertThat(stats.get("totalSessions")).isEqualTo(2L);
-        assertThat((List<ChargingSession>) stats.get("sessions")).hasSize(2);
+        assertThat((List<Reservation>) stats.get("sessions")).hasSize(2);
     }
 
     @Test
     void getAggregateStats_ShouldReturnCorrectStats() {
         // Given
-        List<ChargingSession> allSessions = Arrays.asList(session1, session2);
+        List<Reservation> allSessions = Arrays.asList(session1, session2);
         when(chargingSessionRepository.findAll()).thenReturn(allSessions);
 
         // When

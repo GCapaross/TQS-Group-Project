@@ -45,11 +45,11 @@ class UserTest {
         User user = new User();
         user.setId(1L);
 
-        ChargingSession session1 = new ChargingSession();
+        Reservation session1 = new Reservation();
         session1.setId(1L);
         session1.setUser(user);
 
-        ChargingSession session2 = new ChargingSession();
+        Reservation session2 = new Reservation();
         session2.setId(2L);
         session2.setUser(user);
 

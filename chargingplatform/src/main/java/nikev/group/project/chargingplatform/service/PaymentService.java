@@ -1,6 +1,6 @@
 package nikev.group.project.chargingplatform.service;
 
-import nikev.group.project.chargingplatform.model.ChargingSession;
+import nikev.group.project.chargingplatform.model.Reservation;
 import nikev.group.project.chargingplatform.repository.ChargingSessionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,7 +15,7 @@ public class PaymentService {
     private ChargingSessionRepository chargingSessionRepository;
 
     @Transactional
-    public String processPayment(ChargingSession session) {
+    public String processPayment(Reservation session) {
         // In a real implementation, this would integrate with a payment gateway
         // For MVP, we'll simulate a successful payment
         
@@ -29,7 +29,7 @@ public class PaymentService {
         return transactionId;
     }
 
-    private double calculateAmount(ChargingSession session) {
+    private double calculateAmount(Reservation session) {
         // Calculate amount based on energy consumed and station's price per kWh
         double energyConsumed = session.getEnergyConsumed();
         double pricePerKwh = session.getChargingStation().getPricePerKwh();
@@ -38,7 +38,7 @@ public class PaymentService {
     }
 
     @Transactional
-    public void refundPayment(ChargingSession session) {
+    public void refundPayment(Reservation session) {
         // In a real implementation, this would integrate with a payment gateway
         // For MVP, we'll simulate a successful refund
         

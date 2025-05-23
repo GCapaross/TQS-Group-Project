@@ -1,7 +1,11 @@
 package nikev.group.project.chargingplatform.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.List;
 
@@ -9,6 +13,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Data
 @Entity
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "stations")
 public class Station {
     @Id
@@ -18,7 +26,6 @@ public class Station {
     private String name;
     private String location;
     
-    
     private double latitude;
     private double longitude;
     
@@ -26,24 +33,19 @@ public class Station {
     private double pricePerKwh;
     
     @ElementCollection
-    @CollectionTable(name = "station_connector_types", joinColumns = @JoinColumn(name = "station_id"))
+    @CollectionTable(name = "station_supported_connectors", joinColumns = @JoinColumn(name = "station_id"))
     @Column(name = "connector_type")
-    private List<String> connectorTypes;
+    private List<String> supportedConnectors; 
     
-    @Column(name = "charging_speed_kw")
-    private double chargingSpeedKw;
+    @OneToMany(mappedBy = "station", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Charger> chargers;
+
+    private String timetable;
+
+    @OneToMany(mappedBy = "station", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<User> workers;
     
     @OneToMany(mappedBy = "chargingStation")
     @JsonIgnore
-    private List<ChargingSession> chargingSessions;
-    
-    @OneToMany(mappedBy = "chargingStation", cascade = CascadeType.ALL)
-    private List<StationReview> reviews;
-    
-    public enum StationStatus {
-        AVAILABLE,
-        IN_USE,
-        MAINTENANCE,
-        OUT_OF_SERVICE
-    }
-} 
+    private List<Reservation> chargingSessions;
+}

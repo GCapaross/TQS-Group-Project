@@ -1,6 +1,6 @@
 package nikev.group.project.chargingplatform.repository;
 
-import nikev.group.project.chargingplatform.model.ChargingSession;
+import nikev.group.project.chargingplatform.model.Reservation;
 import nikev.group.project.chargingplatform.model.Station;
 import nikev.group.project.chargingplatform.model.User;
 import nikev.group.project.chargingplatform.repository.UserRepository;
@@ -67,7 +67,7 @@ class ChargingSessionRepositoryTest {
     @Test
     void testSaveAndFindById() {
         // Given
-        ChargingSession session = new ChargingSession();
+        Reservation session = new Reservation();
         session.setChargingStation(station);
         session.setUser(user);
         session.setStartTime(startTime);
@@ -75,8 +75,8 @@ class ChargingSessionRepositoryTest {
         session.setStatus("BOOKED");
 
         // When
-        ChargingSession saved = chargingSessionRepository.save(session);
-        Optional<ChargingSession> found = chargingSessionRepository.findById(saved.getId());
+        Reservation saved = chargingSessionRepository.save(session);
+        Optional<Reservation> found = chargingSessionRepository.findById(saved.getId());
 
         // Then
         assertThat(found).isPresent();
@@ -88,7 +88,7 @@ class ChargingSessionRepositoryTest {
     @Test
     void testFindByUserId() {
         // Given
-        ChargingSession session = new ChargingSession();
+        Reservation session = new Reservation();
         session.setChargingStation(station);
         session.setUser(user);
         session.setStartTime(startTime);
@@ -97,7 +97,7 @@ class ChargingSessionRepositoryTest {
         chargingSessionRepository.save(session);
 
         // When
-        List<ChargingSession> sessions = chargingSessionRepository.findByUserId(user.getId());
+        List<Reservation> sessions = chargingSessionRepository.findByUserId(user.getId());
 
         // Then
         assertThat(sessions).hasSize(1);
@@ -107,7 +107,7 @@ class ChargingSessionRepositoryTest {
     @Test
     void testFindByChargingStationId() {
         // Given
-        ChargingSession session = new ChargingSession();
+        Reservation session = new Reservation();
         session.setChargingStation(station);
         session.setUser(user);
         session.setStartTime(startTime);
@@ -116,7 +116,7 @@ class ChargingSessionRepositoryTest {
         chargingSessionRepository.save(session);
 
         // When
-        List<ChargingSession> sessions = chargingSessionRepository.findByChargingStationId(station.getId());
+        List<Reservation> sessions = chargingSessionRepository.findByChargingStationId(station.getId());
 
         // Then
         assertThat(sessions).hasSize(1);
@@ -126,7 +126,7 @@ class ChargingSessionRepositoryTest {
     @Test
     void testFindOverlappingSessions() {
         // Given
-        ChargingSession existingSession = new ChargingSession();
+        Reservation existingSession = new Reservation();
         existingSession.setChargingStation(station);
         existingSession.setUser(user);
         existingSession.setStartTime(startTime);
@@ -135,7 +135,7 @@ class ChargingSessionRepositoryTest {
         chargingSessionRepository.save(existingSession);
 
         // When
-        List<ChargingSession> overlapping = chargingSessionRepository.findOverlappingSessions(
+        List<Reservation> overlapping = chargingSessionRepository.findOverlappingSessions(
                 station.getId(),
                 startTime.minusMinutes(30),
                 endTime.minusMinutes(30)
