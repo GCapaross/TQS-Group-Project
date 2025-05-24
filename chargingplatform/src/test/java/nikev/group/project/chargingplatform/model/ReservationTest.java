@@ -9,7 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ReservationTest {
 
     @Test
-    void testChargingSessionCreation() {
+    void testChargingReservationCreation() {
         // Given
         Station station = new Station();
         station.setId(1L);
@@ -21,72 +21,81 @@ class ReservationTest {
         LocalDateTime startTime = LocalDateTime.now();
         LocalDateTime endTime = startTime.plusHours(2);
 
-        Reservation session = new Reservation();
-        session.setId(1L);
-        session.setStation(station);
-        session.setUser(user);
-        session.setStartTime(startTime);
-        session.setEndTime(endTime);
-        session.setEnergyConsumed(10.0);
-        session.setCost(5.0);
-        session.setStatus("COMPLETED");
+        Reservation reservation = new Reservation();
+        reservation.setId(1L);
+        reservation.setStation(station);
+        reservation.setUser(user);
+        reservation.setStartDate(startTime);
+        reservation.setEndDate(endTime);
 
         // Then
-        assertThat(session.getId()).isEqualTo(1L);
-        assertThat(session.getStation()).isEqualTo(station);
-        assertThat(session.getUser()).isEqualTo(user);
-        assertThat(session.getStartTime()).isEqualTo(startTime);
-        assertThat(session.getEndTime()).isEqualTo(endTime);
-        assertThat(session.getEnergyConsumed()).isEqualTo(10.0);
-        assertThat(session.getCost()).isEqualTo(5.0);
-        assertThat(session.getStatus()).isEqualTo("COMPLETED");
+        assertThat(reservation.getId()).isEqualTo(1L);
+        assertThat(reservation.getStation()).isEqualTo(station);
+        assertThat(reservation.getUser()).isEqualTo(user);
+        assertThat(reservation.getStartDate()).isEqualTo(startTime);
+        assertThat(reservation.getEndDate()).isEqualTo(endTime);
     }
 
     @Test
-    void testChargingSessionStatusTransitions() {
+    void testChargingReservationStatusTransitions() {
         // Given
-        Reservation session = new Reservation();
-        session.setStatus("BOOKED");
+        LocalDateTime now = LocalDateTime.now();
+        Reservation reservation = new Reservation();
 
         // When
-        session.setStatus("IN_PROGRESS");
+        reservation.setStartDate(now.plusHours(1));
+        reservation.setEndDate(now.plusHours(2));
 
         // Then
-        assertThat(session.getStatus()).isEqualTo("IN_PROGRESS");
+        assertThat(reservation.getStatus())
+            .isEqualTo(Reservation.ReservationStatus.BOOKED);
 
         // When
-        session.setStatus("COMPLETED");
+        reservation.setStartDate(now.minusHours(1));
+        reservation.setEndDate(now.plusHours(1));
 
         // Then
-        assertThat(session.getStatus()).isEqualTo("COMPLETED");
+        assertThat(reservation.getStatus())
+            .isEqualTo(Reservation.ReservationStatus.IN_PROGRESS);
+        
+        // When
+        reservation.setStartDate(now.minusHours(2));
+        reservation.setEndDate(now.minusHours(1));
+
+        // Then
+        assertThat(reservation.getStatus())
+            .isEqualTo(Reservation.ReservationStatus.COMPLETED);
     }
 
     @Test
-    void testChargingSessionEquality() {
+    void testChargingReservationEquality() {
         // Given
-        Reservation session1 = new Reservation();
-        session1.setId(1L);
-        session1.setStatus("COMPLETED");
+        LocalDateTime now = LocalDateTime.now();
+        Reservation reservation1 = new Reservation();
+        reservation1.setId(1L);
+        reservation1.setStartDate(now.plusHours(1));
+        reservation1.setEndDate(now.plusHours(2));
 
-        Reservation session2 = new Reservation();
-        session2.setId(1L);
-        session2.setStatus("COMPLETED");
+        Reservation reservation2 = new Reservation();
+        reservation2.setId(1L);
+        reservation2.setStartDate(now.plusHours(1));
+        reservation2.setEndDate(now.plusHours(2));
 
         // Then
-        assertThat(session1).isEqualTo(session2);
+        assertThat(reservation1).isEqualTo(reservation2);
     }
 
     @Test
-    void testChargingSessionDuration() {
+    void testChargingReservationDuration() {
         // Given
         LocalDateTime startTime = LocalDateTime.now();
         LocalDateTime endTime = startTime.plusHours(2);
 
-        Reservation session = new Reservation();
-        session.setStartTime(startTime);
-        session.setEndTime(endTime);
+        Reservation reservation = new Reservation();
+        reservation.setStartTime(startTime);
+        reservation.setEndTime(endTime);
 
         // Then
-        assertThat(session.getEndTime()).isAfter(session.getStartTime());
+        assertThat(reservation.getEndTime()).isAfter(reservation.getStartTime());
     }
 }
