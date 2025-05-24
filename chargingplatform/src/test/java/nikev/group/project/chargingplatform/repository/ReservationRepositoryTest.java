@@ -33,10 +33,10 @@ class ReservationRepositoryTest {
             .withPassword("test");
 
     @Autowired
-    private ChargingSessionRepository chargingSessionRepository;
+    private ReservationRepository reservationRepository;
 
     @Autowired
-    private ChargingStationRepository chargingStationRepository;
+    private StationRepository stationRepository;
 
     @Autowired
     private UserRepository userRepository;
@@ -67,16 +67,16 @@ class ReservationRepositoryTest {
     @Test
     void testSaveAndFindById() {
         // Given
-        Reservation session = new Reservation();
-        session.setChargingStation(station);
-        session.setUser(user);
-        session.setStartTime(startTime);
-        session.setEndTime(endTime);
-        session.setStatus("BOOKED");
+        Reservation reservation = new Reservation();
+        reservation.setChargingStation(station);
+        reservation.setUser(user);
+        reservation.setStartTime(startTime);
+        reservation.setEndTime(endTime);
+        reservation.setStatus("BOOKED");
 
         // When
-        Reservation saved = chargingSessionRepository.save(session);
-        Optional<Reservation> found = chargingSessionRepository.findById(saved.getId());
+        Reservation saved = reservationRepository.save(reservation);
+        Optional<Reservation> found = reservationRepository.findById(saved.getId());
 
         // Then
         assertThat(found).isPresent();
@@ -88,54 +88,54 @@ class ReservationRepositoryTest {
     @Test
     void testFindByUserId() {
         // Given
-        Reservation session = new Reservation();
-        session.setChargingStation(station);
-        session.setUser(user);
-        session.setStartTime(startTime);
-        session.setEndTime(endTime);
-        session.setStatus("BOOKED");
-        chargingSessionRepository.save(session);
+        Reservation reservation = new Reservation();
+        reservation.setChargingStation(station);
+        reservation.setUser(user);
+        reservation.setStartTime(startTime);
+        reservation.setEndTime(endTime);
+        reservation.setStatus("BOOKED");
+        reservationRepository.save(reservation);
 
         // When
-        List<Reservation> sessions = chargingSessionRepository.findByUserId(user.getId());
+        List<Reservation> reservations = reservationRepository.findByUserId(user.getId());
 
         // Then
-        assertThat(sessions).hasSize(1);
-        assertThat(sessions.get(0).getUser()).isEqualTo(user);
+        assertThat(reservations).hasSize(1);
+        assertThat(reservations.get(0).getUser()).isEqualTo(user);
     }
 
     @Test
     void testFindByChargingStationId() {
         // Given
-        Reservation session = new Reservation();
-        session.setChargingStation(station);
-        session.setUser(user);
-        session.setStartTime(startTime);
-        session.setEndTime(endTime);
-        session.setStatus("BOOKED");
-        chargingSessionRepository.save(session);
+        Reservation reservation = new Reservation();
+        reservation.setChargingStation(station);
+        reservation.setUser(user);
+        reservation.setStartTime(startTime);
+        reservation.setEndTime(endTime);
+        reservation.setStatus("BOOKED");
+        reservationRepository.save(reservation);
 
         // When
-        List<Reservation> sessions = chargingSessionRepository.findByChargingStationId(station.getId());
+        List<Reservation> reservations = reservationRepository.findByChargingStationId(station.getId());
 
         // Then
-        assertThat(sessions).hasSize(1);
-        assertThat(sessions.get(0).getChargingStation()).isEqualTo(station);
+        assertThat(reservations).hasSize(1);
+        assertThat(reservations.get(0).getStation()).isEqualTo(station);
     }
 
     @Test
-    void testFindOverlappingSessions() {
+    void testFindOverlappingReservations() {
         // Given
-        Reservation existingSession = new Reservation();
-        existingSession.setChargingStation(station);
-        existingSession.setUser(user);
-        existingSession.setStartTime(startTime);
-        existingSession.setEndTime(endTime);
-        existingSession.setStatus("BOOKED");
-        chargingSessionRepository.save(existingSession);
+        Reservation existingReservation = new Reservation();
+        existingReservation.setStation(station);
+        existingReservation.setUser(user);
+        existingReservation.setStartTime(startTime);
+        existingReservation.setEndTime(endTime);
+        existingReservation.setStatus("BOOKED");
+        reservationRepository.save(existingReservation);
 
         // When
-        List<Reservation> overlapping = chargingSessionRepository.findOverlappingSessions(
+        List<Reservation> overlapping = reservationRepository.findOverlappingReservations(
                 station.getId(),
                 startTime.minusMinutes(30),
                 endTime.minusMinutes(30)
@@ -143,6 +143,6 @@ class ReservationRepositoryTest {
 
         // Then
         assertThat(overlapping).hasSize(1);
-        assertThat(overlapping.get(0)).isEqualTo(existingSession);
+        assertThat(overlapping.get(0)).isEqualTo(existingReservation);
     }
 }
