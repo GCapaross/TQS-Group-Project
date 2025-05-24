@@ -2,8 +2,13 @@ package nikev.group.project.chargingplatform.config;
 
 import nikev.group.project.chargingplatform.model.Station;
 import nikev.group.project.chargingplatform.model.User;
+import nikev.group.project.chargingplatform.model.Company;
+import nikev.group.project.chargingplatform.model.Charger;
+import nikev.group.project.chargingplatform.model.Charger.ChargerStatus;
 import nikev.group.project.chargingplatform.repository.StationRepository;
 import nikev.group.project.chargingplatform.repository.UserRepository;
+import nikev.group.project.chargingplatform.repository.CompanyRepository;
+import nikev.group.project.chargingplatform.repository.ChargerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
@@ -22,6 +27,12 @@ public class DataInitializer implements CommandLineRunner {
     @Autowired
     private StationRepository stationRepository;
 
+    @Autowired
+    private CompanyRepository companyRepository;
+
+    @Autowired
+    private ChargerRepository chargerRepository;
+
     @Override
     public void run(String... args) throws Exception {
         // Create default admin user if not present
@@ -32,6 +43,14 @@ public class DataInitializer implements CommandLineRunner {
             admin.setEmail("admin@admin.com");
             admin.setPassword("admin");
             userRepository.save(admin);
+        }
+        // Create default company if none
+        User admin = userRepository.findByEmail("admin@admin.com").get();
+        if (companyRepository.count() == 0) {
+            Company defaultCompany = new Company();
+            defaultCompany.setName("Default Company");
+            defaultCompany.setOwner(admin);
+            companyRepository.save(defaultCompany);
         }
 
         // Initialize stations if none exist
@@ -79,6 +98,25 @@ public class DataInitializer implements CommandLineRunner {
             stations.add(coimbra);
 
             stationRepository.saveAll(stations);
+            // Assign company to stations and save
+            Company company = companyRepository.findAll().get(0);
+            stations.forEach(s -> s.setCompany(company));
+            stationRepository.saveAll(stations);
+            // Initialize chargers for each station
+            if (chargerRepository.count() == 0) {
+                List<Charger> chargers = new ArrayList<>();
+                for (Station s : stations) {
+                    // create two chargers per station
+                    for (int i = 0; i < 2; i++) {
+                        Charger c = new Charger();
+                        c.setStatus(ChargerStatus.AVAILABLE);
+                        c.setChargingSpeedKw(50.0);
+                        c.setStation(s);
+                        chargers.add(c);
+                    }
+                }
+                chargerRepository.saveAll(chargers);
+            }
         }
     }
 }
