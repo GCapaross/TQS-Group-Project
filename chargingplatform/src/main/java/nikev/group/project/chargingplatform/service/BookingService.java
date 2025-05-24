@@ -109,6 +109,25 @@ public class BookingService {
   }
 
   /**
+   * Checks if there are available slots to create a new booking given the overlapping reservations and max capacity
+   * @param overlappingReservations
+   * @param maxCapacity
+   * @return boolean
+   */
+  public boolean hasAvailableSlot(
+    List<Reservation> overlappingReservations,
+    int maxCapacity
+  ) {
+    // If there are less reservations than the maximum capacity, then it a spot is always guaranteed
+    if (overlappingReservations.size() < maxCapacity) {
+      return true;
+    }
+
+    int usedSpots = getMaximumChargersUsedAtSameTime(overlappingReservations);
+    return (usedSpots < maxCapacity);
+  }
+
+  /**
    * Auxiliar class to aid in the checkSlotAvailability algorithm
    */
   @AllArgsConstructor
@@ -119,15 +138,16 @@ public class BookingService {
     LocalDateTime date;
   }
 
-  public boolean checkSlotAvailability(
-    List<Reservation> overlappingReservations,
-    int maxCapacity
+  /**
+   * Calculates how many chargers are used at the same time by the overlapping reservations
+   *
+   * @param overlappingReservations
+   * @param maxCapacity
+   * @return int that represents the maximum number of chargers used at the same time
+   */
+  public int getMaximumChargersUsedAtSameTime(
+    List<Reservation> overlappingReservations
   ) {
-    // If there are less reservations than slots, then there is a spot guaranteed
-    if (overlappingReservations.size() < maxCapacity) {
-      return true;
-    }
-
     List<ReservationAction> reservationActions = new ArrayList<>();
     for (Reservation reservation : overlappingReservations) {
       ReservationAction enter = new ReservationAction(
@@ -152,6 +172,6 @@ public class BookingService {
       }
     }
 
-    return (maxUsersAtSameTime < maxCapacity);
+    return maxUsersAtSameTime;
   }
 }
