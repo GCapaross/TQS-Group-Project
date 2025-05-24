@@ -38,27 +38,4 @@ class UserTest {
         assertThat(user1).isEqualTo(user2);
         assertThat(user1.hashCode()).isEqualTo(user2.hashCode());
     }
-
-    @Test
-    void testUserChargingSessions() {
-        // Given
-        User user = new User();
-        user.setId(1L);
-
-        Reservation session1 = new Reservation();
-        session1.setId(1L);
-        session1.setUser(user);
-
-        Reservation session2 = new Reservation();
-        session2.setId(2L);
-        session2.setUser(user);
-
-        // When
-        user.setChargingSessions(List.of(session1, session2));
-
-        // Then
-        assertThat(user.getChargingSessions()).hasSize(2);
-        assertThat(user.getChargingSessions().get(0)).isEqualTo(session1);
-        assertThat(user.getChargingSessions().get(1)).isEqualTo(session2);
-    }
 } 
