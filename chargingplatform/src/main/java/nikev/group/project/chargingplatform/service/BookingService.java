@@ -27,7 +27,7 @@ public class BookingService {
 
     @Transactional
     public Reservation bookSlot(Long stationId, Long userId, LocalDateTime startTime, LocalDateTime endTime) {
-        Station station = stationRepository.findById(stationId)
+        var station = stationRepository.findById(stationId)
                 .orElseThrow(() -> new RuntimeException("Charging station not found"));
                 
         if (station.hasAvailableCharger()) {
