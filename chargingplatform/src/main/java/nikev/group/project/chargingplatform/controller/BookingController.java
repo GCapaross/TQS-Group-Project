@@ -72,10 +72,10 @@ public class BookingController {
         return true;
     }
 
-    private Long extractUserIdFromToken(String token) {
-        // TODO: Implement proper JWT token validation and user ID extraction
-        // For now, return a default user ID for testing
-        return 1L;
-    }
+    // private Long extractUserIdFromToken(String token) {
+    //     // TODO: Implement proper JWT token validation and user ID extraction
+    //     // For now, return a default user ID for testing
+    //     return 1L;
+    // }
 
 }

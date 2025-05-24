@@ -9,8 +9,6 @@ import lombok.Setter;
 
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 @Data
 @Entity
 @Getter
@@ -37,21 +35,17 @@ public class Station {
     @Column(name = "connector_type")
     private List<String> supportedConnectors; 
     
-    @OneToMany(mappedBy = "station", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Charger> chargers;
-
     private String timetable;
 
-    @OneToMany(mappedBy = "station", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<User> workers;
-    
-    @OneToMany(mappedBy = "chargingStation")
-    @JsonIgnore
-    private List<Reservation> reservations;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "company_id")
+    private Company company;
 
-    public boolean hasAvailableCharger() {
-        return this.chargers != null
-            && this.chargers.stream()
-                       .anyMatch(c -> c.getStatus() == Charger.ChargerStatus.AVAILABLE);
-    }
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinTable(
+        name = "station_workers",
+        joinColumns = @JoinColumn(name = "station_id"),
+        inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private List<User> workers;
 }

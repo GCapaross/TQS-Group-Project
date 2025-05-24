@@ -7,8 +7,6 @@ import lombok.NoArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.List;
-
 @Data
 @Entity
 @NoArgsConstructor
@@ -27,7 +25,4 @@ public class Company {
     @ManyToOne
     @JoinColumn(name = "owner_id")
     private User owner;
-
-    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Station> stations;
 }

@@ -1,6 +1,5 @@
 package nikev.group.project.chargingplatform.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -27,15 +26,15 @@ public class Charger {
     @Column(name = "charging_speed_kw")
     private double chargingSpeedKw;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "station_id")
+    private Station station;
+
     public static enum ChargerStatus {
         AVAILABLE,      // Charger is free and operational
         CHARGING,       // Charger is currently in use
         RESERVED,       // Charger is reserved for a user
         OUT_OF_SERVICE, // Charger is not operational (e.g., broken)
         MAINTENANCE     // Charger is under maintenance
-    }
-
-    public ChargerStatus getStatus() {
-        return status;
     }
 }

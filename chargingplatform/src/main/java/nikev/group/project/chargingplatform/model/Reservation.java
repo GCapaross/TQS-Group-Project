@@ -9,8 +9,6 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 @Data
 @Entity
 @NoArgsConstructor
@@ -23,13 +21,12 @@ public class Reservation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY) // Good practice for performance
     @JoinColumn(name = "user_id")
     private User user;
     
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY) // Good practice for performance
     @JoinColumn(name = "station_id")
-    @JsonIgnore
     private Station station;
     
     private LocalDateTime startDate;
