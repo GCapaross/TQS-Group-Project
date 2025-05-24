@@ -47,7 +47,7 @@ public class Station {
     
     @OneToMany(mappedBy = "chargingStation")
     @JsonIgnore
-    private List<Reservation> chargingSessions;
+    private List<Reservation> reservations;
 
     public boolean hasAvailableCharger() {
         return this.chargers != null

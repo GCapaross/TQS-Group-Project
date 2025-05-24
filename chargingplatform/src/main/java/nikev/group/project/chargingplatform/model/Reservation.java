@@ -34,4 +34,21 @@ public class Reservation {
     
     private LocalDateTime startDate;
     private LocalDateTime endDate;
+
+    public ReservationStatus getStatus() {
+        if (startDate.isAfter(LocalDateTime.now())) {
+            return ReservationStatus.BOOKED;
+        } else if (endDate.isBefore(LocalDateTime.now())) {
+            return ReservationStatus.COMPLETED;
+        } else {
+            return ReservationStatus.IN_PROGRESS;
+        }
+    }
+
+    public static enum ReservationStatus {
+        BOOKED,
+        IN_PROGRESS,
+        COMPLETED,
+        CANCELLED
+    }
 }

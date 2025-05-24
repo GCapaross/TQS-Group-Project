@@ -17,4 +17,5 @@ public class SearchStationDTO {
     private Double latitude;
     private Double longitude;
     private Double radiusKm;
+    private String timetable;
 }
