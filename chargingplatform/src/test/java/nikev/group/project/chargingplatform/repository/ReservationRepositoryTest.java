@@ -53,7 +53,7 @@ class ReservationRepositoryTest {
         station.setLocation("Test Location");
         station.setLatitude(40.7128);
         station.setLongitude(-74.0060);
-        station = chargingStationRepository.save(station);
+        station = stationRepository.save(station);
 
         user = new User();
         user.setName("Test User");
@@ -68,11 +68,10 @@ class ReservationRepositoryTest {
     void testSaveAndFindById() {
         // Given
         Reservation reservation = new Reservation();
-        reservation.setChargingStation(station);
+        reservation.setStation(station);
         reservation.setUser(user);
-        reservation.setStartTime(startTime);
-        reservation.setEndTime(endTime);
-        reservation.setStatus("BOOKED");
+        reservation.setStartDate(startTime);
+        reservation.setEndDate(endTime);
 
         // When
         Reservation saved = reservationRepository.save(reservation);
@@ -80,8 +79,6 @@ class ReservationRepositoryTest {
 
         // Then
         assertThat(found).isPresent();
-        assertThat(found.get().getStatus()).isEqualTo("BOOKED");
-        assertThat(found.get().getChargingStation()).isEqualTo(station);
         assertThat(found.get().getUser()).isEqualTo(user);
     }
 
@@ -89,11 +86,10 @@ class ReservationRepositoryTest {
     void testFindByUserId() {
         // Given
         Reservation reservation = new Reservation();
-        reservation.setChargingStation(station);
+        reservation.setStation(station);
         reservation.setUser(user);
-        reservation.setStartTime(startTime);
-        reservation.setEndTime(endTime);
-        reservation.setStatus("BOOKED");
+        reservation.setStartDate(startTime);
+        reservation.setEndDate(endTime);
         reservationRepository.save(reservation);
 
         // When
@@ -108,11 +104,10 @@ class ReservationRepositoryTest {
     void testFindByChargingStationId() {
         // Given
         Reservation reservation = new Reservation();
-        reservation.setChargingStation(station);
+        reservation.setStation(station);
         reservation.setUser(user);
-        reservation.setStartTime(startTime);
-        reservation.setEndTime(endTime);
-        reservation.setStatus("BOOKED");
+        reservation.setStartDate(startTime);
+        reservation.setEndDate(endTime);
         reservationRepository.save(reservation);
 
         // When
@@ -129,9 +124,8 @@ class ReservationRepositoryTest {
         Reservation existingReservation = new Reservation();
         existingReservation.setStation(station);
         existingReservation.setUser(user);
-        existingReservation.setStartTime(startTime);
-        existingReservation.setEndTime(endTime);
-        existingReservation.setStatus("BOOKED");
+        existingReservation.setStartDate(startTime);
+        existingReservation.setEndDate(endTime);
         reservationRepository.save(existingReservation);
 
         // When

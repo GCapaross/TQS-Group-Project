@@ -1,5 +1,6 @@
 package nikev.group.project.chargingplatform.controller;
 
+import nikev.group.project.chargingplatform.model.Charger;
 import nikev.group.project.chargingplatform.model.Reservation;
 import nikev.group.project.chargingplatform.model.User;
 import nikev.group.project.chargingplatform.service.BookingService;
@@ -18,6 +19,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -63,13 +65,13 @@ class BookingControllerTest {
         testStation.setLocation("Test Location");
         testStation.setPricePerKwh(0.25);
         testStation.setSupportedConnectors(Arrays.asList("CCS", "Type 2"));
+        testStation.setChargers(List.of(new Charger(1L, Charger.ChargerStatus.RESERVED, 1.24)));
         testStation.setTimetable("24/7");
 
         testReservation = new Reservation();
         testReservation.setId(1L);
         testReservation.setUser(testUser);
         testReservation.setStation(testStation);
-        testReservation.setStatus("BOOKED");
 
         startTime = LocalDateTime.now().plusHours(1);
         endTime = startTime.plusHours(2);
@@ -84,7 +86,7 @@ class BookingControllerTest {
                 .content(JsonUtils.toJson(new BookingRequestDTO(testStation.getId(), startTime, endTime))))
             .andDo(print())
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.status").value("BOOKED"));
+            .andExpect(jsonPath("$.startDate").value(startTime));
 
         verify(bookingService, times(1)).bookSlot(any(), any(), any(), any());
     }

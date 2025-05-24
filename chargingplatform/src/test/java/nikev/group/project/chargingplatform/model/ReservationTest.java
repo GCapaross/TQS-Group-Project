@@ -92,10 +92,10 @@ class ReservationTest {
         LocalDateTime endTime = startTime.plusHours(2);
 
         Reservation reservation = new Reservation();
-        reservation.setStartTime(startTime);
-        reservation.setEndTime(endTime);
+        reservation.setStartDate(startTime);
+        reservation.setEndDate(endTime);
 
         // Then
-        assertThat(reservation.getEndTime()).isAfter(reservation.getStartTime());
+        assertThat(reservation.getEndDate()).isAfter(reservation.getStartDate());
     }
 }
