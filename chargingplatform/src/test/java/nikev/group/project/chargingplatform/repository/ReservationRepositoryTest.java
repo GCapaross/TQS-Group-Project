@@ -9,18 +9,13 @@ import nikev.group.project.chargingplatform.TestcontainersConfiguration;
 import nikev.group.project.chargingplatform.model.Reservation;
 import nikev.group.project.chargingplatform.model.Station;
 import nikev.group.project.chargingplatform.model.User;
-import nikev.group.project.chargingplatform.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 @DataJpaTest
@@ -99,7 +94,7 @@ class ReservationRepositoryTest {
     reservationRepository.save(reservation);
 
     // When
-    List<Reservation> reservations = reservationRepository.findByUserId(
+    List<Reservation> reservations = reservationRepository.findByUser_Id(
       user.getId()
     );
 
@@ -119,8 +114,9 @@ class ReservationRepositoryTest {
     reservationRepository.save(reservation);
 
     // When
-    List<Reservation> reservations =
-      reservationRepository.findByChargingStationId(station.getId());
+    List<Reservation> reservations = reservationRepository.findByStation_Id(
+      station.getId()
+    );
 
     // Then
     assertThat(reservations).hasSize(1);

@@ -11,8 +11,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ReservationRepository
   extends JpaRepository<Reservation, Long> {
-  List<Reservation> findByUserId(Long userId);
-  List<Reservation> findByStationId(Long stationId);
+  List<Reservation> findByUser_Id(Long userId);
+  List<Reservation> findByStation_Id(Long stationId);
 
   // May be bad, as explained in discord
   @Query(
@@ -26,6 +26,4 @@ public interface ReservationRepository
     @Param("startDate") LocalDateTime startDate,
     @Param("endDate") LocalDateTime endDate
   );
-
-  List<Reservation> findByChargingStationId(Long chargingStationId);
 }
