@@ -1,10 +1,22 @@
 package nikev.group.project.chargingplatform.controller;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
+import nikev.group.project.chargingplatform.DTOs.BookingRequestDTO;
 import nikev.group.project.chargingplatform.model.Charger;
 import nikev.group.project.chargingplatform.model.Reservation;
+import nikev.group.project.chargingplatform.model.Station;
 import nikev.group.project.chargingplatform.model.User;
 import nikev.group.project.chargingplatform.service.BookingService;
-
 import org.flywaydb.core.internal.util.JsonUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,148 +29,196 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-
-import nikev.group.project.chargingplatform.model.Station;
-import nikev.group.project.chargingplatform.DTOs.BookingRequestDTO;
-
+/**
+ * Given a reservation with id 1 associated to user with id 2
+ * When user is not user with id 2 and has role manager for the station with id 3
+ * then RuntimeException is thrown
+ */
+/**
+ * Given a reservation with id 1 associated to user with id 2
+ * When user is not user with id 2 and doesnt has role manager for the station with id 5
+ * then RuntimeException is thrown
+ */
 @WebMvcTest(BookingController.class)
 @AutoConfigureMockMvc(addFilters = false) // Disable Spring Security filters for tests
 class BookingControllerTest {
-    @Autowired
-    private MockMvc mockMvc;
 
-    @MockitoBean
-    private BookingService bookingService;
+  @Autowired
+  private MockMvc mockMvc;
 
-    @Autowired
-    private WebApplicationContext context;
+  @MockitoBean
+  private BookingService bookingService;
 
-    private User testUser;
-    private Station testStation;
-    private Reservation testReservation;
-    private LocalDateTime startTime;
-    private LocalDateTime endTime;
+  @Autowired
+  private WebApplicationContext context;
 
-    @BeforeEach
-    void setUp() {
-        mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
+  private User testUser;
+  private Station testStation;
+  private Reservation testReservation;
+  private LocalDateTime startTime;
+  private LocalDateTime endTime;
 
-        testUser = new User();
-        testUser.setId(1L);
-        testUser.setName("Test User");
-        testUser.setEmail("test@example.com");
+  @BeforeEach
+  void setUp() {
+    mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
 
-        testStation = new Station();
-        testStation.setId(1L);
-        testStation.setName("Test Station");
-        testStation.setLocation("Test Location");
-        testStation.setPricePerKwh(0.25);
-        testStation.setSupportedConnectors(Arrays.asList("CCS", "Type 2"));
-        testStation.setChargers(List.of(new Charger(1L, Charger.ChargerStatus.RESERVED, 1.24)));
-        testStation.setTimetable("24/7");
+    testUser = new User();
+    testUser.setId(1L);
+    testUser.setName("Test User");
+    testUser.setEmail("test@example.com");
 
-        testReservation = new Reservation();
-        testReservation.setId(1L);
-        testReservation.setUser(testUser);
-        testReservation.setStation(testStation);
+    testStation = new Station();
+    testStation.setId(1L);
+    testStation.setName("Test Station");
+    testStation.setLocation("Test Location");
+    testStation.setPricePerKwh(0.25);
+    testStation.setSupportedConnectors(Arrays.asList("CCS", "Type 2"));
+    testStation.setChargers(
+      List.of(new Charger(1L, Charger.ChargerStatus.RESERVED, 1.24))
+    );
+    testStation.setTimetable("24/7");
 
-        startTime = LocalDateTime.now().plusHours(1);
-        endTime = startTime.plusHours(2);
-    }
+    testReservation = new Reservation();
+    testReservation.setId(1L);
+    testReservation.setUser(testUser);
+    testReservation.setStation(testStation);
 
-    @Test
-    void createBooking_Success() throws Exception {
-        when(bookingService.bookSlot(any(), any(), any(), any())).thenReturn(testReservation);
+    startTime = LocalDateTime.now().plusHours(1);
+    endTime = startTime.plusHours(2);
+  }
 
-        mockMvc.perform(post("/api/bookings")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(JsonUtils.toJson(new BookingRequestDTO(testStation.getId(), startTime, endTime))))
-            .andDo(print())
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.startDate").value(startTime));
+  @Test
+  void createBooking_Success() throws Exception {
+    when(bookingService.bookSlot(any(), any(), any(), any())).thenReturn(
+      testReservation
+    );
 
-        verify(bookingService, times(1)).bookSlot(any(), any(), any(), any());
-    }
+    mockMvc
+      .perform(
+        post("/api/bookings")
+          .contentType(MediaType.APPLICATION_JSON)
+          .content(
+            JsonUtils.toJson(
+              new BookingRequestDTO(testStation.getId(), startTime, endTime)
+            )
+          )
+      )
+      .andDo(print())
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.startDate").value(startTime));
 
-    @Test
-    void createBooking_WhenServiceThrowsException_ReturnsBadRequest() throws Exception {
-        when(bookingService.bookSlot(any(), any(), any(), any())).thenThrow(new RuntimeException("Booking failed"));
+    verify(bookingService, times(1)).bookSlot(any(), any(), any(), any());
+  }
 
-        mockMvc.perform(post("/api/bookings")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(JsonUtils.toJson(new BookingRequestDTO(testStation.getId(), startTime, endTime))))
-            .andDo(print())
-            .andExpect(status().isBadRequest());
-    }
+  @Test
+  void createBooking_WhenServiceThrowsException_ReturnsBadRequest()
+    throws Exception {
+    when(bookingService.bookSlot(any(), any(), any(), any())).thenThrow(
+      new RuntimeException("Booking failed")
+    );
 
-    @Test
-    void createBooking_WithNullRequest_ReturnsBadRequest() throws Exception {
-        mockMvc.perform(post("/api/bookings")
-                .contentType(MediaType.APPLICATION_JSON))
-            .andDo(print())
-            .andExpect(status().isBadRequest());
-    }
+    mockMvc
+      .perform(
+        post("/api/bookings")
+          .contentType(MediaType.APPLICATION_JSON)
+          .content(
+            JsonUtils.toJson(
+              new BookingRequestDTO(testStation.getId(), startTime, endTime)
+            )
+          )
+      )
+      .andDo(print())
+      .andExpect(status().isBadRequest());
+  }
 
-    @Test
-    void createBooking_WithInvalidTimeRange_ReturnsBadRequest() throws Exception {
-        LocalDateTime invalidEndTime = startTime.minusHours(1);
+  @Test
+  void createBooking_WithNullRequest_ReturnsBadRequest() throws Exception {
+    mockMvc
+      .perform(post("/api/bookings").contentType(MediaType.APPLICATION_JSON))
+      .andDo(print())
+      .andExpect(status().isBadRequest());
+  }
 
-        mockMvc.perform(post("/api/bookings")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(JsonUtils.toJson(new BookingRequestDTO(testStation.getId(), startTime, invalidEndTime))))
-            .andDo(print())
-            .andExpect(status().isBadRequest());
-    }
+  @Test
+  void createBooking_WithInvalidTimeRange_ReturnsBadRequest() throws Exception {
+    LocalDateTime invalidEndTime = startTime.minusHours(1);
 
-    @Test
-    void createBooking_WithPastStartTime_ReturnsBadRequest() throws Exception {
-        LocalDateTime pastStartTime = LocalDateTime.now().minusHours(1);
+    mockMvc
+      .perform(
+        post("/api/bookings")
+          .contentType(MediaType.APPLICATION_JSON)
+          .content(
+            JsonUtils.toJson(
+              new BookingRequestDTO(
+                testStation.getId(),
+                startTime,
+                invalidEndTime
+              )
+            )
+          )
+      )
+      .andDo(print())
+      .andExpect(status().isBadRequest());
+  }
 
-        mockMvc.perform(post("/api/bookings")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(JsonUtils.toJson(new BookingRequestDTO(testStation.getId(), pastStartTime, endTime))))
-            .andDo(print())
-            .andExpect(status().isBadRequest());
-    }
+  @Test
+  void createBooking_WithPastStartTime_ReturnsBadRequest() throws Exception {
+    LocalDateTime pastStartTime = LocalDateTime.now().minusHours(1);
 
-    @Test
-    void cancelBooking_Success() throws Exception {
-        doNothing().when(bookingService).cancelBooking(any());
+    mockMvc
+      .perform(
+        post("/api/bookings")
+          .contentType(MediaType.APPLICATION_JSON)
+          .content(
+            JsonUtils.toJson(
+              new BookingRequestDTO(testStation.getId(), pastStartTime, endTime)
+            )
+          )
+      )
+      .andDo(print())
+      .andExpect(status().isBadRequest());
+  }
 
-        mockMvc.perform(delete("/api/bookings/" + testReservation.getId())
-                .contentType(MediaType.APPLICATION_JSON))
-            .andDo(print())
-            .andExpect(status().isNoContent());
+  @Test
+  void cancelBooking_Success() throws Exception {
+    doNothing().when(bookingService).cancelBooking(any());
 
-        verify(bookingService, times(1)).cancelBooking(testReservation.getId());
-    }
+    mockMvc
+      .perform(
+        delete("/api/bookings/" + testReservation.getId()).contentType(
+          MediaType.APPLICATION_JSON
+        )
+      )
+      .andDo(print())
+      .andExpect(status().isNoContent());
 
-    @Test
-    void cancelBooking_WhenServiceThrowsException_ReturnsBadRequest() throws Exception {
-        doThrow(new RuntimeException("Cancellation failed")).when(bookingService).cancelBooking(any());
+    verify(bookingService, times(1)).cancelBooking(testReservation.getId());
+  }
 
-        mockMvc.perform(delete("/api/bookings/" + testReservation.getId())
-                .contentType(MediaType.APPLICATION_JSON))
-            .andDo(print())
-            .andExpect(status().isBadRequest());
-    }
+  @Test
+  void cancelBooking_WhenServiceThrowsException_ReturnsBadRequest()
+    throws Exception {
+    doThrow(new RuntimeException("Cancellation failed"))
+      .when(bookingService)
+      .cancelBooking(any());
 
-    @Test
-    void cancelBooking_WithNullId_ReturnsBadRequest() throws Exception {
-        mockMvc.perform(delete("/api/bookings/null")
-                .contentType(MediaType.APPLICATION_JSON))
-            .andDo(print())
-            .andExpect(status().isBadRequest());
-    }
+    mockMvc
+      .perform(
+        delete("/api/bookings/" + testReservation.getId()).contentType(
+          MediaType.APPLICATION_JSON
+        )
+      )
+      .andDo(print())
+      .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void cancelBooking_WithNullId_ReturnsBadRequest() throws Exception {
+    mockMvc
+      .perform(
+        delete("/api/bookings/null").contentType(MediaType.APPLICATION_JSON)
+      )
+      .andDo(print())
+      .andExpect(status().isBadRequest());
+  }
 }

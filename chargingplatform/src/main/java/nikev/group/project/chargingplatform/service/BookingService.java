@@ -161,7 +161,18 @@ public class BookingService {
       reservationActions.add(enter);
       reservationActions.add(leave);
     }
-    reservationActions.sort((r1, r2) -> r1.getDate().compareTo(r2.getDate()));
+    reservationActions.sort((r1, r2) -> {
+      int compare = r1.getDate().compareTo(r2.getDate());
+      if (compare != 0) {
+        return compare;
+      }
+
+      // If dates are equal, then leave must come first!
+      if (r1.getType() < r2.getType()) {
+        return -1;
+      }
+      return 1; // Equals doesnt matter, just that leave should always appear first if dates are equals
+    });
 
     int usersAtSameTime = 0;
     int maxUsersAtSameTime = 0;
