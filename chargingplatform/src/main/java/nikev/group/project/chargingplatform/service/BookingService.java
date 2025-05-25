@@ -3,7 +3,6 @@ package nikev.group.project.chargingplatform.service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import nikev.group.project.chargingplatform.model.Charger;
@@ -99,7 +98,7 @@ public class BookingService {
 
   // New method to check for available chargers
   public boolean hasAvailableCharger(Long stationId) {
-    List<Charger> chargers = chargerRepository.findByStationId(stationId);
+    List<Charger> chargers = chargerRepository.findByStation_Id(stationId);
     if (chargers == null || chargers.isEmpty()) {
       return false;
     }

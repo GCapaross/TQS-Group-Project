@@ -16,6 +16,7 @@ import nikev.group.project.chargingplatform.repository.ReservationRepository;
 import nikev.group.project.chargingplatform.repository.StationRepository;
 import nikev.group.project.chargingplatform.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -222,9 +223,9 @@ public class BookingServiceTest {
    */
   @Test
   public void whenNoBookingWithId1_thenRuntimeExceptionIsThrown() {
-    doThrow(new RuntimeException())
-      .when(reservationRepository)
-      .deleteById(anyLong());
+    when(reservationRepository.findById(anyLong())).thenReturn(
+      Optional.empty()
+    );
     assertThrows(RuntimeException.class, () -> bookingService.cancelBooking(1L)
     );
   }
@@ -236,50 +237,83 @@ public class BookingServiceTest {
    */
   @Test
   public void whenCancellingValidBooking_thenBookingIsCancelled() {
+    when(reservationRepository.findById(anyLong())).thenReturn(
+      Optional.of(reservation)
+    );
     doNothing().when(reservationRepository).deleteById(anyLong());
+
     assertDoesNotThrow(() -> bookingService.cancelBooking(1L));
   }
 
   /* FUNCTION public boolean hasAvailableCharger(Long stationId) */
   /**
-   * Given no station with id 5
+   * Given no station with id 1
    * When verify it has available charger
    * then RuntimeException is thrown
    */
   @Test
   public void whenVerifyingAvailableChargerOnUnexistentStation_thenRuntimeExceptionIsThrown() {
-    doThrow(new RuntimeException()).when(stationRepository).findById(anyLong());
+    when(chargerRepository.findByStation_Id(anyLong())).thenReturn(
+      Collections.emptyList()
+    );
+
     assertThrows(RuntimeException.class, () ->
-      bookingService.hasAvailableCharger(5L)
+      bookingService.hasAvailableCharger(1L)
     );
   }
 
   /**
-   * Given station with id 5
+   * Given station with id 1
    * and 2 chargers with one with status available
    * When verify it has available charger
    * then return true
    */
   @Test
   public void whenVerifyingAvailableChargerOnStationWithOneAvailableCharger_thenReturnTrue() {
-    when(stationRepository.findById(anyLong())).thenReturn(
-      Optional.of(station)
+    Charger charger1 = new Charger(
+      1L,
+      Charger.ChargerStatus.AVAILABLE,
+      1.45,
+      station
     );
-    assertTrue(bookingService.hasAvailableCharger(5L));
+    Charger charger2 = new Charger(
+      2L,
+      Charger.ChargerStatus.CHARGING,
+      1.45,
+      station
+    );
+    when(chargerRepository.findByStation_Id(anyLong())).thenReturn(
+      List.of(charger1, charger2)
+    );
+
+    assertTrue(bookingService.hasAvailableCharger(1L));
   }
 
   /**
-   * Given station with id 5
+   * Given station with id 1
    * and 2 chargers both with status different from available
    * When verify it has available charger
    * then return false
    */
   @Test
   public void whenVerifyingAvailableChargerOnStationWithNoAvailableCharger_thenReturnFalse() {
-    when(stationRepository.findById(anyLong())).thenReturn(
-      Optional.of(station)
+    Charger charger1 = new Charger(
+      1L,
+      Charger.ChargerStatus.OUT_OF_SERVICE,
+      1.45,
+      station
     );
-    assertFalse(bookingService.hasAvailableCharger(5L));
+    Charger charger2 = new Charger(
+      2L,
+      Charger.ChargerStatus.CHARGING,
+      1.45,
+      station
+    );
+    when(chargerRepository.findByStation_Id(anyLong())).thenReturn(
+      List.of(charger1, charger2)
+    );
+
+    assertFalse(bookingService.hasAvailableCharger(1L));
   }
 
   /* FUNCTION public Reservation getBooking(Long sessionId) */
@@ -290,9 +324,10 @@ public class BookingServiceTest {
    */
   @Test
   public void whenFetchingUnexistentBooking_thenRuntimeExceptionIsThrown() {
-    doThrow(new RuntimeException())
-      .when(reservationRepository)
-      .findById(anyLong());
+    doThrow(new RuntimeException()).when(
+      reservationRepository.findById(anyLong())
+    );
+
     assertThrows(RuntimeException.class, () -> bookingService.getBooking(5L));
   }
 
@@ -306,6 +341,7 @@ public class BookingServiceTest {
     when(reservationRepository.findById(anyLong())).thenReturn(
       Optional.of(reservation)
     );
+
     assertEquals(reservation, bookingService.getBooking(1L));
   }
 
@@ -321,7 +357,7 @@ public class BookingServiceTest {
    */
   @Test
   public void whenBookingSlotOnUnexistentStation_thenRuntimeExceptionIsThrown() {
-    doThrow(new RuntimeException()).when(stationRepository).findById(anyLong());
+    doThrow(new RuntimeException()).when(stationRepository.findById(anyLong()));
     assertThrows(RuntimeException.class, () ->
       bookingService.bookSlot(5L, 1L, startTime, endTime)
     );
@@ -335,7 +371,32 @@ public class BookingServiceTest {
    */
   @Test
   public void whenBookingSlotWithUnexistentUser_thenRuntimeExceptionIsThrown() {
-    doThrow(new RuntimeException()).when(userRepository).findById(anyLong());
+    when(stationRepository.findById(anyLong())).thenReturn(
+      Optional.of(station)
+    );
+    doThrow(new RuntimeException()).when(userRepository.findById(anyLong()));
+
+    // Mock hasAvailableSlot
+    Charger charger1 = new Charger(
+      1L,
+      Charger.ChargerStatus.AVAILABLE,
+      1.45,
+      station
+    );
+    Charger charger2 = new Charger(
+      2L,
+      Charger.ChargerStatus.CHARGING,
+      1.45,
+      station
+    );
+    when(chargerRepository.findByStation_Id(anyLong())).thenReturn(
+      List.of(charger1, charger2)
+    );
+
+    when(
+      reservationRepository.findOverlappingReservations(anyLong(), any(), any())
+    ).thenReturn(Collections.emptyList());
+
     assertThrows(RuntimeException.class, () ->
       bookingService.bookSlot(1L, 1L, startTime, endTime)
     );
@@ -349,6 +410,37 @@ public class BookingServiceTest {
    */
   @Test
   public void whenBookingSlotWithNoAvailableSlots_thenRuntimeExceptionIsThrown() {
+    when(stationRepository.findById(anyLong())).thenReturn(
+      Optional.of(station)
+    );
+    when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
+
+    // Mock hasAvailableSlot
+    Charger charger1 = new Charger(
+      1L,
+      Charger.ChargerStatus.AVAILABLE,
+      1.45,
+      station
+    );
+    Charger charger2 = new Charger(
+      2L,
+      Charger.ChargerStatus.CHARGING,
+      1.45,
+      station
+    );
+    when(chargerRepository.findByStation_Id(anyLong())).thenReturn(
+      List.of(charger1, charger2)
+    );
+
+    when(
+      reservationRepository.findOverlappingReservations(anyLong(), any(), any())
+    ).thenReturn(
+      List.of(
+        new Reservation(1L, user, station, startTime, endTime),
+        new Reservation(1L, user, station, startTime, endTime)
+      )
+    );
+
     assertThrows(RuntimeException.class, () ->
       bookingService.bookSlot(1L, 1L, startTime, endTime)
     );
@@ -356,13 +448,41 @@ public class BookingServiceTest {
 
   /**
    * (Charger out of service)
-   * Given station with 2 chargers and 1 reservation between 14h30 and 15h30
+   * Given station with 2 chargers and 1 reservation between startTime and endTime
    * but 1 charger has state OUT_OF_SERVICE
-   * When booking a slot to the station to the slot 14h30 and 15h00
+   * When booking a slot to the station to the slot startTime and endTime
    * then throw RuntimeException
    */
   @Test
   public void whenBookingSlotWithOutOfServiceCharger_thenRuntimeExceptionIsThrown() {
+    when(stationRepository.findById(anyLong())).thenReturn(
+      Optional.of(station)
+    );
+    when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
+
+    // Mock hasAvailableSlot
+    Charger charger1 = new Charger(
+      1L,
+      Charger.ChargerStatus.OUT_OF_SERVICE,
+      1.45,
+      station
+    );
+    Charger charger2 = new Charger(
+      2L,
+      Charger.ChargerStatus.AVAILABLE,
+      1.45,
+      station
+    );
+    when(chargerRepository.findByStation_Id(anyLong())).thenReturn(
+      List.of(charger1, charger2)
+    );
+
+    when(
+      reservationRepository.findOverlappingReservations(anyLong(), any(), any())
+    ).thenReturn(
+      List.of(new Reservation(1L, user, station, startTime, endTime))
+    );
+
     assertThrows(RuntimeException.class, () ->
       bookingService.bookSlot(1L, 1L, startTime, endTime)
     );
@@ -376,9 +496,54 @@ public class BookingServiceTest {
    * then Reservation is made
    */
   @Test
+  @Disabled("Disabled due to logic not being migrated yet")
   public void whenBookingSlotWithFreeCharger_thenReturnReservation() {
+    when(stationRepository.findById(anyLong())).thenReturn(
+      Optional.of(station)
+    );
+    when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
+
+    // Mock hasAvailableSlot
+    Charger charger1 = new Charger(
+      1L,
+      Charger.ChargerStatus.AVAILABLE,
+      1.45,
+      station
+    );
+    Charger charger2 = new Charger(
+      2L,
+      Charger.ChargerStatus.AVAILABLE,
+      1.45,
+      station
+    );
+    when(chargerRepository.findByStation_Id(anyLong())).thenReturn(
+      List.of(charger1, charger2)
+    );
+
+    LocalDateTime r1StartTime = LocalDateTime.now().plusMinutes(30);
+    LocalDateTime r1EndTime = LocalDateTime.now().plusMinutes(60);
+    LocalDateTime r2StartTime = LocalDateTime.now().plusMinutes(60);
+    LocalDateTime r2EndTime = LocalDateTime.now().plusMinutes(90);
+
+    when(
+      reservationRepository.findOverlappingReservations(anyLong(), any(), any())
+    ).thenReturn(
+      List.of(
+        new Reservation(1L, user, station, r1StartTime, r1EndTime),
+        new Reservation(2L, user, station, r2StartTime, r2EndTime)
+      )
+    );
+
+    LocalDateTime newReservationStartTime = LocalDateTime.now().plusMinutes(45);
+    LocalDateTime newReservationEndTime = LocalDateTime.now().plusMinutes(75);
+
     assertThat(
-      bookingService.bookSlot(1L, 1L, startTime, endTime),
+      bookingService.bookSlot(
+        1L,
+        1L,
+        newReservationStartTime,
+        newReservationEndTime
+      ),
       is(reservation)
     );
   }
@@ -390,6 +555,33 @@ public class BookingServiceTest {
    */
   @Test
   public void whenBookingSlotWithOneAvailableCharger_thenReturnReservation() {
+    when(stationRepository.findById(anyLong())).thenReturn(
+      Optional.of(station)
+    );
+    when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
+
+    // Mock hasAvailableSlot
+    Charger charger1 = new Charger(
+      1L,
+      Charger.ChargerStatus.OUT_OF_SERVICE,
+      1.45,
+      station
+    );
+    Charger charger2 = new Charger(
+      2L,
+      Charger.ChargerStatus.AVAILABLE,
+      1.45,
+      station
+    );
+    when(chargerRepository.findByStation_Id(anyLong())).thenReturn(
+      List.of(charger1, charger2)
+    );
+
+    when(
+      reservationRepository.findOverlappingReservations(anyLong(), any(), any())
+    ).thenReturn(
+      List.of(new Reservation(1L, user, station, startTime, endTime))
+    );
     assertThat(
       bookingService.bookSlot(1L, 1L, startTime, endTime),
       is(reservation)

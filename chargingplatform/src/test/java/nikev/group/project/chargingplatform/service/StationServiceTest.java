@@ -1,8 +1,5 @@
 package nikev.group.project.chargingplatform.service;
 
-import java.util.List;
-import nikev.group.project.chargingplatform.model.Station;
-
 public class StationServiceTest {
   /**
    * Given no stations

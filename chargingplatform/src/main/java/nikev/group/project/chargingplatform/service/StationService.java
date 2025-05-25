@@ -3,12 +3,10 @@ package nikev.group.project.chargingplatform.service;
 import jakarta.persistence.criteria.Predicate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import nikev.group.project.chargingplatform.DTOs.SearchStationDTO;
 import nikev.group.project.chargingplatform.model.Station;
 import nikev.group.project.chargingplatform.repository.StationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 @Service
