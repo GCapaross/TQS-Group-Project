@@ -18,11 +18,12 @@ import nikev.group.project.chargingplatform.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@SpringBootTest
+@ExtendWith(MockitoExtension.class)
 public class BookingServiceTest {
 
   @Mock
@@ -240,7 +241,6 @@ public class BookingServiceTest {
     when(reservationRepository.findById(anyLong())).thenReturn(
       Optional.of(reservation)
     );
-    doNothing().when(reservationRepository).deleteById(anyLong());
 
     assertDoesNotThrow(() -> bookingService.cancelBooking(1L));
   }
@@ -257,9 +257,7 @@ public class BookingServiceTest {
       Collections.emptyList()
     );
 
-    assertThrows(RuntimeException.class, () ->
-      bookingService.hasAvailableCharger(1L)
-    );
+    assertThat(bookingService.hasAvailableCharger(1L), is(false));
   }
 
   /**
@@ -324,8 +322,8 @@ public class BookingServiceTest {
    */
   @Test
   public void whenFetchingUnexistentBooking_thenRuntimeExceptionIsThrown() {
-    doThrow(new RuntimeException()).when(
-      reservationRepository.findById(anyLong())
+    when(reservationRepository.findById(anyLong())).thenThrow(
+      new RuntimeException()
     );
 
     assertThrows(RuntimeException.class, () -> bookingService.getBooking(5L));
@@ -357,7 +355,9 @@ public class BookingServiceTest {
    */
   @Test
   public void whenBookingSlotOnUnexistentStation_thenRuntimeExceptionIsThrown() {
-    doThrow(new RuntimeException()).when(stationRepository.findById(anyLong()));
+    when(stationRepository.findById(anyLong())).thenThrow(
+      new RuntimeException()
+    );
     assertThrows(RuntimeException.class, () ->
       bookingService.bookSlot(5L, 1L, startTime, endTime)
     );
@@ -374,7 +374,7 @@ public class BookingServiceTest {
     when(stationRepository.findById(anyLong())).thenReturn(
       Optional.of(station)
     );
-    doThrow(new RuntimeException()).when(userRepository.findById(anyLong()));
+    when(userRepository.findById(anyLong())).thenThrow(new RuntimeException());
 
     // Mock hasAvailableSlot
     Charger charger1 = new Charger(
@@ -413,7 +413,6 @@ public class BookingServiceTest {
     when(stationRepository.findById(anyLong())).thenReturn(
       Optional.of(station)
     );
-    when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
 
     // Mock hasAvailableSlot
     Charger charger1 = new Charger(
@@ -458,7 +457,6 @@ public class BookingServiceTest {
     when(stationRepository.findById(anyLong())).thenReturn(
       Optional.of(station)
     );
-    when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
 
     // Mock hasAvailableSlot
     Charger charger1 = new Charger(

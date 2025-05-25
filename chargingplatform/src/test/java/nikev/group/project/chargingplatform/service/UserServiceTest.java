@@ -9,20 +9,16 @@ import nikev.group.project.chargingplatform.model.User;
 import nikev.group.project.chargingplatform.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@SpringBootTest
+@ExtendWith(MockitoExtension.class)
 public class UserServiceTest {
 
   @Mock
   private UserRepository userRepository;
-
-  @Mock
-  private PasswordEncoder passwordEncoder;
 
   @InjectMocks
   private UserService userService;
@@ -31,8 +27,6 @@ public class UserServiceTest {
 
   @BeforeEach
   void setUp() {
-    MockitoAnnotations.openMocks(this);
-
     testUser = new User();
     testUser.setId(1L);
     testUser.setEmail("test@example.com");
@@ -88,7 +82,6 @@ public class UserServiceTest {
     when(userRepository.findByEmail(testUser.getEmail())).thenReturn(
       Optional.of(testUser)
     );
-    when(anyString().equals(anyString())).thenReturn(true);
 
     // Act
     User loggedInUser = userService.login(
@@ -112,11 +105,13 @@ public class UserServiceTest {
     when(userRepository.findByEmail(testUser.getEmail())).thenReturn(
       Optional.of(testUser)
     );
-    when(anyString().equals(anyString())).thenReturn(false);
 
+    User loginUser = new User();
+    loginUser.setEmail(testUser.getEmail());
+    loginUser.setPassword("IncorrectPassword");
     // Act & Assert
     assertThrows(RuntimeException.class, () ->
-      userService.login(testUser.getEmail(), "wrongPassword")
+      userService.login(loginUser.getEmail(), "wrongPassword")
     );
   }
 
