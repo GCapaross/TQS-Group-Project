@@ -113,7 +113,7 @@ const BookingPage: React.FC = () => {
                 Charging Speed: {station.chargingSpeedKw} kW
               </Typography>
               <Typography variant="body1">
-                Connector Types: {station.connectorTypes.join(', ')}
+                Connector Types: {station.supportedConnectors.join(', ')}
               </Typography>
               <Typography variant="body1">
                 Network: {station.carrierNetwork}
