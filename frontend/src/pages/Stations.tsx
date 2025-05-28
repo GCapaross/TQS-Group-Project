@@ -29,7 +29,6 @@ const Stations: React.FC = () => {
         const fetchStations = async () => {
             try {
                 const data = await chargingStationApi.getAll();
-                console.log('Fetched stations:', data);
                 setStations(data);
             } catch (err) {
                 setError('Failed to load charging stations');
@@ -46,7 +45,6 @@ const Stations: React.FC = () => {
         station.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         station.location.toLowerCase().includes(searchQuery.toLowerCase())
     );
-    console.log('Filtered stations:', filteredStations);
 
     const getStatusColor = (status: string) => {
         switch (status) {
