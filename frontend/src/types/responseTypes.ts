@@ -8,7 +8,7 @@ export interface ChargingStation {
     maxSlots: number;
     availableSlots: number;
     pricePerKwh: number;
-    connectorTypes: string[];
+    supportedConnectors: string[];
     chargingSpeedKw: number;
     carrierNetwork: string;
     averageRating: number;

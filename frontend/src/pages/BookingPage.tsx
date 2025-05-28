@@ -13,7 +13,7 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 import BookingForm from '../components/BookingForm';
 import { chargingStationApi, bookingApi } from '../services/api';
-import { ChargingStation } from '../types/api';
+import { ChargingStation } from '../types/responseTypes';
 
 const BookingPage: React.FC = () => {
   const { stationId } = useParams<{ stationId: string }>();
