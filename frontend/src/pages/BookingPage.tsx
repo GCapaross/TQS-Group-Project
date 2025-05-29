@@ -51,23 +51,6 @@ const BookingPage: React.FC = () => {
     }
 
     if (!stationId) return;
-
-    /*try {
-      await bookingApi.create({
-        stationId: parseInt(stationId),
-        startTime: startTime.toISOString(),
-        endTime: endTime.toISOString(),
-        estimatedEnergy
-      });
-
-      setShowSuccess(true);
-      // Refresh station data to update available slots
-      const updatedStation = await chargingStationApi.getById(parseInt(stationId));
-      setStation(updatedStation);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to book time slot');
-      throw err;
-    } */
       try {
         const toLocalISOString = (d: Date) => d.toISOString().slice(0, 19);
 
