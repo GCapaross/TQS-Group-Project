@@ -9,6 +9,8 @@ import lombok.Setter;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 @Data
 @Entity
 @Getter
@@ -39,6 +41,7 @@ public class Station {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "company_id")
+    @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
     private Company company;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)

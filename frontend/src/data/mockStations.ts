@@ -11,7 +11,7 @@ export const mockStations: ChargingStation[] = [
         maxSlots: 4,
         availableSlots: 2,
         pricePerKwh: 0.45,
-        connectorTypes: ["CCS", "Type 2"],
+        supportedConnectors: ["CCS", "Type 2"],
         chargingSpeedKw: 50,
         carrierNetwork: "ChargePoint",
         averageRating: 4.5
@@ -26,7 +26,7 @@ export const mockStations: ChargingStation[] = [
         maxSlots: 6,
         availableSlots: 1,
         pricePerKwh: 0.40,
-        connectorTypes: ["CCS", "CHAdeMO", "Type 2"],
+        supportedConnectors: ["CCS", "CHAdeMO", "Type 2"],
         chargingSpeedKw: 150,
         carrierNetwork: "Tesla",
         averageRating: 4.8
@@ -41,7 +41,7 @@ export const mockStations: ChargingStation[] = [
         maxSlots: 2,
         availableSlots: 2,
         pricePerKwh: 0.35,
-        connectorTypes: ["Type 2"],
+        supportedConnectors: ["Type 2"],
         chargingSpeedKw: 22,
         carrierNetwork: "GreenPower",
         averageRating: 4.2
