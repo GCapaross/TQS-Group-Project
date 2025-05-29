@@ -43,26 +43,19 @@ const BookingForm: React.FC<BookingFormProps> = ({ station, open, onClose, onBoo
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
-  const [availableSlots, setAvailableSlots] = useState<TimeSlot[]>([]);
   const [bookingId, setBookingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (open) {
-      fetchAvailableSlots();
+      setShowConfirmation(false);
+      setBookingId(null);
+      setStartTime(null);
+      setEndTime(null);
+      setEstimatedEnergy(0);
+      setError(null);
+      setLoading(false);
     }
   }, [open]);
-
-  const fetchAvailableSlots = async () => {
-    try {
-      const response = await fetch(`/api/stations/${station.id}/available-slots`);
-      if (response.ok) {
-        const slots = await response.json();
-        setAvailableSlots(slots);
-      }
-    } catch (err) {
-      console.error('Failed to fetch available slots:', err);
-    }
-  };
 
   const handleSubmit = async () => {
     if (!isAuthenticated) {
@@ -189,27 +182,6 @@ const BookingForm: React.FC<BookingFormProps> = ({ station, open, onClose, onBoo
                 onChange={(e) => setEstimatedEnergy(Number(e.target.value))}
                 sx={{ mb: 3 }}
               />
-
-              <Typography variant="h6" gutterBottom>
-                Available Time Slots
-              </Typography>
-              <Grid container spacing={1} sx={{ mb: 3 }}>
-                {availableSlots.map((slot, index) => (
-                  <Grid key={index}> {/* To rewiew - was causing error */ }
-                    <Chip
-                      label={`${slot.start.toLocaleTimeString()} - ${slot.end.toLocaleTimeString()}`}
-                      color={slot.isAvailable ? 'success' : 'error'}
-                      onClick={() => {
-                        if (slot.isAvailable) {
-                          setStartTime(slot.start);
-                          setEndTime(slot.end);
-                        }
-                      }}
-                      sx={{ m: 0.5 }}
-                    />
-                  </Grid>
-                ))}
-              </Grid>
             </>
           )}
 
@@ -222,9 +194,6 @@ const BookingForm: React.FC<BookingFormProps> = ({ station, open, onClose, onBoo
           <Box sx={{ mt: 2 }}>
             <Typography variant="body2" color="text.secondary">
               Price per kWh: ${station.pricePerKwh}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Available Slots: {station.availableSlots} / {station.maxSlots}
             </Typography>
             <Typography variant="body2" color="text.secondary">
               Estimated Cost: ${(estimatedEnergy * station.pricePerKwh).toFixed(2)}
