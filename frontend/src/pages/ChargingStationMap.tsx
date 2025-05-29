@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import { Icon } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Box, Typography, CircularProgress, Alert } from '@mui/material';
+import { Box, Typography, CircularProgress, Alert, Paper, Grid, TextField, Button, Slider, FormControl, InputLabel, Select, MenuItem, Chip } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { chargingStationApi } from '../services/api';
 import { ChargingStation } from '../types/api';
@@ -28,10 +28,18 @@ const MapUpdater: React.FC<{ center: [number, number] }> = ({ center }) => {
 
 const ChargingStationMap: React.FC = () => {
     const [stations, setStations] = useState<ChargingStation[]>([]);
+    const [filteredStations, setFilteredStations] = useState<ChargingStation[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [userLocation, setUserLocation] = useState<[number, number]>([38.7223, -9.1393]); // Default to Lisbon
     const navigate = useNavigate();
+
+    // Filter states
+    const [connectorTypes, setConnectorTypes] = useState<string[]>([]);
+    const [minChargingSpeed, setMinChargingSpeed] = useState<number>(0);
+    const [carrierNetwork, setCarrierNetwork] = useState<string>('');
+    const [minRating, setMinRating] = useState<number>(0);
+    const [radiusKm, setRadiusKm] = useState<number>(10);
 
     useEffect(() => {
         // Get user's location
@@ -49,6 +57,7 @@ const ChargingStationMap: React.FC = () => {
             try {
                 const data = await chargingStationApi.getAll();
                 setStations(data);
+                setFilteredStations(data);
             } catch (err) {
                 setError('Failed to load charging stations');
                 console.error('Error fetching stations:', err);
@@ -59,6 +68,37 @@ const ChargingStationMap: React.FC = () => {
 
         fetchStations();
     }, []);
+
+    // Apply filters whenever filter states change
+    useEffect(() => {
+        let filtered = [...stations];
+
+        if (connectorTypes.length > 0) {
+            filtered = filtered.filter(station =>
+                connectorTypes.some(type => station.connectorTypes.includes(type))
+            );
+        }
+
+        if (minChargingSpeed > 0) {
+            filtered = filtered.filter(station =>
+                station.chargingSpeedKw >= minChargingSpeed
+            );
+        }
+
+        if (carrierNetwork) {
+            filtered = filtered.filter(station =>
+                station.carrierNetwork === carrierNetwork
+            );
+        }
+
+        if (minRating > 0) {
+            filtered = filtered.filter(station =>
+                station.averageRating >= minRating
+            );
+        }
+
+        setFilteredStations(filtered);
+    }, [stations, connectorTypes, minChargingSpeed, carrierNetwork, minRating]);
 
     const handleStationClick = (stationId: number) => {
         navigate(`/stations/${stationId}/book`);
@@ -81,44 +121,189 @@ const ChargingStationMap: React.FC = () => {
     }
 
     return (
-        <Box sx={{ height: '100vh', width: '100%' }}>
-            <MapContainer
-                center={userLocation}
-                zoom={13}
-                style={{ height: '100%', width: '100%' }}
+        <Box sx={{ 
+            height: '100vh', 
+            width: '100%', 
+            position: 'relative',
+            padding: '80px 20px 20px 20px', // Add padding to account for navbar and edges
+            boxSizing: 'border-box'
+        }}>
+            <Paper
+                elevation={3}
+                sx={{
+                    position: 'absolute',
+                    top: 100, // Adjusted to account for navbar
+                    right: 40,
+                    zIndex: 1000,
+                    p: 2,
+                    width: 300,
+                    maxHeight: 'calc(100vh - 120px)', // Adjusted to account for padding
+                    overflowY: 'auto'
+                }}
             >
-                <TileLayer
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                />
-                <MapUpdater center={userLocation} />
-                {stations.map((station) => (
-                    <Marker
-                        key={station.id}
-                        position={[station.latitude, station.longitude]}
-                        icon={defaultIcon}
-                        eventHandlers={{
-                            click: () => handleStationClick(station.id)
-                        }}
-                    >
-                        <Popup>
-                            <Box sx={{ p: 1 }}>
-                                <Typography variant="h6">{station.name}</Typography>
-                                <Typography variant="body2">{station.location}</Typography>
-                                <Typography variant="body2">
-                                    Available Slots: {station.availableSlots}/{station.maxSlots}
-                                </Typography>
-                                <Typography variant="body2">
-                                    Price: ${station.pricePerKwh}/kWh
-                                </Typography>
-                                <Typography variant="body2">
-                                    Status: {station.status}
-                                </Typography>
-                            </Box>
-                        </Popup>
-                    </Marker>
-                ))}
-            </MapContainer>
+                <Typography variant="h6" gutterBottom>
+                    Filters
+                </Typography>
+                <Grid container spacing={2}>
+                    <Grid item xs={12}>
+                        <FormControl fullWidth>
+                            <InputLabel>Connector Types</InputLabel>
+                            <Select
+                                multiple
+                                value={connectorTypes}
+                                onChange={(e) => setConnectorTypes(e.target.value as string[])}
+                                renderValue={(selected) => (
+                                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                                        {selected.map((value) => (
+                                            <Chip key={value} label={value} />
+                                        ))}
+                                    </Box>
+                                )}
+                            >
+                                {['CCS', 'CHAdeMO', 'Type 2', 'Type 1'].map((type) => (
+                                    <MenuItem key={type} value={type}>
+                                        {type}
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+                    </Grid>
+                    <Grid item xs={12}>
+                        <Typography gutterBottom>
+                            Min Charging Speed (kW)
+                        </Typography>
+                        <Slider
+                            value={minChargingSpeed}
+                            onChange={(_, value) => setMinChargingSpeed(value as number)}
+                            min={0}
+                            max={350}
+                            step={10}
+                            valueLabelDisplay="auto"
+                        />
+                    </Grid>
+                    <Grid item xs={12}>
+                        <FormControl fullWidth>
+                            <InputLabel>Carrier Network</InputLabel>
+                            <Select
+                                value={carrierNetwork}
+                                onChange={(e) => setCarrierNetwork(e.target.value)}
+                            >
+                                <MenuItem value="">Any</MenuItem>
+                                {['ChargePoint', 'Tesla', 'GreenPower'].map((network) => (
+                                    <MenuItem key={network} value={network}>
+                                        {network}
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+                    </Grid>
+                    <Grid item xs={12}>
+                        <Typography gutterBottom>
+                            Min Rating
+                        </Typography>
+                        <Slider
+                            value={minRating}
+                            onChange={(_, value) => setMinRating(value as number)}
+                            min={0}
+                            max={5}
+                            step={0.5}
+                            valueLabelDisplay="auto"
+                        />
+                    </Grid>
+                </Grid>
+            </Paper>
+
+            <Paper
+                elevation={3}
+                sx={{
+                    height: 'calc(100vh - 100px)', // Adjusted to account for padding
+                    width: '100%',
+                    overflow: 'hidden',
+                    borderRadius: '8px'
+                }}
+            >
+                <MapContainer
+                    center={userLocation}
+                    zoom={13}
+                    style={{ height: '100%', width: '100%' }}
+                >
+                    <TileLayer
+                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    />
+                    <MapUpdater center={userLocation} />
+                    {filteredStations.length === 0 ? (
+                        <Box
+                            sx={{
+                                position: 'absolute',
+                                top: '50%',
+                                left: '50%',
+                                transform: 'translate(-50%, -50%)',
+                                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                                padding: '20px',
+                                borderRadius: '8px',
+                                boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                                zIndex: 1000,
+                                textAlign: 'center'
+                            }}
+                        >
+                            <Typography variant="h6" color="text.secondary">
+                                No stations found with these filters
+                            </Typography>
+                        </Box>
+                    ) : (
+                        filteredStations.map((station) => (
+                            <Marker
+                                key={station.id}
+                                position={[station.latitude, station.longitude]}
+                                icon={defaultIcon}
+                            >
+                                <Popup>
+                                    <Box sx={{ p: 1, minWidth: 200 }}>
+                                        <Typography variant="h6" gutterBottom>
+                                            {station.name}
+                                        </Typography>
+                                        <Typography variant="body2" paragraph>
+                                            {station.location}
+                                        </Typography>
+                                        <Typography variant="body2">
+                                            Available Slots: {station.availableSlots}/{station.maxSlots}
+                                        </Typography>
+                                        <Typography variant="body2">
+                                            Price: ${station.pricePerKwh}/kWh
+                                        </Typography>
+                                        <Typography variant="body2">
+                                            Speed: {station.chargingSpeedKw} kW
+                                        </Typography>
+                                        <Typography variant="body2">
+                                            Rating: {station.averageRating}/5
+                                        </Typography>
+                                        <Box sx={{ mt: 1, display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                                            {station.connectorTypes.map((type) => (
+                                                <Chip
+                                                    key={type}
+                                                    label={type}
+                                                    size="small"
+                                                    variant="outlined"
+                                                />
+                                            ))}
+                                        </Box>
+                                        <Button
+                                            variant="contained"
+                                            size="small"
+                                            fullWidth
+                                            sx={{ mt: 2 }}  
+                                            onClick={() => handleStationClick(station.id)}
+                                        >
+                                            Book Now
+                                        </Button>
+                                    </Box>
+                                </Popup>
+                            </Marker>
+                        ))
+                    )}
+                </MapContainer>
+            </Paper>
         </Box>
     );
 };
