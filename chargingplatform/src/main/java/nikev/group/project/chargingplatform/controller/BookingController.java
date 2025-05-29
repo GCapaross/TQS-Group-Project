@@ -8,13 +8,14 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.constraints.NotNull;
 import nikev.group.project.chargingplatform.DTOs.BookingRequestDTO;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/api/bookings")
 public class BookingController {
-
+    private static final Logger log = LoggerFactory.getLogger(BookingController.class);
     @Autowired
     private BookingService bookingService;
 
@@ -23,7 +24,9 @@ public class BookingController {
         @NotNull @RequestBody(required=true) BookingRequestDTO request
     ) {
         try {
+            log.info("BookingRequest: start={} end={}", request.getStartTime(), request.getEndTime());
             if (!isValidBookingRequest(request)) {
+                log.warn("BookingRequest rejected by validation");
                 return ResponseEntity.badRequest().build();
             }
 
