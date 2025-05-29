@@ -1,65 +1,113 @@
 package nikev.group.project.chargingplatform.controller;
 
-import static org.hamcrest.MatcherAssert.*;
-import static org.hamcrest.Matchers.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import jakarta.inject.Inject;
-import jakarta.validation.constraints.NotNull;
-import java.time.LocalDateTime;
-import java.util.*;
-import nikev.group.project.chargingplatform.DTOs.BookingRequestDTO;
-import nikev.group.project.chargingplatform.DTOs.SearchStationDTO;
-import nikev.group.project.chargingplatform.model.Charger;
-import nikev.group.project.chargingplatform.model.Reservation;
-import nikev.group.project.chargingplatform.model.Station;
 import nikev.group.project.chargingplatform.model.User;
-import nikev.group.project.chargingplatform.repository.ChargerRepository;
-import nikev.group.project.chargingplatform.repository.ReservationRepository;
-import nikev.group.project.chargingplatform.repository.StationRepository;
-import nikev.group.project.chargingplatform.repository.UserRepository;
 import nikev.group.project.chargingplatform.service.UserService;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
+import org.flywaydb.core.internal.util.JsonUtils;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(UserController.class)
 public class UserControllerTest {
 
   @MockitoBean
   private UserService userService;
+
+  @Autowired
+  MockMvc mockMvc;
+
   /* FUNCTION public ResponseEntity<User> registerUser(User user) */
   /*
    * GIven no user with email test@example.com exists
    * When user registers with email test@example.com registers
    * Then user is created with email test@example.com
    */
+  @Test
+  public void testRegisterUser_Success() {
+    User user = new User();
+    user.setEmail("test@example.com");
+    user.setPassword("password123");
+    user.setName("Test User");
+
+    when(userService.registerUser(any(User.class))).thenReturn(user);
+
+    try {
+      mockMvc
+        .perform(
+          post("/api/users/register")
+            .contentType("application/json")
+            .content(JsonUtils.toJson(user))
+        )
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.email", is("test@example.com")))
+        .andExpect(jsonPath("$.name", is("Test User")));
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
 
   /*
    * GIven user with email test@example.com exists
    * When user registers with email test@example.com registers
    * Then bad request is returned
    */
+  @Test
+  public void testRegisterUserAlreadyExists_Failure() {
+    User user = new User();
+    user.setEmail("test@example.com");
+    user.setPassword("password123");
+    user.setName("Test User");
+
+    when(userService.registerUser(any(User.class))).thenThrow(
+      new RuntimeException("User already exists")
+    );
+    try {
+      mockMvc
+        .perform(
+          post("/api/users/register")
+            .contentType("application/json")
+            .content(JsonUtils.toJson(user))
+        )
+        .andExpect(status().isBadRequest());
+    } catch (Exception e) {
+      // Handle exception if needed
+    }
+  }
+
   /**
    * When request body is missing required fields (email, password, name)
    * Then bad request is returned
    */
+  @Test
+  public void testRegisterUser_MissingFields_Failure() {
+    User user = new User();
+    // Intentionally leaving out required fields
+
+    try {
+      mockMvc
+        .perform(
+          post("/api/users/register")
+            .contentType("application/json")
+            .content(JsonUtils.toJson(user))
+        )
+        .andExpect(status().isBadRequest());
+    } catch (Exception e) {
+      // Handle exception if needed
+    }
+  }
+
+  // Should we try each field individually?
+
+  /* FUNCTION public ResponseEntity<User> getUserByEmail(String email) */
 
   /* FUNCTION public ResponseEntity<User> login(LoginRequest loginRequest) */
   /**
@@ -67,11 +115,57 @@ public class UserControllerTest {
    * When user tries to login with that email and the correct passowrd
    * Then a status of 200 with the user is returned
    */
+  @Test
+  public void testLogin_Success() {
+    User user = new User();
+    user.setEmail("test@example.com");
+    user.setPassword("password123");
+    user.setName("Test User");
+
+    when(userService.login("test@example.com", "password123")).thenReturn(user);
+
+    try {
+      mockMvc
+        .perform(
+          post("/api/users/login")
+            .contentType("application/json")
+            .content(JsonUtils.toJson(user))
+        )
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.email", is("test@example.com")))
+        .andExpect(jsonPath("$.name", is("Test User")));
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
+
   /**
    * Given an email that has a users associated
    * When user tries to login with that email and an incorrect passowrd
    * a status of 401 is returned
    */
+  @Test
+  public void testLogin_IncorrectPassword_Failure() {
+    User user = new User();
+    user.setEmail("test@example.com");
+    user.setPassword("password123");
+    user.setName("Test User");
+
+    when(userService.login("test@example.com", "wrongPassword")).thenThrow(
+      new RuntimeException("Invalid password")
+    );
+    try {
+      mockMvc
+        .perform(
+          post("/api/users/login")
+            .contentType("application/json")
+            .content(JsonUtils.toJson(user))
+        )
+        .andExpect(status().isUnauthorized());
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
   /**
    * Given an email that has no users associated
    * When user tries to login with that email
