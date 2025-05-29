@@ -6,6 +6,7 @@ import ChargingStationMap from './pages/ChargingStationMap';
 import RegisterPage from './pages/RegisterPage';
 import LoginPage from './pages/LoginPage';
 import BookingPage from './pages/BookingPage';
+import ChargingSessionPage from './pages/ChargingSessionPage';
 import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
 import { AuthProvider } from './contexts/AuthContext';
 import "./App.css";
@@ -48,6 +49,7 @@ function App() {
                 <Route path="/register" element={<RegisterPage />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/stations/:stationId/book" element={<BookingPage />} />
+                <Route path="/charging-session" element={<ChargingSessionPage />} />
               </Routes>
             </div>
           </div>

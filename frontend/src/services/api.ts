@@ -35,6 +35,26 @@ export const chargingStationApi = {
             params: { latitude, longitude, radius }
         });
         return response.data;
+    },
+
+    startChargingSession: async (stationId: number, reservationId?: number): Promise<void> => {
+        await api.post(`/charging-stations/${stationId}/start-charging`, {
+            reservationId
+        });
+    },
+
+    stopChargingSession: async (stationId: number): Promise<void> => {
+        await api.post(`/charging-stations/${stationId}/stop-charging`);
+    },
+
+    getActiveSession: async (stationId: number): Promise<{
+        energySupplied: number;
+        cost: number;
+        startTime: string;
+        isActive: boolean;
+    }> => {
+        const response = await api.get(`/charging-stations/${stationId}/active-session`);
+        return response.data;
     }
 };
 

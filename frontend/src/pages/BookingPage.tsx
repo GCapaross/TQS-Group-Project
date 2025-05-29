@@ -152,7 +152,7 @@ const BookingPage: React.FC = () => {
         onBook={handleBook}
       />
 
-      <Snackbar
+      <Snackbar 
         open={showSuccess}
         autoHideDuration={6000}
         onClose={() => setShowSuccess(false)}

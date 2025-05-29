@@ -66,6 +66,9 @@ const Navbar: React.FC = () => {
                     <Button component={RouterLink} to="/map" color="inherit">
                         Map View
                     </Button>
+                    <Button component={RouterLink} to="/charging-session" color="inherit">
+                        Charging Session
+                    </Button>
                 </Box>
 
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>

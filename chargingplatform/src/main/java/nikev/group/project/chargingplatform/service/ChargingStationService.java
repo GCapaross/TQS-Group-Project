@@ -2,14 +2,19 @@ package nikev.group.project.chargingplatform.service;
 
 import nikev.group.project.chargingplatform.DTOs.SearchStationDTO;
 import nikev.group.project.chargingplatform.model.ChargingStation;
+import nikev.group.project.chargingplatform.model.ChargingSession;
 import nikev.group.project.chargingplatform.repository.ChargingStationRepository;
+import nikev.group.project.chargingplatform.repository.ChargingSessionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.data.jpa.domain.Specification;
 import jakarta.persistence.criteria.Predicate;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -18,8 +23,14 @@ public class ChargingStationService {
     @Autowired
     private ChargingStationRepository chargingStationRepository;
 
+    @Autowired
+    private ChargingSessionRepository chargingSessionRepository;
+
     public List<ChargingStation> getAllChargingStations() {
-        return chargingStationRepository.findAll();
+        List<ChargingStation> stations = chargingStationRepository.findAll();
+        System.out.println("Found " + stations.size() + " charging stations");
+        stations.forEach(station -> System.out.println("Station: " + station.getName() + ", Available Slots: " + station.getAvailableSlots()));
+        return stations;
     }
 
     public ChargingStation getChargingStationById(Long id) {
@@ -95,5 +106,97 @@ public class ChargingStationService {
 
     public void deleteChargingStation(Long id) {
         chargingStationRepository.deleteById(id);
+    }
+
+    @Transactional
+    public ChargingSession startChargingSession(Long stationId, Long reservationId) {
+        ChargingStation station = getChargingStationById(stationId);
+        
+        if (station.getStatus() != ChargingStation.StationStatus.AVAILABLE) {
+            throw new RuntimeException("Station is not available for charging");
+        }
+        
+        if (station.getAvailableSlots() <= 0) {
+            throw new RuntimeException("No available slots at this station");
+        }
+
+        // If there's a reservation, verify it
+        if (reservationId != null) {
+            ChargingSession reservation = chargingSessionRepository.findById(reservationId)
+                    .orElseThrow(() -> new RuntimeException("Reservation not found"));
+            
+            if (!reservation.getStatus().equals("BOOKED")) {
+                throw new RuntimeException("Invalid reservation status");
+            }
+            
+            if (!reservation.getChargingStation().getId().equals(stationId)) {
+                throw new RuntimeException("Reservation is for a different station");
+            }
+        }
+
+        // Create new charging session
+        ChargingSession session = new ChargingSession();
+        session.setChargingStation(station);
+        session.setStartTime(LocalDateTime.now());
+        session.setStatus("IN_PROGRESS");
+        session.setEnergyConsumed(0.0);
+        session.setCost(0.0);
+
+        // Update station status
+        station.setAvailableSlots(station.getAvailableSlots() - 1);
+        if (station.getAvailableSlots() == 0) {
+            station.setStatus(ChargingStation.StationStatus.IN_USE);
+        }
+        
+        chargingStationRepository.save(station);
+        return chargingSessionRepository.save(session);
+    }
+
+    @Transactional
+    public ChargingSession stopChargingSession(Long stationId) {
+        ChargingStation station = getChargingStationById(stationId);
+        
+        // Find active session for this station
+        ChargingSession session = chargingSessionRepository.findByChargingStationId(stationId)
+                .stream()
+                .filter(s -> s.getStatus().equals("IN_PROGRESS"))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("No active charging session found"));
+
+        // Update session
+        session.setEndTime(LocalDateTime.now());
+        session.setStatus("COMPLETED");
+        
+        // Calculate final cost
+        double durationHours = java.time.Duration.between(session.getStartTime(), session.getEndTime()).toMinutes() / 60.0;
+        double energyConsumed = durationHours * station.getChargingSpeedKw();
+        double cost = energyConsumed * station.getPricePerKwh();
+        
+        session.setEnergyConsumed(energyConsumed);
+        session.setCost(cost);
+
+        // Update station status
+        station.setAvailableSlots(station.getAvailableSlots() + 1);
+        if (station.getStatus() == ChargingStation.StationStatus.IN_USE) {
+            station.setStatus(ChargingStation.StationStatus.AVAILABLE);
+        }
+        
+        chargingStationRepository.save(station);
+        return chargingSessionRepository.save(session);
+    }
+
+    public Map<String, Object> getActiveSessionData(Long stationId) {
+        ChargingSession session = chargingSessionRepository.findByChargingStationId(stationId)
+                .stream()
+                .filter(s -> s.getStatus().equals("IN_PROGRESS"))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("No active charging session found"));
+
+        return Map.of(
+            "energySupplied", session.getEnergyConsumed(),
+            "cost", session.getCost(),
+            "startTime", session.getStartTime().toString(),
+            "isActive", true
+        );
     }
 } 
