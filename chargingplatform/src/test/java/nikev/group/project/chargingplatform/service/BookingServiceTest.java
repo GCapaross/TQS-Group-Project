@@ -223,7 +223,7 @@ public class BookingServiceTest {
    * then RuntimeException is thrown
    */
   @Test
-  public void whenNoBookingWithId1_thenRuntimeExceptionIsThrown() {
+  public void whenCancelingUnexistentBooking_thenRuntimeExceptionIsThrown() {
     when(reservationRepository.findById(anyLong())).thenReturn(
       Optional.empty()
     );
@@ -243,6 +243,7 @@ public class BookingServiceTest {
     );
 
     assertDoesNotThrow(() -> bookingService.cancelBooking(1L));
+    verify(reservationRepository, times(1)).deleteById(reservation.getId());
   }
 
   /* FUNCTION public boolean hasAvailableCharger(Long stationId) */
