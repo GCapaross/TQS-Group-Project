@@ -39,21 +39,9 @@ public class BookingService {
     LocalDateTime startTime,
     LocalDateTime endTime
   ) {
-    // Station station = stationRepository.findById(stationId) // original line
-    //         .orElseThrow(() -> new RuntimeException("Charging station not found"));
-
-    // if (station.hasAvailableCharger()) { // original line
-    //     throw new RuntimeException("No available slots at this station");
-    // }
-
-    // Updated logic to use hasAvailableCharger service method
     Station station = stationRepository
       .findById(stationId)
       .orElseThrow(() -> new RuntimeException("Charging station not found"));
-
-    if (!hasAvailableCharger(stationId)) { // Use the new service method
-      throw new RuntimeException("No available slots at this station");
-    }
 
     // Check for overlapping bookings
     List<Reservation> overlappingReservations =
@@ -62,11 +50,21 @@ public class BookingService {
         startTime,
         endTime
       );
+    System.out.println(
+      "Overlapping reservations: " + overlappingReservations.size()
+    );
 
-    if (!overlappingReservations.isEmpty()) {
-      throw new RuntimeException("Time slot is already booked");
+    if (
+      !hasAvailableSlot(
+        overlappingReservations,
+        chargerRepository.findByStation_Id(stationId).size()
+      )
+    ) {
+      System.out.println("No available slots for this station");
+      throw new RuntimeException("No available slots for this station");
     }
 
+    System.out.println("No available slots for this station");
     // Associate user and station in reservation
     User user = userRepository
       .findById(userId)
