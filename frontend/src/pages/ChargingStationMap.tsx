@@ -292,7 +292,7 @@ const ChargingStationMap: React.FC = () => {
                                             variant="contained"
                                             size="small"
                                             fullWidth
-                                            sx={{ mt: 2 }}  
+                                            sx={{ mt: 2 }}      
                                             onClick={() => handleStationClick(station.id)}
                                         >
                                             Book Now
