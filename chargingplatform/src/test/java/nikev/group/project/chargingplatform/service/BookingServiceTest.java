@@ -3,6 +3,8 @@ package nikev.group.project.chargingplatform.service;
 import static org.hamcrest.MatcherAssert.*;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 import java.time.LocalDateTime;
@@ -223,7 +225,7 @@ public class BookingServiceTest {
    * then RuntimeException is thrown
    */
   @Test
-  public void whenNoBookingWithId1_thenRuntimeExceptionIsThrown() {
+  public void whenCancelingUnexistentBooking_thenRuntimeExceptionIsThrown() {
     when(reservationRepository.findById(anyLong())).thenReturn(
       Optional.empty()
     );
@@ -241,8 +243,10 @@ public class BookingServiceTest {
     when(reservationRepository.findById(anyLong())).thenReturn(
       Optional.of(reservation)
     );
+    doNothing().when(reservationRepository).delete(any());
 
     assertDoesNotThrow(() -> bookingService.cancelBooking(1L));
+    verify(reservationRepository, times(1)).delete(reservation);
   }
 
   /* FUNCTION public boolean hasAvailableCharger(Long stationId) */
@@ -557,6 +561,8 @@ public class BookingServiceTest {
       Optional.of(station)
     );
     when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
+    when(reservationRepository.save(any())).thenAnswer(i -> i.getArguments()[0]
+    );
 
     // Mock hasAvailableSlot
     Charger charger1 = new Charger(
@@ -580,9 +586,14 @@ public class BookingServiceTest {
     ).thenReturn(
       List.of(new Reservation(1L, user, station, startTime, endTime))
     );
+
     assertThat(
       bookingService.bookSlot(1L, 1L, startTime, endTime),
-      is(reservation)
+      allOf(
+        hasProperty("user", is(user)),
+        hasProperty("startDate", is(startTime)),
+        hasProperty("endDate", is(endTime))
+      )
     );
   }
 
