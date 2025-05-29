@@ -32,7 +32,6 @@ const BookingPage: React.FC = () => {
       
       try {
         const data = await chargingStationApi.getById(parseInt(stationId));
-        console.log('Fetched station:', data);
         setStation(data);
       } catch (err) {
         setError('Error loading station details');
@@ -70,10 +69,12 @@ const BookingPage: React.FC = () => {
       throw err;
     } */
       try {
+        const toLocalISOString = (d: Date) => d.toISOString().slice(0, 19);
+
         await bookingApi.create({
           stationId: parseInt(stationId),
-          startTime: startTime.toISOString(),
-          endTime: endTime.toISOString(),
+          startTime: toLocalISOString(startTime),
+          endTime: toLocalISOString(endTime),
           estimatedEnergy
         });
 
