@@ -24,6 +24,7 @@ const BookingPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isBookingFormOpen, setIsBookingFormOpen] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [bookingError, setBookingError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchStation = async () => {
@@ -31,6 +32,7 @@ const BookingPage: React.FC = () => {
       
       try {
         const data = await chargingStationApi.getById(parseInt(stationId));
+        console.log('Fetched station:', data);
         setStation(data);
       } catch (err) {
         setError('Error loading station details');
@@ -51,7 +53,7 @@ const BookingPage: React.FC = () => {
 
     if (!stationId) return;
 
-    try {
+    /*try {
       await bookingApi.create({
         stationId: parseInt(stationId),
         startTime: startTime.toISOString(),
@@ -66,7 +68,27 @@ const BookingPage: React.FC = () => {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to book time slot');
       throw err;
-    }
+    } */
+      try {
+        await bookingApi.create({
+          stationId: parseInt(stationId),
+          startTime: startTime.toISOString(),
+          endTime: endTime.toISOString(),
+          estimatedEnergy
+        });
+
+        setShowSuccess(true);
+        setBookingError(null);
+        const updated = await chargingStationApi.getById(parseInt(stationId));
+        setStation(updated);
+        setIsBookingFormOpen(false);
+      } catch (err: any) {
+        if (err.response?.status === 400) {
+          setBookingError('There are not slots available for this time range.');
+        } else {
+          setBookingError('Failed to make a reservation: ' + (err.message || 'unknown error'));
+        }
+      }
   };
 
   if (loading) {
@@ -157,7 +179,24 @@ const BookingPage: React.FC = () => {
         autoHideDuration={6000}
         onClose={() => setShowSuccess(false)}
         message="Booking successful! Check your bookings page for details."
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       />
+
+      {/* Error handling for booking */}
+      <Snackbar
+        open={!!bookingError}
+        autoHideDuration={6000}
+        onClose={() => setBookingError(null)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={() => setBookingError(null)}
+          severity="error"
+          sx={{ width: '100%' }}
+        >
+          {bookingError}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 };
