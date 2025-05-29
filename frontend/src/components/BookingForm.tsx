@@ -26,12 +26,6 @@ interface BookingFormProps {
   onBook: (startTime: Date, endTime: Date, estimatedEnergy: number) => Promise<void>;
 }
 
-interface TimeSlot {
-  start: Date;
-  end: Date;
-  isAvailable: boolean;
-}
-
 const BookingForm: React.FC<BookingFormProps> = ({ station, open, onClose, onBook }) => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();

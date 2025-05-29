@@ -14,6 +14,7 @@ import { useAuth } from '../contexts/AuthContext';
 import BookingForm from '../components/BookingForm';
 import { chargingStationApi, bookingApi } from '../services/api';
 import { ChargingStation } from '../types/responseTypes';
+import { AxiosError } from 'axios';
 
 const BookingPage: React.FC = () => {
   const { stationId } = useParams<{ stationId: string }>();
@@ -66,11 +67,15 @@ const BookingPage: React.FC = () => {
         const updated = await chargingStationApi.getById(parseInt(stationId));
         setStation(updated);
         setIsBookingFormOpen(false);
-      } catch (err: any) {
-        if (err.response?.status === 400) {
-          setBookingError('There are not slots available for this time range.');
+      } catch (err: unknown) {
+        if (err instanceof AxiosError) {
+          if (err.response?.status === 400) {
+            setBookingError('There are not slots available for this time range.');
+          } else {
+            setBookingError('Failed to make a reservation: ' + (err.message || 'unknown error'));
+          }
         } else {
-          setBookingError('Failed to make a reservation: ' + (err.message || 'unknown error'));
+          setBookingError('Failed to make a reservation: ' + (err instanceof Error ? err.message : 'unknown error'));
         }
       }
   };
