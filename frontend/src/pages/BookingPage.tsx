@@ -126,22 +126,7 @@ const BookingPage: React.FC = () => {
                 Price per kWh: ${station.pricePerKwh}
               </Typography>
               <Typography variant="body1">
-                Available Slots: {station.availableSlots} / {station.maxSlots}
-              </Typography>
-              <Typography variant="body1">
-                Status: {station.status}
-              </Typography>
-              <Typography variant="body1">
-                Charging Speed: {station.chargingSpeedKw} kW
-              </Typography>
-              <Typography variant="body1">
                 Connector Types: {station.supportedConnectors.join(', ')}
-              </Typography>
-              <Typography variant="body1">
-                Network: {station.carrierNetwork}
-              </Typography>
-              <Typography variant="body1">
-                Rating: {station.averageRating}/5
               </Typography>
             </Box>
           </Box>
@@ -150,7 +135,6 @@ const BookingPage: React.FC = () => {
               variant="contained"
               size="large"
               onClick={() => setIsBookingFormOpen(true)}
-              disabled={station.status !== 'AVAILABLE' || station.availableSlots === 0}
               sx={{
                 width: '100%',
                 py: 2,
@@ -160,8 +144,7 @@ const BookingPage: React.FC = () => {
                 }
               }}
             >
-              {station.status !== 'AVAILABLE' ? 'Station Unavailable' :
-               station.availableSlots === 0 ? 'No Slots Available' : 'Book Now'}
+              Book Now
             </Button>
           </Box>
         </Box>
