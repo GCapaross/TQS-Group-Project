@@ -48,7 +48,7 @@ public class BookingController {
       bookingService.cancelBooking(id);
       return ResponseEntity.noContent().build();
     } catch (RuntimeException e) {
-      return ResponseEntity.badRequest().build();
+      return ResponseEntity.notFound().build();
     }
   }
 
