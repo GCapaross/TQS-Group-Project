@@ -23,8 +23,8 @@ public class StationController {
   @GetMapping("/{id}")
   public ResponseEntity<Station> getStationById(@PathVariable Long id) {
     try {
-      stationService.getStationById(id);
-      return ResponseEntity.ok(stationService.getStationById(id));
+      Station station = stationService.getStationById(id);
+      return ResponseEntity.ok(station);
     } catch (RuntimeException e) {
       return ResponseEntity.notFound().build();
     }
