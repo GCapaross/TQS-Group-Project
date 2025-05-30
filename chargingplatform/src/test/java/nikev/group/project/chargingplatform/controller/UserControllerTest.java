@@ -1,8 +1,11 @@
 package nikev.group.project.chargingplatform.controller;
 
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.MatcherAssert.*;
+import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -32,7 +35,7 @@ public class UserControllerTest {
    * Then user is created with email test@example.com
    */
   @Test
-  public void testRegisterUser_Success() {
+  public void whenRegisteringNewUser_thenUserIsCreated() {
     User user = new User();
     user.setEmail("test@example.com");
     user.setPassword("password123");
@@ -61,7 +64,7 @@ public class UserControllerTest {
    * Then bad request is returned
    */
   @Test
-  public void testRegisterUserAlreadyExists_Failure() {
+  public void whenRegisteringExistingEmail_then400() {
     User user = new User();
     user.setEmail("test@example.com");
     user.setPassword("password123");
@@ -70,6 +73,7 @@ public class UserControllerTest {
     when(userService.registerUser(any(User.class))).thenThrow(
       new RuntimeException("User already exists")
     );
+
     try {
       mockMvc
         .perform(
@@ -88,7 +92,7 @@ public class UserControllerTest {
    * Then bad request is returned
    */
   @Test
-  public void testRegisterUser_MissingFields_Failure() {
+  public void whenRequestBodyIsMissingRequiredFields_then400() {
     User user = new User();
     // Intentionally leaving out required fields
 
@@ -116,7 +120,7 @@ public class UserControllerTest {
    * Then a status of 200 with the user is returned
    */
   @Test
-  public void testLogin_Success() {
+  public void whenLoggingInWithValidCredentials_then200() {
     User user = new User();
     user.setEmail("test@example.com");
     user.setPassword("password123");
@@ -137,6 +141,7 @@ public class UserControllerTest {
     } catch (Exception e) {
       e.printStackTrace();
     }
+    verify(userService, times(1)).login(anyString(), anyString());
   }
 
   /**
@@ -145,13 +150,13 @@ public class UserControllerTest {
    * a status of 401 is returned
    */
   @Test
-  public void testLogin_IncorrectPassword_Failure() {
+  public void whenLoggingInWithInvalidCredentials_then401() {
     User user = new User();
     user.setEmail("test@example.com");
     user.setPassword("password123");
     user.setName("Test User");
 
-    when(userService.login("test@example.com", "wrongPassword")).thenThrow(
+    when(userService.login(anyString(), anyString())).thenThrow(
       new RuntimeException("Invalid password")
     );
     try {
@@ -165,10 +170,36 @@ public class UserControllerTest {
     } catch (Exception e) {
       e.printStackTrace();
     }
+
+    verify(userService, times(1)).login(anyString(), anyString());
   }
+
   /**
    * Given an email that has no users associated
    * When user tries to login with that email
    * a status of 401 is returned
    */
+  @Test
+  public void whenLoggingInWithInvalidEmail_then401() {
+    when(userService.login(anyString(), anyString())).thenThrow(
+      new RuntimeException("User not found")
+    );
+
+    User user = new User();
+    user.setEmail("test@example.com");
+    user.setPassword("password123");
+
+    try {
+      mockMvc
+        .perform(
+          post("/api/users/login")
+            .contentType("application/json")
+            .content(JsonUtils.toJson(user))
+        )
+        .andExpect(status().isUnauthorized());
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    verify(userService, times(1)).login(anyString(), anyString());
+  }
 }
