@@ -61,7 +61,7 @@ public class WebConfig implements WebMvcConfigurer {
                         "/swagger-ui.html",
                         "/swagger-ui/**"
                     ).permitAll()
-                    .anyRequest().authenticated()
+                    .anyRequest().permitAll()
                 )
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 .httpBasic(AbstractHttpConfigurer::disable);
