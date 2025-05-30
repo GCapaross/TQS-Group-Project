@@ -22,43 +22,6 @@ public class BookingController {
     @Autowired
     private BookingService bookingService;
 
-  /**
-   * (Unexisten station)
-   * Given no station with id 5
-   * When booking a slot to station with id 5
-   * then throw RuntimeException
-   */
-  /**
-   * (Unexistent user)
-   * Given station with id 1 and no user with id 1
-   * When booking a slot to station with id 1 by the user with id 1
-   * then throw RuntimeException
-   */
-  /**
-   * (No slots available)
-   * Given station with 2 chargers and 2 reservations between 14h30 and 15h00
-   * When booking a slot to the station to the slot 14h30 and 15h30
-   * then throw RuntimeException
-   */
-  /**
-   * (Charger out of service)
-   * Given station with 2 chargers and 1 reservation between startTime and endTime
-   * but 1 charger has state OUT_OF_SERVICE
-   * When booking a slot to the station to the slot startTime and endTime
-   * then throw RuntimeException
-   */
-  /**
-   * (Free station)
-   * Given station with 2 chargers and 2 reservations:
-   * one between 14h30 and 15h00 and another between 15h00 and 15h30
-   * When booking a slot to the station to the slot 14h45 and 15h15
-   * then Reservation is made
-   */
-  /**
-   * Given station with 2 chargers and 1 reservations between 14h30 and 15h00
-   * When booking a slot to the station to the slot 14h30 and 15h00
-   * then Reservation is made
-   */
   @PostMapping
   public ResponseEntity<Reservation> createBooking(
     @RequestBody(required = true) BookingRequestDTO request
@@ -83,16 +46,6 @@ public class BookingController {
     }
   }
 
-  /**
-   * Given no booking with id 1
-   * When trying to cancel booking with id 1
-   * then reposnse with bad request is returned
-   */
-  /**
-   * Given booking with id 1
-   * When trying to cancel booking with id 1
-   * then response with status ok is returned
-   */
   @DeleteMapping("/{id}")
   public ResponseEntity<Void> cancelBooking(
     @NotNull @PathVariable(required = true) Long id
@@ -101,7 +54,7 @@ public class BookingController {
       bookingService.cancelBooking(id);
       return ResponseEntity.noContent().build();
     } catch (RuntimeException e) {
-      return ResponseEntity.badRequest().build();
+      return ResponseEntity.notFound().build();
     }
   }
 
