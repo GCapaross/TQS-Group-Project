@@ -5,7 +5,7 @@ import 'leaflet/dist/leaflet.css';
 import { Box, Typography, CircularProgress, Alert } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { chargingStationApi } from '../services/api';
-import { ChargingStation } from '../types/api';
+import { ChargingStation } from '../types/responseTypes';
 
 // Fix for default marker icons in Leaflet with React
 import icon from 'leaflet/dist/images/marker-icon.png';

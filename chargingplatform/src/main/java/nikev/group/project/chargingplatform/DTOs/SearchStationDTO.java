@@ -9,11 +9,13 @@ import lombok.*;
 @Getter
 @Setter
 public class SearchStationDTO {
-    private List<String> connectorTypes;
-    private Double minChargingSpeed;
-    private String carrierNetwork;
-    private Double minRating;
+    private String name;
+    private String location;
+    private List<String> supportedConnectors;
+    private Double minPricePerKwh;
+    private Double maxPricePerKwh;
     private Double latitude;
     private Double longitude;
     private Double radiusKm;
+    private String timetable;
 }

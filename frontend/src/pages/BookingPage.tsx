@@ -13,7 +13,8 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 import BookingForm from '../components/BookingForm';
 import { chargingStationApi, bookingApi } from '../services/api';
-import { ChargingStation } from '../types/api';
+import { ChargingStation } from '../types/responseTypes';
+import { AxiosError } from 'axios';
 
 const BookingPage: React.FC = () => {
   const { stationId } = useParams<{ stationId: string }>();
@@ -24,6 +25,7 @@ const BookingPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isBookingFormOpen, setIsBookingFormOpen] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [bookingError, setBookingError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchStation = async () => {
@@ -50,23 +52,32 @@ const BookingPage: React.FC = () => {
     }
 
     if (!stationId) return;
+      try {
+        const toLocalISOString = (d: Date) => d.toISOString().slice(0, 19);
 
-    try {
-      await bookingApi.create({
-        stationId: parseInt(stationId),
-        startTime: startTime.toISOString(),
-        endTime: endTime.toISOString(),
-        estimatedEnergy
-      });
+        await bookingApi.create({
+          stationId: parseInt(stationId),
+          startTime: toLocalISOString(startTime),
+          endTime: toLocalISOString(endTime),
+          estimatedEnergy
+        });
 
-      setShowSuccess(true);
-      // Refresh station data to update available slots
-      const updatedStation = await chargingStationApi.getById(parseInt(stationId));
-      setStation(updatedStation);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to book time slot');
-      throw err;
-    }
+        setShowSuccess(true);
+        setBookingError(null);
+        const updated = await chargingStationApi.getById(parseInt(stationId));
+        setStation(updated);
+        setIsBookingFormOpen(false);
+      } catch (err: unknown) {
+        if (err instanceof AxiosError) {
+          if (err.response?.status === 400) {
+            setBookingError('There are not slots available for this time range.');
+          } else {
+            setBookingError('Failed to make a reservation: ' + (err.message || 'unknown error'));
+          }
+        } else {
+          setBookingError('Failed to make a reservation: ' + (err instanceof Error ? err.message : 'unknown error'));
+        }
+      }
   };
 
   if (loading) {
@@ -104,22 +115,7 @@ const BookingPage: React.FC = () => {
                 Price per kWh: ${station.pricePerKwh}
               </Typography>
               <Typography variant="body1">
-                Available Slots: {station.availableSlots} / {station.maxSlots}
-              </Typography>
-              <Typography variant="body1">
-                Status: {station.status}
-              </Typography>
-              <Typography variant="body1">
-                Charging Speed: {station.chargingSpeedKw} kW
-              </Typography>
-              <Typography variant="body1">
-                Connector Types: {station.connectorTypes.join(', ')}
-              </Typography>
-              <Typography variant="body1">
-                Network: {station.carrierNetwork}
-              </Typography>
-              <Typography variant="body1">
-                Rating: {station.averageRating}/5
+                Connector Types: {station.supportedConnectors.join(', ')}
               </Typography>
             </Box>
           </Box>
@@ -128,7 +124,6 @@ const BookingPage: React.FC = () => {
               variant="contained"
               size="large"
               onClick={() => setIsBookingFormOpen(true)}
-              disabled={station.status !== 'AVAILABLE' || station.availableSlots === 0}
               sx={{
                 width: '100%',
                 py: 2,
@@ -138,8 +133,7 @@ const BookingPage: React.FC = () => {
                 }
               }}
             >
-              {station.status !== 'AVAILABLE' ? 'Station Unavailable' :
-               station.availableSlots === 0 ? 'No Slots Available' : 'Book Now'}
+              Book Now
             </Button>
           </Box>
         </Box>
@@ -157,7 +151,24 @@ const BookingPage: React.FC = () => {
         autoHideDuration={6000}
         onClose={() => setShowSuccess(false)}
         message="Booking successful! Check your bookings page for details."
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       />
+
+      {/* Error handling for booking */}
+      <Snackbar
+        open={!!bookingError}
+        autoHideDuration={6000}
+        onClose={() => setBookingError(null)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={() => setBookingError(null)}
+          severity="error"
+          sx={{ width: '100%' }}
+        >
+          {bookingError}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 };
