@@ -36,15 +36,4 @@ public class UserService {
 
         return user;
     }
-
-    @Transactional
-    public User updateProfile(Long userId, User updatedUser) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        user.setName(updatedUser.getName());
-        user.setEmail(updatedUser.getEmail());
-        
-        return userRepository.save(user);
-    }
 } 

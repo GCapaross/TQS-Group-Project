@@ -39,7 +39,7 @@ public class DataInitializer implements CommandLineRunner {
         Optional<User> adminOpt = userRepository.findByEmail("admin@admin.com");
         if (!adminOpt.isPresent()) {
             User admin = new User();
-            admin.setName("Admin User");
+            admin.setUsername("Admin User");
             admin.setEmail("admin@admin.com");
             admin.setPassword("admin");
             userRepository.save(admin);

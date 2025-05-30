@@ -5,6 +5,7 @@ import nikev.group.project.chargingplatform.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import nikev.group.project.chargingplatform.DTOs.LoginRequest;
 
 @RestController
 @RequestMapping("/api/users")
@@ -32,7 +33,7 @@ public class UserController {
     if (
       user.getEmail() == null ||
       user.getPassword() == null ||
-      user.getName() == null
+      user.getUsername() == null
     ) {
       return ResponseEntity.badRequest().build();
     }
@@ -70,55 +71,5 @@ public class UserController {
     } catch (RuntimeException e) {
       return ResponseEntity.status(401).build();
     }
-  }
-
-  /**
-   * Given a user with id 1
-   * When user with id 1 tries to update their profile with valid data
-   * Then a status of 200 with the updated user is returned
-   */
-  /**
-   * Given a user with id 1 with email old@example.com
-   *  and another user with id 2 with email test@example.com
-   * When user with id 1 tries to update their email to test@example.com
-   * Then a status of 400 is returned
-   */
-  /**
-   * Given a user with id 1 with email test@example.com
-   * When user with id 1 tries to update profile of unexistent user (id -1)
-   * Then a status of 404 is returned
-   */
-  @PutMapping("/{id}")
-  public ResponseEntity<User> updateProfile(
-    @PathVariable Long id,
-    @RequestBody User updatedUser
-  ) {
-    try {
-      User user = userService.updateProfile(id, updatedUser);
-      return ResponseEntity.ok(user);
-    } catch (RuntimeException e) {
-      return ResponseEntity.notFound().build();
-    }
-  }
-
-  private static class LoginRequest {
-
-    private String email;
-    private String password;
-
-    public String getEmail() {
-      return email;
-    }
-
-    // public void setEmail(String email) {
-    //     this.email = email;
-    // }
-
-    public String getPassword() {
-      return password;
-    }
-    // public void setPassword(String password) {
-    //     this.password = password;
-    // }
   }
 }
