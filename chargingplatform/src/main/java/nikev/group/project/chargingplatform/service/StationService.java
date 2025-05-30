@@ -154,6 +154,7 @@ public class StationService {
   }
 
   public void deleteStation(Long id) {
-    stationRepository.deleteById(id);
+    Station stationToDelete = getStationById(id);
+    stationRepository.delete(stationToDelete);
   }
 }
