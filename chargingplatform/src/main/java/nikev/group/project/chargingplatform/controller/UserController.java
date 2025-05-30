@@ -82,7 +82,6 @@ public class UserController {
           .httpOnly(true)
           .secure(false)
           .path("/")
-          .maxAge(jwtTokenProvider.getJwtExpirationMs() / 1000)
           .sameSite("Strict")
           .build();
       return ResponseEntity.ok()

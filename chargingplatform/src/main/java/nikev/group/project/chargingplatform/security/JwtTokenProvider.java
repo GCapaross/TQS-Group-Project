@@ -1,6 +1,11 @@
 package nikev.group.project.chargingplatform.security;
 
+import java.sql.Time;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.Date;
+import java.util.TimeZone;
+
 import jakarta.annotation.PostConstruct;
 import nikev.group.project.chargingplatform.controller.BookingController;
 import io.jsonwebtoken.*;
@@ -46,6 +51,9 @@ public class JwtTokenProvider {
         UserDetails userPrincipal = (UserDetails) authentication.getPrincipal();
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpirationMs);
+
+        log.info("Now: {}", now);
+        log.info("Expiry Date: {}", expiryDate);
 
         return Jwts.builder()
                 .setSubject(userPrincipal.getUsername())

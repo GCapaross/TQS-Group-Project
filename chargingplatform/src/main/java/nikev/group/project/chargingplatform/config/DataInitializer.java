@@ -3,6 +3,7 @@ package nikev.group.project.chargingplatform.config;
 import nikev.group.project.chargingplatform.model.Station;
 import nikev.group.project.chargingplatform.model.User;
 import nikev.group.project.chargingplatform.model.Company;
+import nikev.group.project.chargingplatform.model.Role;
 import nikev.group.project.chargingplatform.model.Charger;
 import nikev.group.project.chargingplatform.model.Charger.ChargerStatus;
 import nikev.group.project.chargingplatform.repository.StationRepository;
@@ -42,6 +43,7 @@ public class DataInitializer implements CommandLineRunner {
             admin.setUsername("Admin User");
             admin.setEmail("admin@admin.com");
             admin.setPassword("admin");
+            admin.setRole(Role.USER);
             userRepository.save(admin);
         }
         // Create default company if none
