@@ -254,9 +254,7 @@ public class StationServiceTest {
    */
   @Test
   void whenDeleteStationWithId1_thenReturnRuntimeException() {
-    doThrow(new RuntimeException())
-      .when(stationRepository)
-      .deleteById(anyLong());
+    doThrow(new RuntimeException()).when(stationRepository).findById(anyLong());
 
     assertThrows(RuntimeException.class, () -> stationService.deleteStation(1L)
     );
@@ -269,8 +267,12 @@ public class StationServiceTest {
    */
   @Test
   void whenDeleteStationWithId5_thenReturnNoException() {
-    doNothing().when(stationRepository).deleteById(anyLong());
-
+    Station station = new Station();
+    station.setId(5L);
+    when(stationRepository.findById(anyLong())).thenReturn(
+      Optional.of(station)
+    );
+    doNothing().when(stationRepository).delete(any(Station.class));
     assertDoesNotThrow(() -> stationService.deleteStation(5L));
   }
 }
