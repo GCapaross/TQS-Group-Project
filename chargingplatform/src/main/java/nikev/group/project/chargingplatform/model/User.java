@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import nikev.group.project.chargingplatform.model.Role;
 
 @Data
 @Getter
@@ -23,6 +24,9 @@ public class User {
     private String email;
     private String password;
     private String credit_card;
+
+    @Enumerated(EnumType.STRING)
+    private Role role;
 
     // Ensure no List<Reservation> reservations;
     // Ensure no List<Receipt> receipts;
