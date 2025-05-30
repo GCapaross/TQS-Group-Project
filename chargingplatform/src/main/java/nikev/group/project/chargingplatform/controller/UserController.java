@@ -3,9 +3,14 @@ package nikev.group.project.chargingplatform.controller;
 import nikev.group.project.chargingplatform.model.User;
 import nikev.group.project.chargingplatform.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import nikev.group.project.chargingplatform.DTOs.LoginRequest;
+import nikev.group.project.chargingplatform.security.JwtTokenProvider;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
 @RestController
 @RequestMapping("/api/users")
@@ -13,6 +18,8 @@ public class UserController {
 
   @Autowired
   private UserService userService;
+  @Autowired
+  private JwtTokenProvider jwtTokenProvider;
 
   /*
    * GIven no user with email test@example.com exists
@@ -67,7 +74,21 @@ public class UserController {
         loginRequest.getEmail(),
         loginRequest.getPassword()
       );
-      return ResponseEntity.ok(user);
+
+      Authentication auth = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+      String token = jwtTokenProvider.generateToken(auth);
+
+      ResponseCookie cookie = ResponseCookie.from("JWT_TOKEN", token)
+          .httpOnly(true)
+          .secure(false)
+          .path("/")
+          .maxAge(jwtTokenProvider.getJwtExpirationMs() / 1000)
+          .sameSite("Strict")
+          .build();
+      return ResponseEntity.ok()
+          .header(HttpHeaders.SET_COOKIE, cookie.toString())
+          .body(user);
+
     } catch (RuntimeException e) {
       return ResponseEntity.status(401).build();
     }
