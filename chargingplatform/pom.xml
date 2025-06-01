@@ -27,9 +27,11 @@
 	</scm>
 	<properties>
 		<java.version>21</java.version>
-  <sonar.organization>gcapaross</sonar.organization>
-  <sonar.host.url>https://sonarcloud.io</sonar.host.url>
-					</properties>
+    <sonar.projectKey>GCapaross_TQS-Group-Project</sonar.projectKey>
+    <sonar.organization>gcapaross</sonar.organization>
+    <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+  </properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
