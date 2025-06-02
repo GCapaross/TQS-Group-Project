@@ -5,14 +5,13 @@ CREATE TABLE users (
     email VARCHAR(255) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     credit_card VARCHAR(255)
-    -- removed works_at_station_id, will be handled by a join table station_workers
 );
 
 -- Create companies table
 CREATE TABLE companies (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
-    owner_id INTEGER REFERENCES users(id) ON DELETE SET NULL -- Assuming a company can exist without an owner or owner deletion doesn't delete company
+    owner_id INTEGER REFERENCES users(id) ON DELETE SET NULL
 );
 
 -- Create stations table
@@ -24,25 +23,31 @@ CREATE TABLE stations (
     longitude DECIMAL(11, 8) NOT NULL,
     price_per_kwh DECIMAL(10, 2) NOT NULL,
     timetable VARCHAR(255),
-    company_id INTEGER REFERENCES companies(id) ON DELETE SET NULL -- Station can exist without a company, or company deletion doesn't delete stations
+    company_id INTEGER REFERENCES companies(id) ON DELETE SET NULL,
+    available_slots INTEGER NOT NULL DEFAULT 0,
+    max_slots INTEGER NOT NULL DEFAULT 0,
+    status VARCHAR(50) NOT NULL DEFAULT 'AVAILABLE',
+    charging_speed_kw DECIMAL(10, 2),
+    average_rating DECIMAL(3, 2) DEFAULT 0.0,
+    carrier_network VARCHAR(255)
 );
 
--- Create station_supported_connectors table (for Station.supportedConnectors)
+-- Create station_supported_connectors table
 CREATE TABLE station_supported_connectors (
     station_id INTEGER REFERENCES stations(id) ON DELETE CASCADE,
     connector_type VARCHAR(255) NOT NULL,
     PRIMARY KEY (station_id, connector_type)
 );
 
--- Create chargers table (for Station.chargers)
+-- Create chargers table
 CREATE TABLE chargers (
     id SERIAL PRIMARY KEY,
-    station_id INTEGER REFERENCES stations(id) ON DELETE CASCADE, -- Foreign key to stations
+    station_id INTEGER REFERENCES stations(id) ON DELETE CASCADE,
     status VARCHAR(50) NOT NULL,
     charging_speed_kw DECIMAL(10, 2)
 );
 
--- Create station_workers join table (for Station.workers)
+-- Create station_workers join table
 CREATE TABLE station_workers (
     station_id INTEGER REFERENCES stations(id) ON DELETE CASCADE,
     user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
