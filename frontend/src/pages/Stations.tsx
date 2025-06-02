@@ -16,7 +16,7 @@ import {
 import { Search as SearchIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { chargingStationApi } from '../services/api';
-import { ChargingStation } from '../types/api';
+import { ChargingStation } from '../types/responseTypes';
 
 const Stations: React.FC = () => {
     const [stations, setStations] = useState<ChargingStation[]>([]);
@@ -142,7 +142,7 @@ const Stations: React.FC = () => {
                                         </Typography>
                                     </Box>
                                     <Box sx={{ mt: 2, display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                                        {station.connectorTypes.map((type) => (
+                                        {station.supportedConnectors.map((type) => (
                                             <Chip
                                                 key={type}
                                                 label={type}

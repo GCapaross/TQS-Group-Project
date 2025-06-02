@@ -1,14 +1,22 @@
 package nikev.group.project.chargingplatform.config;
 
-import nikev.group.project.chargingplatform.model.ChargingStation;
+import nikev.group.project.chargingplatform.model.Station;
 import nikev.group.project.chargingplatform.model.User;
-import nikev.group.project.chargingplatform.repository.ChargingStationRepository;
+import nikev.group.project.chargingplatform.model.Company;
+import nikev.group.project.chargingplatform.model.Charger;
+import nikev.group.project.chargingplatform.model.Charger.ChargerStatus;
+import nikev.group.project.chargingplatform.repository.StationRepository;
 import nikev.group.project.chargingplatform.repository.UserRepository;
+import nikev.group.project.chargingplatform.repository.CompanyRepository;
+import nikev.group.project.chargingplatform.repository.ChargerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 
 @Component
 public class DataInitializer implements CommandLineRunner {
@@ -17,86 +25,98 @@ public class DataInitializer implements CommandLineRunner {
     private UserRepository userRepository;
 
     @Autowired
-    private ChargingStationRepository chargingStationRepository;
+    private StationRepository stationRepository;
+
+    @Autowired
+    private CompanyRepository companyRepository;
+
+    @Autowired
+    private ChargerRepository chargerRepository;
 
     @Override
-    public void run(String... args) {
-        // Create default admin user if it doesn't exist
-        if (!userRepository.findByEmail("admin@admin.com").isPresent()) {
+    public void run(String... args) throws Exception {
+        // Create default admin user if not present
+        Optional<User> adminOpt = userRepository.findByEmail("admin@admin.com");
+        if (!adminOpt.isPresent()) {
             User admin = new User();
             admin.setName("Admin User");
             admin.setEmail("admin@admin.com");
             admin.setPassword("admin");
             userRepository.save(admin);
         }
+        // Create default company if none
+        User admin = userRepository.findByEmail("admin@admin.com").get();
+        if (companyRepository.count() == 0) {
+            Company defaultCompany = new Company();
+            defaultCompany.setName("Default Company");
+            defaultCompany.setOwner(admin);
+            companyRepository.save(defaultCompany);
+        }
 
-        // Add charging stations in Portugal if they don't exist
-        if (chargingStationRepository.count() == 0) {
-            // Lisbon stations
-            ChargingStation lisbonCentral = new ChargingStation();
-            lisbonCentral.setName("Lisbon Central Charging Hub");
-            lisbonCentral.setLocation("Avenida da Liberdade, Lisbon");
-            lisbonCentral.setLatitude(38.7223);
-            lisbonCentral.setLongitude(-9.1393);
-            lisbonCentral.setStatus(ChargingStation.StationStatus.AVAILABLE);
-            lisbonCentral.setMaxSlots(8);
-            lisbonCentral.setAvailableSlots(8);
-            lisbonCentral.setPricePerKwh(0.35);
-            lisbonCentral.setConnectorTypes(Arrays.asList("CCS", "Type 2", "CHAdeMO"));
-            lisbonCentral.setChargingSpeedKw(150.0);
-            lisbonCentral.setCarrierNetwork("EDP");
-            lisbonCentral.setAverageRating(4.5);
-            chargingStationRepository.save(lisbonCentral);
+        // Initialize stations if none exist
+        if (stationRepository.count() == 0) {
+            List<Station> stations = new ArrayList<>();
 
-            // Porto stations
-            ChargingStation portoStation = new ChargingStation();
-            portoStation.setName("Porto Riverside Charging");
-            portoStation.setLocation("Ribeira, Porto");
-            portoStation.setLatitude(41.1408);
-            portoStation.setLongitude(-8.6161);
-            portoStation.setStatus(ChargingStation.StationStatus.AVAILABLE);
-            portoStation.setMaxSlots(6);
-            portoStation.setAvailableSlots(6);
-            portoStation.setPricePerKwh(0.32);
-            portoStation.setConnectorTypes(Arrays.asList("CCS", "Type 2"));
-            portoStation.setChargingSpeedKw(120.0);
-            portoStation.setCarrierNetwork("Galp");
-            portoStation.setAverageRating(4.3);
-            chargingStationRepository.save(portoStation);
+            Station lisbon = new Station();
+            lisbon.setName("Lisbon Central Charging Hub");
+            lisbon.setLocation("Avenida da Liberdade, Lisbon");
+            lisbon.setLatitude(38.7223);
+            lisbon.setLongitude(-9.1393);
+            lisbon.setPricePerKwh(0.35);
+            lisbon.setSupportedConnectors(Arrays.asList("CCS", "Type 2", "CHAdeMO"));
+            lisbon.setTimetable("24/7");
+            stations.add(lisbon);
 
-            // Faro stations
-            ChargingStation faroStation = new ChargingStation();
-            faroStation.setName("Faro Airport Charging");
-            faroStation.setLocation("Faro International Airport");
-            faroStation.setLatitude(37.0144);
-            faroStation.setLongitude(-7.9659);
-            faroStation.setStatus(ChargingStation.StationStatus.AVAILABLE);
-            faroStation.setMaxSlots(4);
-            faroStation.setAvailableSlots(4);
-            faroStation.setPricePerKwh(0.38);
-            faroStation.setConnectorTypes(Arrays.asList("CCS", "Type 2", "CHAdeMO"));
-            faroStation.setChargingSpeedKw(180.0);
-            faroStation.setCarrierNetwork("Repsol");
-            faroStation.setAverageRating(4.7);
-            chargingStationRepository.save(faroStation);
+            Station porto = new Station();
+            porto.setName("Porto Riverside Charging");
+            porto.setLocation("Ribeira, Porto");
+            porto.setLatitude(41.1408);
+            porto.setLongitude(-8.6161);
+            porto.setPricePerKwh(0.32);
+            porto.setSupportedConnectors(Arrays.asList("CCS", "Type 2"));
+            porto.setTimetable("24/7");
+            stations.add(porto);
 
-            // Coimbra stations
-            ChargingStation coimbraStation = new ChargingStation();
-            coimbraStation.setName("Coimbra University Charging");
-            coimbraStation.setLocation("University of Coimbra");
-            coimbraStation.setLatitude(40.2089);
-            coimbraStation.setLongitude(-8.4257);
-            coimbraStation.setStatus(ChargingStation.StationStatus.AVAILABLE);
-            coimbraStation.setMaxSlots(4);
-            coimbraStation.setAvailableSlots(4);
-            coimbraStation.setPricePerKwh(0.30);
-            coimbraStation.setConnectorTypes(Arrays.asList("CCS", "Type 2"));
-            coimbraStation.setChargingSpeedKw(100.0);
-            coimbraStation.setCarrierNetwork("EDP");
-            coimbraStation.setAverageRating(4.2);
-            chargingStationRepository.save(coimbraStation);
+            Station faro = new Station();
+            faro.setName("Faro Airport Charging");
+            faro.setLocation("Faro International Airport");
+            faro.setLatitude(37.0144);
+            faro.setLongitude(-7.9659);
+            faro.setPricePerKwh(0.38);
+            faro.setSupportedConnectors(Arrays.asList("CCS", "Type 2", "CHAdeMO"));
+            faro.setTimetable("24/7");
+            stations.add(faro);
+
+            Station coimbra = new Station();
+            coimbra.setName("Coimbra University Charging");
+            coimbra.setLocation("University of Coimbra");
+            coimbra.setLatitude(40.2089);
+            coimbra.setLongitude(-8.4257);
+            coimbra.setPricePerKwh(0.30);
+            coimbra.setSupportedConnectors(Arrays.asList("CCS", "Type 2"));
+            coimbra.setTimetable("24/7");
+            stations.add(coimbra);
+
+            stationRepository.saveAll(stations);
+            // Assign company to stations and save
+            Company company = companyRepository.findAll().get(0);
+            stations.forEach(s -> s.setCompany(company));
+            stationRepository.saveAll(stations);
+            // Initialize chargers for each station
+            if (chargerRepository.count() == 0) {
+                List<Charger> chargers = new ArrayList<>();
+                for (Station s : stations) {
+                    // create two chargers per station
+                    for (int i = 0; i < 2; i++) {
+                        Charger c = new Charger();
+                        c.setStatus(ChargerStatus.AVAILABLE);
+                        c.setChargingSpeedKw(50.0);
+                        c.setStation(s);
+                        chargers.add(c);
+                    }
+                }
+                chargerRepository.saveAll(chargers);
+            }
         }
     }
-} 
-
-// mvn spring-boot:run
+}

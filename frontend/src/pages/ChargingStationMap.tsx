@@ -5,7 +5,7 @@ import 'leaflet/dist/leaflet.css';
 import { Box, Typography, CircularProgress, Alert, Paper, Grid, TextField, Button, Slider, FormControl, InputLabel, Select, MenuItem, Chip } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { chargingStationApi } from '../services/api';
-import { ChargingStation } from '../types/api';
+import { ChargingStation } from '../types/responseTypes';
 
 // Fix for default marker icons in Leaflet with React
 import icon from 'leaflet/dist/images/marker-icon.png';
@@ -181,7 +181,7 @@ const ChargingStationMap: React.FC = () => {
                             valueLabelDisplay="auto"
                         />
                     </Grid>
-                    {/* <Grid item xs={12}>
+                    <Grid item xs={12}>
                         <FormControl fullWidth>
                             <InputLabel>Carrier Network</InputLabel>
                             <Select
@@ -196,8 +196,8 @@ const ChargingStationMap: React.FC = () => {
                                 ))}
                             </Select>
                         </FormControl>
-                    </Grid> */}
-                    {/* <Grid item xs={12}>
+                    </Grid>
+                    <Grid item xs={12}>
                         <Typography gutterBottom>
                             Min Rating
                         </Typography>
@@ -209,7 +209,7 @@ const ChargingStationMap: React.FC = () => {
                             step={0.5}
                             valueLabelDisplay="auto"
                         />
-                    </Grid> */}
+                    </Grid>
                 </Grid>
             </Paper>
 
@@ -292,7 +292,7 @@ const ChargingStationMap: React.FC = () => {
                                             variant="contained"
                                             size="small"
                                             fullWidth
-                                            sx={{ mt: 2 }}          
+                                            sx={{ mt: 2 }}
                                             onClick={() => handleStationClick(station.id)}
                                         >
                                             Book Now

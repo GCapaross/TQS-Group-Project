@@ -1,5 +1,6 @@
 package nikev.group.project.chargingplatform.controller;
 
+import lombok.Getter;
 import nikev.group.project.chargingplatform.model.User;
 import nikev.group.project.chargingplatform.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,60 +11,55 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/users")
 public class UserController {
 
-    @Autowired
-    private UserService userService;
+  @Autowired
+  private UserService userService;
 
-    @PostMapping("/register")
-    public ResponseEntity<User> registerUser(@RequestBody User user) {
-        if (user.getEmail() == null || user.getPassword() == null || user.getName() == null) {
-            return ResponseEntity.badRequest().build();
-        }
-        try {
-            User registeredUser = userService.registerUser(user);
-            return ResponseEntity.ok(registeredUser);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().build();
-        }
+  @PostMapping("/register")
+  public ResponseEntity<User> registerUser(@RequestBody User user) {
+    if (
+      user.getEmail() == null ||
+      user.getPassword() == null ||
+      user.getName() == null
+    ) {
+      return ResponseEntity.badRequest().build();
     }
-
-    @PostMapping("/login")
-    public ResponseEntity<User> login(@RequestBody LoginRequest loginRequest) {
-        try {
-            User user = userService.login(loginRequest.getEmail(), loginRequest.getPassword());
-            return ResponseEntity.ok(user);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(401).build();
-        }
+    try {
+      User registeredUser = userService.registerUser(user);
+      return ResponseEntity.ok(registeredUser);
+    } catch (RuntimeException e) {
+      return ResponseEntity.badRequest().build();
     }
+  }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<User> updateProfile(@PathVariable Long id, @RequestBody User updatedUser) {
-        try {
-            User user = userService.updateProfile(id, updatedUser);
-            return ResponseEntity.ok(user);
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+  @PostMapping("/login")
+  public ResponseEntity<User> login(@RequestBody LoginRequest loginRequest) {
+    try {
+      User user = userService.login(
+        loginRequest.getEmail(),
+        loginRequest.getPassword()
+      );
+      return ResponseEntity.ok(user);
+    } catch (RuntimeException e) {
+      return ResponseEntity.status(401).build();
     }
+  }
 
-    private static class LoginRequest {
-        private String email;
-        private String password;
+  // @PutMapping("/{id}")
+  // public ResponseEntity<User> updateProfile(
+  //   @PathVariable Long id,
+  //   @RequestBody User updatedUser
+  // ) {
+  //   try {
+  //     User user = userService.updateProfile(id, updatedUser);
+  //     return ResponseEntity.ok(user);
+  //   } catch (RuntimeException e) {
+  //     return ResponseEntity.notFound().build();
+  //   }
+  // }
+  @Getter
+  private static class LoginRequest {
 
-        public String getEmail() {
-            return email;
-        }
-
-        public void setEmail(String email) {
-            this.email = email;
-        }
-
-        public String getPassword() {
-            return password;
-        }
-
-        public void setPassword(String password) {
-            this.password = password;
-        }
-    }
-} 
+    private String email;
+    private String password;
+  }
+}
