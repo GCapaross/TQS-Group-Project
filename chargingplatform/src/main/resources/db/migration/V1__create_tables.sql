@@ -38,7 +38,7 @@ CREATE TABLE station_supported_connectors (
 CREATE TABLE chargers (
     id SERIAL PRIMARY KEY,
     station_id INTEGER REFERENCES stations(id) ON DELETE CASCADE, -- Foreign key to stations
-    status VARCHAR(50) NOT NULL,
+    status VARCHAR(50) NOT NULL CHECK (status IN ('AVAILABLE', 'CHARGING', 'RESERVED', 'OUT_OF_SERVICE')),
     charging_speed_kw DECIMAL(10, 2)
 );
 
