@@ -4,14 +4,17 @@ export interface ChargingStation {
     location: string;
     latitude: number;
     longitude: number;
-    status: 'AVAILABLE' | 'IN_USE' | 'MAINTENANCE' | 'OUT_OF_SERVICE';
-    maxSlots: number;
-    availableSlots: number;
     pricePerKwh: number;
     supportedConnectors: string[];
-    chargingSpeedKw: number;
-    carrierNetwork: string;
-    averageRating: number;
+    timetable: string;
+    company?: {
+        id: number;
+        name: string;
+    };
+    workers?: Array<{
+        id: number;
+        name: string;
+    }>;
 }
 
 export interface FilterOptions {

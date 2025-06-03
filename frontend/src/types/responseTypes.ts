@@ -12,14 +12,23 @@ export interface ChargingStation {
     chargingSpeedKw: number;
     carrierNetwork: string;
     averageRating: number;
+    timetable: string;
+    company?: {
+        id: number;
+        name: string;
+    };
+    workers?: Array<{
+        id: number;
+        name: string;
+    }>;
 }
 
 export interface Booking {
     id: number;
     stationId: number;
     userId: number;
-    startTime: string;
-    endTime: string;
+    startTime: Date;
+    endTime: Date;
     estimatedEnergy: number;
     status: 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED';
     createdAt: string;

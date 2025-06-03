@@ -60,17 +60,33 @@ export const chargingStationApi = {
 
 export const bookingApi = {
     create: async (booking: Omit<Booking, 'id' | 'userId' | 'status' | 'createdAt' | 'updatedAt'>): Promise<Booking> => {
-        const response = await api.post<Booking>('/bookings', booking);
-        return response.data;
+        const response = await api.post<Booking>('/bookings', {
+            ...booking,
+            startTime: booking.startTime.toISOString(),
+            endTime: booking.endTime.toISOString()
+        });
+        return {
+            ...response.data,
+            startTime: new Date(response.data.startTime),
+            endTime: new Date(response.data.endTime)
+        };
     },
 
     getByUser: async (): Promise<Booking[]> => {
         const response = await api.get<Booking[]>('/bookings/user');
-        return response.data;
+        return response.data.map(booking => ({
+            ...booking,
+            startTime: new Date(booking.startTime),
+            endTime: new Date(booking.endTime)
+        }));
     },
 
     cancel: async (id: number): Promise<Booking> => {
         const response = await api.post<Booking>(`/bookings/${id}/cancel`);
-        return response.data;
+        return {
+            ...response.data,
+            startTime: new Date(response.data.startTime),
+            endTime: new Date(response.data.endTime)
+        };
     }
 }; 

@@ -5,7 +5,7 @@ import 'leaflet/dist/leaflet.css';
 import { Box, Typography, CircularProgress, Alert, Paper, Grid, TextField, Button, Slider, FormControl, InputLabel, Select, MenuItem, Chip } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { chargingStationApi } from '../services/api';
-import { ChargingStation } from '../types/responseTypes';
+import { ChargingStation } from '../types/ChargingStation';
 
 // Fix for default marker icons in Leaflet with React
 import icon from 'leaflet/dist/images/marker-icon.png';
@@ -75,7 +75,7 @@ const ChargingStationMap: React.FC = () => {
 
         if (connectorTypes.length > 0) {
             filtered = filtered.filter(station =>
-                connectorTypes.some(type => station.connectorTypes.includes(type))
+                connectorTypes.some(type => station.supportedConnectors.includes(type))
             );
         }
 
@@ -122,22 +122,24 @@ const ChargingStationMap: React.FC = () => {
 
     return (
         <Box sx={{ 
-            height: '100vh', 
+            height: 'calc(100vh - 64px)', // Subtract navbar height
             width: '100%', 
             position: 'relative',
-            padding: '80px 20px 20px 20px', // Add padding to account for navbar and edges
-            boxSizing: 'border-box'
+            padding: '20px',
+            boxSizing: 'border-box',
+            display: 'flex',
+            flexDirection: 'column'
         }}>
             <Paper
                 elevation={3}
                 sx={{
                     position: 'absolute',
-                    top: 100, // Adjusted to account for navbar
-                    right: 40,
+                    top: 20,
+                    right: 20,
                     zIndex: 1000,
                     p: 2,
                     width: 300,
-                    maxHeight: 'calc(100vh - 120px)', // Adjusted to account for padding
+                    maxHeight: 'calc(100vh - 100px)',
                     overflowY: 'auto'
                 }}
             >
@@ -279,7 +281,7 @@ const ChargingStationMap: React.FC = () => {
                                             Rating: {station.averageRating}/5
                                         </Typography>
                                         <Box sx={{ mt: 1, display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                                            {station.connectorTypes.map((type) => (
+                                            {station.supportedConnectors.map((type: string) => (
                                                 <Chip
                                                     key={type}
                                                     label={type}

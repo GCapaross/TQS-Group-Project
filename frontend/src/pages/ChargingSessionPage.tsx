@@ -32,6 +32,10 @@ import {
     Legend,
     ArcElement
 } from 'chart.js';
+import { useAuth } from '../contexts/AuthContext';
+import { chargingStationApi } from '../services/api';
+import { ChargingStation } from '../types/ChargingStation';
+import { bookingApi } from '../services/api';
 
 ChartJS.register(
     CategoryScale,
@@ -57,45 +61,10 @@ interface SessionData {
     isActive: boolean;
 }
 
-// Mock stations data
-const mockStations = [
-    {
-        id: 1,
-        name: "Station A",
-        location: "Downtown",
-        availableSlots: 2,
-        maxSlots: 4,
-        pricePerKwh: 0.35,
-        chargingSpeedKw: 50,
-        connectorTypes: ["Type 2", "CCS"],
-        status: "AVAILABLE"
-    },
-    {
-        id: 2,
-        name: "Station B",
-        location: "Shopping Mall",
-        availableSlots: 1,
-        maxSlots: 2,
-        pricePerKwh: 0.40,
-        chargingSpeedKw: 100,
-        connectorTypes: ["CCS", "CHAdeMO"],
-        status: "AVAILABLE"
-    },
-    {
-        id: 3,
-        name: "Station C",
-        location: "Airport",
-        availableSlots: 3,
-        maxSlots: 6,
-        pricePerKwh: 0.45,
-        chargingSpeedKw: 150,
-        connectorTypes: ["Type 2", "CCS", "CHAdeMO"],
-        status: "AVAILABLE"
-    }
-];
-
 const ChargingSessionPage: React.FC = () => {
     const theme = useTheme();
+    const navigate = useNavigate();
+    const { isAuthenticated } = useAuth();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [showStationDialog, setShowStationDialog] = useState(false);
@@ -104,7 +73,30 @@ const ChargingSessionPage: React.FC = () => {
     const [powerHistory, setPowerHistory] = useState<number[]>([]);
     const [currentHistory, setCurrentHistory] = useState<number[]>([]);
     const [timeLabels, setTimeLabels] = useState<string[]>([]);
-    const navigate = useNavigate();
+    const [stations, setStations] = useState<ChargingStation[]>([]);
+
+    useEffect(() => {
+        const fetchStations = async () => {
+            try {
+                console.log('Fetching stations...');
+                const data = await chargingStationApi.getAll();
+                console.log('Stations fetched:', data);
+                if (!data || data.length === 0) {
+                    console.warn('No stations returned from API');
+                }
+                setStations(data);
+            } catch (err) {
+                console.error('Error fetching stations:', err);
+                if (err instanceof Error) {
+                    setError(`Failed to load charging stations: ${err.message}`);
+                } else {
+                    setError('Failed to load charging stations');
+                }
+            }
+        };
+
+        fetchStations();
+    }, []); // Fetch on component mount
 
     useEffect(() => {
         let interval: number | undefined;
@@ -118,8 +110,29 @@ const ChargingSessionPage: React.FC = () => {
         };
     }, [sessionData]);
 
-    const startChargingSession = async (station: typeof mockStations[0]) => {
+    const startChargingSession = async (station: ChargingStation) => {
+        if (!isAuthenticated) {
+            navigate('/login');
+            return;
+        }
+
         try {
+            setLoading(true);
+            
+            // Create a booking for immediate use
+            const startTime = new Date();
+            const endTime = new Date(startTime.getTime() + 2 * 60 * 60 * 1000); // 2 hours from now
+            
+            const booking = await bookingApi.create({
+                stationId: station.id,
+                startTime: startTime,
+                endTime: endTime,
+                estimatedEnergy: 50 // Default estimated energy
+            });
+
+            // Start the charging session with the booking ID
+            await chargingStationApi.startChargingSession(station.id, booking.id);
+
             // Generate random initial battery level between 10% and 30%
             const initialBatteryLevel = Math.floor(Math.random() * 20) + 10;
             const targetBatteryLevel = 100;
@@ -127,7 +140,7 @@ const ChargingSessionPage: React.FC = () => {
             // Calculate estimated time based on charging speed and battery difference
             const batteryCapacity = 75; // kWh (typical EV battery)
             const energyNeeded = (targetBatteryLevel - initialBatteryLevel) * batteryCapacity / 100;
-            const estimatedHours = energyNeeded / station.chargingSpeedKw;
+            const estimatedHours = energyNeeded / 50; // Using a default charging speed of 50kW
             const estimatedEndTime = new Date(Date.now() + estimatedHours * 3600 * 1000);
 
             const newSession: SessionData = {
@@ -135,7 +148,7 @@ const ChargingSessionPage: React.FC = () => {
                 stationName: station.name,
                 batteryLevel: initialBatteryLevel,
                 targetBatteryLevel,
-                chargingSpeed: station.chargingSpeedKw,
+                chargingSpeed: 50, // Default charging speed
                 startTime: new Date(),
                 estimatedEndTime,
                 energySupplied: 0,
@@ -148,50 +161,64 @@ const ChargingSessionPage: React.FC = () => {
         } catch (err) {
             setError('Failed to start charging session');
             console.error('Error starting session:', err);
+        } finally {
+            setLoading(false);
         }
     };
 
-    const updateSessionProgress = () => {
+    const updateSessionProgress = async () => {
         if (!sessionData) return;
 
-        const now = new Date();
-        const elapsedHours = (now.getTime() - sessionData.startTime.getTime()) / (1000 * 3600);
-        const energyAdded = elapsedHours * sessionData.chargingSpeed;
-        const batteryCapacity = 75; // kWh
-        const newBatteryLevel = Math.min(
-            100,
-            sessionData.batteryLevel + (energyAdded / batteryCapacity) * 100
-        );
+        try {
+            const activeSession = await chargingStationApi.getActiveSession(sessionData.stationId);
+            
+            const now = new Date();
+            const elapsedHours = (now.getTime() - sessionData.startTime.getTime()) / (1000 * 3600);
+            const energyAdded = activeSession.energySupplied;
+            const batteryCapacity = 75; // kWh
+            const newBatteryLevel = Math.min(
+                100,
+                sessionData.batteryLevel + (energyAdded / batteryCapacity) * 100
+            );
 
-        // Update power and current history
-        const currentPower = sessionData.chargingSpeed;
-        const current = (currentPower * 1000) / 400; // Assuming 400V system
-        const timeLabel = now.toLocaleTimeString();
+            // Update power and current history
+            const currentPower = sessionData.chargingSpeed;
+            const current = (currentPower * 1000) / 400; // Assuming 400V system
+            const timeLabel = now.toLocaleTimeString();
 
-        setPowerHistory(prev => [...prev, currentPower].slice(-20));
-        setCurrentHistory(prev => [...prev, current].slice(-20));
-        setTimeLabels(prev => [...prev, timeLabel].slice(-20));
+            setPowerHistory(prev => [...prev, currentPower].slice(-20));
+            setCurrentHistory(prev => [...prev, current].slice(-20));
+            setTimeLabels(prev => [...prev, timeLabel].slice(-20));
 
-        setSessionData(prev => {
-            if (!prev) return null;
-            const newCost = energyAdded * 0.35;
-            return {
-                ...prev,
-                batteryLevel: newBatteryLevel,
-                energySupplied: energyAdded,
-                cost: newCost,
-                isActive: newBatteryLevel < 100
-            };
-        });
+            setSessionData(prev => {
+                if (!prev) return null;
+                return {
+                    ...prev,
+                    batteryLevel: newBatteryLevel,
+                    energySupplied: energyAdded,
+                    cost: activeSession.cost,
+                    isActive: activeSession.isActive
+                };
+            });
 
-        if (newBatteryLevel >= 100) {
-            stopChargingSession();
+            if (!activeSession.isActive) {
+                stopChargingSession();
+            }
+        } catch (err) {
+            console.error('Error updating session progress:', err);
         }
     };
 
     const stopChargingSession = async () => {
         if (!sessionData) return;
-        setSessionData(null);
+        
+        try {
+            await chargingStationApi.stopChargingSession(sessionData.stationId);
+            setSessionData(null);
+        } catch (err) {
+            setError('Failed to stop charging session');
+            console.error('Error stopping session:', err);
+        }
     };
 
     const handleStopClick = () => {
@@ -264,6 +291,11 @@ const ChargingSessionPage: React.FC = () => {
         return (
             <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
                 <Box sx={{ textAlign: 'center', mt: 4 }}>
+                    {!isAuthenticated ? (
+                        <Alert severity="info" sx={{ mb: 2 }}>
+                            Please log in to start a charging session.
+                        </Alert>
+                    ) : null}
                     <Button
                         variant="contained"
                         color="primary"
@@ -275,49 +307,65 @@ const ChargingSessionPage: React.FC = () => {
                     </Button>
                 </Box>
 
-                <Dialog open={showStationDialog} onClose={() => setShowStationDialog(false)} maxWidth="md" fullWidth>
+                <Dialog open={showStationDialog} onClose={() => setShowStationDialog(false)} maxWidth="xl" fullWidth>
                     <DialogTitle>Select Charging Station</DialogTitle>
                     <DialogContent>
-                        <Grid container spacing={2} sx={{ mt: 1 }}>
-                            {mockStations
-                                .filter(station => station.availableSlots > 0 && station.status === 'AVAILABLE')
-                                .map((station) => (
-                                    <Grid item xs={12} sm={6} md={4} key={station.id}>
-                                        <Card>
-                                            <CardContent>
-                                                <Typography variant="h6" gutterBottom>
-                                                    {station.name}
-                                                </Typography>
-                                                <Typography variant="body2" color="text.secondary">
-                                                    {station.location}
-                                                </Typography>
-                                                <Typography variant="body2">
-                                                    Available: {station.availableSlots}/{station.maxSlots}
-                                                </Typography>
-                                                <Typography variant="body2">
-                                                    ${station.pricePerKwh}/kWh
-                                                </Typography>
-                                                <Typography variant="body2">
-                                                    {station.chargingSpeedKw} kW
-                                                </Typography>
-                                                <Typography variant="body2" noWrap>
-                                                    {station.connectorTypes.join(', ')}
-                                                </Typography>
-                                            </CardContent>
-                                            <CardActions>
-                                                <Button
-                                                    fullWidth
-                                                    variant="contained"
-                                                    color="primary"
-                                                    onClick={() => startChargingSession(station)}
-                                                >
-                                                    Select
-                                                </Button>
-                                            </CardActions>
-                                        </Card>
-                                    </Grid>
-                                ))}
-                        </Grid>
+                        <Box sx={{ 
+                            display: 'grid', 
+                            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)' },
+                            gap: 2,
+                            p: 2
+                        }}>
+                            {stations.map((station) => (
+                                <Card key={station.id} sx={{ 
+                                    height: '100%',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    transition: 'transform 0.2s, box-shadow 0.2s',
+                                    '&:hover': {
+                                        transform: 'translateY(-4px)',
+                                        boxShadow: 6
+                                    }
+                                }}>
+                                    <CardContent sx={{ flexGrow: 1 }}>
+                                        <Typography variant="h6" gutterBottom noWrap>
+                                            {station.name}
+                                        </Typography>
+                                        <Typography variant="body2" color="text.secondary" gutterBottom>
+                                            {station.location}
+                                        </Typography>
+                                        <Box sx={{ mt: 2 }}>
+                                            <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                                                <strong>Price:</strong>&nbsp;${station.pricePerKwh}/kWh
+                                            </Typography>
+                                            <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                                                <strong>Connectors:</strong>&nbsp;{station.supportedConnectors.join(', ')}
+                                            </Typography>
+                                            <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center' }}>
+                                                <strong>Schedule:</strong>&nbsp;{station.timetable}
+                                            </Typography>
+                                        </Box>
+                                    </CardContent>
+                                    <CardActions sx={{ p: 2, pt: 0 }}>
+                                        <Button
+                                            fullWidth
+                                            variant="contained"
+                                            color="primary"
+                                            onClick={() => startChargingSession(station)}
+                                            sx={{
+                                                py: 1,
+                                                background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+                                                '&:hover': {
+                                                    background: 'linear-gradient(45deg, #1976D2 30%, #1E88E5 90%)'
+                                                }
+                                            }}
+                                        >
+                                            Select Station
+                                        </Button>
+                                    </CardActions>
+                                </Card>
+                            ))}
+                        </Box>
                     </DialogContent>
                     <DialogActions>
                         <Button onClick={() => setShowStationDialog(false)}>Cancel</Button>
@@ -345,8 +393,8 @@ const ChargingSessionPage: React.FC = () => {
 
                 <Grid container spacing={3}>
                     {/* Battery Level */}
-                    <Grid item xs={12}>
-                        <Box sx={{ mt: 2, mb: 2 }}>
+                    <Box sx={{ width: '100%', p: 1 }}>
+                        <Paper sx={{ p: 2 }}>
                             <Typography variant="body2" color="text.secondary" gutterBottom>
                                 Battery Level
                             </Typography>
@@ -358,12 +406,12 @@ const ChargingSessionPage: React.FC = () => {
                             <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
                                 {sessionData.batteryLevel.toFixed(1)}%
                             </Typography>
-                        </Box>
-                    </Grid>
+                        </Paper>
+                    </Box>
 
                     {/* Power and Current Charts */}
-                    <Grid item xs={12} md={6}>
-                        <Paper elevation={2} sx={{ p: 2, height: 200 }}>
+                    <Box sx={{ width: { xs: '100%', md: '50%' }, p: 1 }}>
+                        <Paper sx={{ p: 2, height: '100%' }}>
                             <Typography variant="subtitle2" gutterBottom>
                                 Power Consumption
                             </Typography>
@@ -371,10 +419,10 @@ const ChargingSessionPage: React.FC = () => {
                                 <Line data={powerChartData} options={chartOptions} />
                             </Box>
                         </Paper>
-                    </Grid>
+                    </Box>
 
-                    <Grid item xs={12} md={6}>
-                        <Paper elevation={2} sx={{ p: 2, height: 200 }}>
+                    <Box sx={{ width: { xs: '100%', md: '50%' }, p: 1 }}>
+                        <Paper sx={{ p: 2, height: '100%' }}>
                             <Typography variant="subtitle2" gutterBottom>
                                 Current Flow
                             </Typography>
@@ -382,37 +430,37 @@ const ChargingSessionPage: React.FC = () => {
                                 <Line data={currentChartData} options={chartOptions} />
                             </Box>
                         </Paper>
-                    </Grid>
+                    </Box>
 
                     {/* Session Details */}
-                    <Grid item xs={12}>
-                        <Paper elevation={2} sx={{ p: 2 }}>
+                    <Box sx={{ width: '100%', p: 1 }}>
+                        <Paper sx={{ p: 2 }}>
                             <Grid container spacing={2}>
-                                <Grid item xs={6} sm={3}>
+                                <Box sx={{ width: { xs: '50%', sm: '25%' }, p: 1 }}>
                                     <Typography variant="body2" color="text.secondary">
                                         Energy Supplied
                                     </Typography>
                                     <Typography variant="h6">
                                         {sessionData.energySupplied.toFixed(2)} kWh
                                     </Typography>
-                                </Grid>
-                                <Grid item xs={6} sm={3}>
+                                </Box>
+                                <Box sx={{ width: { xs: '50%', sm: '25%' }, p: 1 }}>
                                     <Typography variant="body2" color="text.secondary">
                                         Current Cost
                                     </Typography>
                                     <Typography variant="h6">
                                         ${sessionData.cost.toFixed(2)}
                                     </Typography>
-                                </Grid>
-                                <Grid item xs={6} sm={3}>
+                                </Box>
+                                <Box sx={{ width: { xs: '50%', sm: '25%' }, p: 1 }}>
                                     <Typography variant="body2" color="text.secondary">
                                         Charging Speed
                                     </Typography>
                                     <Typography variant="h6">
                                         {sessionData.chargingSpeed} kW
                                     </Typography>
-                                </Grid>
-                                <Grid item xs={6} sm={3}>
+                                </Box>
+                                <Box sx={{ width: { xs: '50%', sm: '25%' }, p: 1 }}>
                                     <Typography variant="body2" color="text.secondary">
                                         Time Remaining
                                     </Typography>
@@ -422,13 +470,13 @@ const ChargingSessionPage: React.FC = () => {
                                             : 'Complete'
                                         }
                                     </Typography>
-                                </Grid>
+                                </Box>
                             </Grid>
                         </Paper>
-                    </Grid>
+                    </Box>
 
                     {/* Stop Button */}
-                    <Grid item xs={12}>
+                    <Box sx={{ width: '100%', p: 1 }}>
                         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
                             <Button
                                 variant="contained"
@@ -446,7 +494,7 @@ const ChargingSessionPage: React.FC = () => {
                                 Stop Charging Session
                             </Button>
                         </Box>
-                    </Grid>
+                    </Box>
                 </Grid>
             </Paper>
 
