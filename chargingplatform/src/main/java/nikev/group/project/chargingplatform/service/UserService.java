@@ -36,4 +36,10 @@ public class UserService {
 
         return user;
     }
+
+    public Long getUserIdByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .map(User::getId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+    }
 } 

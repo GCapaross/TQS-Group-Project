@@ -5,11 +5,13 @@ import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import jakarta.servlet.http.Cookie;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -36,6 +38,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
+
+import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Date;
+import java.util.List;
+
+import javax.crypto.SecretKey;
 
 @WebMvcTest(BookingController.class)
 public class BookingControllerTest {
@@ -45,6 +58,19 @@ public class BookingControllerTest {
 
   @MockitoBean
   private BookingService BookingService;
+
+  public String getJwtForTestUser(){
+    String secret = "myTestSecretKeyWhichIsVeryLongAndSecureForTestsOnly";
+    Date now = new Date();
+    Date expiryDate = new Date(now.getTime() + 3600000);
+    SecretKey secretKey = Keys.hmacShaKeyFor(secret.getBytes());
+    return Jwts.builder()
+                .setSubject("test")
+                .setIssuedAt(now)
+                .setExpiration(expiryDate)
+                .signWith(secretKey, SignatureAlgorithm.HS256)
+                .compact();
+  }
 
   /*
    * FUNCTION public ResponseEntity<Reservation> createBooking(
@@ -64,6 +90,8 @@ public class BookingControllerTest {
       LocalDateTime.now().plusHours(1)
     );
 
+    // String jwt = getJwtForTestUser();
+
     when(
       BookingService.bookSlot(
         anyLong(),
@@ -79,6 +107,7 @@ public class BookingControllerTest {
           post("/api/bookings")
             .contentType("application/json")
             .content(JsonUtils.toJson(request))
+            // .cookie(new Cookie("JWT_TOKEN", jwt))
         )
         .andExpect(status().isBadRequest());
     } catch (Exception e) {
