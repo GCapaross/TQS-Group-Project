@@ -14,6 +14,7 @@ import nikev.group.project.chargingplatform.DTOs.BookingRequestDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.time.LocalDateTime;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/bookings")
@@ -55,6 +56,57 @@ public class BookingController {
       return ResponseEntity.noContent().build();
     } catch (RuntimeException e) {
       return ResponseEntity.notFound().build();
+    }
+  }
+
+  @PostMapping("/live/start")
+  public ResponseEntity<Reservation> startLiveChargingSession(
+    @RequestBody Map<String, Object> request
+  ) {
+    try {
+      log.info("Starting live charging session with request: {}", request);
+      
+      if (!request.containsKey("stationId") || !request.containsKey("userId") || 
+          !request.containsKey("initialBatteryLevel") || !request.containsKey("targetBatteryLevel")) {
+        log.error("Missing required parameters in request");
+        return ResponseEntity.badRequest().build();
+      }
+
+      Long stationId = Long.valueOf(request.get("stationId").toString());
+      Long userId = Long.valueOf(request.get("userId").toString());
+      double initialBatteryLevel = Double.parseDouble(request.get("initialBatteryLevel").toString());
+      double targetBatteryLevel = Double.parseDouble(request.get("targetBatteryLevel").toString());
+
+      log.info("Starting live charging session for station {} and user {} with battery levels {} to {}", 
+          stationId, userId, initialBatteryLevel, targetBatteryLevel);
+
+      Reservation session = bookingService.startLiveChargingSession(
+        stationId,
+        userId,
+        initialBatteryLevel,
+        targetBatteryLevel
+      );
+      
+      log.info("Successfully created live charging session: {}", session);
+      return ResponseEntity.ok(session);
+    } catch (NumberFormatException e) {
+      log.error("Invalid number format in request parameters", e);
+      return ResponseEntity.badRequest().build();
+    } catch (RuntimeException e) {
+      log.error("Error starting live charging session", e);
+      return ResponseEntity.badRequest().build();
+    }
+  }
+
+  @PostMapping("/live/{id}/stop")
+  public ResponseEntity<Reservation> stopLiveChargingSession(
+    @PathVariable Long id
+  ) {
+    try {
+      Reservation session = bookingService.stopLiveChargingSession(id);
+      return ResponseEntity.ok(session);
+    } catch (RuntimeException e) {
+      return ResponseEntity.badRequest().build();
     }
   }
 

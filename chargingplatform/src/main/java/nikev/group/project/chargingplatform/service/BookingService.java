@@ -182,4 +182,101 @@ public class BookingService {
 
     return maxUsersAtSameTime;
   }
+
+  @Transactional
+  public Reservation startLiveChargingSession(
+    Long stationId,
+    Long userId,
+    double initialBatteryLevel,
+    double targetBatteryLevel
+  ) {
+    System.out.println("Starting live charging session for station " + stationId + " and user " + userId);
+    
+    Station station = stationRepository
+      .findById(stationId)
+      .orElseThrow(() -> new RuntimeException("Charging station not found"));
+
+    // Get available charger
+    List<Charger> chargers = chargerRepository.findByStation_Id(stationId);
+    if (chargers == null || chargers.isEmpty()) {
+      throw new RuntimeException("No chargers found for station");
+    }
+
+    Charger availableCharger = chargers.stream()
+      .filter(c -> c.getStatus() == Charger.ChargerStatus.AVAILABLE)
+      .findFirst()
+      .orElseThrow(() -> new RuntimeException("No available chargers"));
+
+    System.out.println("Found available charger: " + availableCharger.getId());
+
+    // Calculate end time based on battery levels and charging speed
+    LocalDateTime startTime = LocalDateTime.now();
+    double batteryToCharge = targetBatteryLevel - initialBatteryLevel;
+    double batteryCapacity = 75.0; // kWh (typical EV battery)
+    double energyNeeded = batteryToCharge * batteryCapacity / 100.0;
+    double hoursToCharge = energyNeeded / availableCharger.getChargingSpeedKw();
+    LocalDateTime endTime = startTime.plusSeconds((long) (hoursToCharge * 3600));
+
+    System.out.println("Calculated charging time: " + hoursToCharge + " hours");
+
+    // Check for overlapping bookings
+    List<Reservation> overlappingReservations =
+      reservationRepository.findOverlappingReservations(
+        stationId,
+        startTime,
+        endTime
+      );
+
+    System.out.println("Found " + overlappingReservations.size() + " overlapping reservations");
+
+    if (
+      !hasAvailableSlot(
+        overlappingReservations,
+        chargers.size()
+      )
+    ) {
+      throw new RuntimeException("No available slots for this station");
+    }
+
+    // Create booking
+    User user = userRepository
+      .findById(userId)
+      .orElseThrow(() -> new RuntimeException("User not found"));
+    Reservation reservation = new Reservation();
+    reservation.setUser(user);
+    reservation.setStation(station);
+    reservation.setStartDate(startTime);
+    reservation.setEndDate(endTime);
+
+    // Update charger status
+    availableCharger.setStatus(Charger.ChargerStatus.CHARGING);
+    chargerRepository.save(availableCharger);
+
+    System.out.println("Created reservation and updated charger status");
+
+    // Save reservation
+    return reservationRepository.save(reservation);
+  }
+
+  @Transactional
+  public Reservation stopLiveChargingSession(Long reservationId) {
+    Reservation reservation = reservationRepository
+      .findById(reservationId)
+      .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+    // Update end time to current time
+    reservation.setEndDate(LocalDateTime.now());
+
+    // Find and update charger status
+    List<Charger> chargers = chargerRepository.findByStation_Id(reservation.getStation().getId());
+    chargers.stream()
+      .filter(c -> c.getStatus() == Charger.ChargerStatus.CHARGING)
+      .findFirst()
+      .ifPresent(charger -> {
+        charger.setStatus(Charger.ChargerStatus.AVAILABLE);
+        chargerRepository.save(charger);
+      });
+
+    return reservationRepository.save(reservation);
+  }
 }

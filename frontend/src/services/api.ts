@@ -88,5 +88,28 @@ export const bookingApi = {
             startTime: new Date(response.data.startTime),
             endTime: new Date(response.data.endTime)
         };
+    },
+
+    startLiveSession: async (stationId: number, initialBatteryLevel: number, targetBatteryLevel: number): Promise<Booking> => {
+        const response = await api.post<Booking>(`/api/bookings/live/start`, {
+            stationId,
+            userId: 1, // TODO: Get from auth context
+            initialBatteryLevel,
+            targetBatteryLevel
+        });
+        return {
+            ...response.data,
+            startTime: new Date(response.data.startTime),
+            endTime: new Date(response.data.endTime)
+        };
+    },
+
+    stopLiveSession: async (id: number): Promise<Booking> => {
+        const response = await api.post<Booking>(`/bookings/live/${id}/stop`);
+        return {
+            ...response.data,
+            startTime: new Date(response.data.startTime),
+            endTime: new Date(response.data.endTime)
+        };
     }
 }; 

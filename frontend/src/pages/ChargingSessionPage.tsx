@@ -119,37 +119,31 @@ const ChargingSessionPage: React.FC = () => {
         try {
             setLoading(true);
             
-            // Create a booking for immediate use
-            const startTime = new Date();
-            const endTime = new Date(startTime.getTime() + 2 * 60 * 60 * 1000); // 2 hours from now
-            
-            const booking = await bookingApi.create({
-                stationId: station.id,
-                startTime: startTime,
-                endTime: endTime,
-                estimatedEnergy: 50 // Default estimated energy
-            });
-
-            // Start the charging session with the booking ID
-            await chargingStationApi.startChargingSession(station.id, booking.id);
-
-            // Generate random initial battery level between 10% and 30%
-            const initialBatteryLevel = Math.floor(Math.random() * 20) + 10;
+            // Generate random initial battery level between 0% and 95%
+            const initialBatteryLevel = Math.floor(Math.random() * 96);
             const targetBatteryLevel = 100;
             
             // Calculate estimated time based on charging speed and battery difference
             const batteryCapacity = 75; // kWh (typical EV battery)
             const energyNeeded = (targetBatteryLevel - initialBatteryLevel) * batteryCapacity / 100;
-            const estimatedHours = energyNeeded / 50; // Using a default charging speed of 50kW
+            const chargingSpeed = 50; // kW (typical fast charger)
+            const estimatedHours = energyNeeded / chargingSpeed;
             const estimatedEndTime = new Date(Date.now() + estimatedHours * 3600 * 1000);
+            
+            // Start live charging session
+            const booking = await bookingApi.startLiveSession(
+                station.id,
+                initialBatteryLevel,
+                targetBatteryLevel
+            );
 
             const newSession: SessionData = {
                 stationId: station.id,
                 stationName: station.name,
                 batteryLevel: initialBatteryLevel,
                 targetBatteryLevel,
-                chargingSpeed: 50, // Default charging speed
-                startTime: new Date(),
+                chargingSpeed,
+                startTime: new Date(booking.startTime),
                 estimatedEndTime,
                 energySupplied: 0,
                 cost: 0,
@@ -213,7 +207,7 @@ const ChargingSessionPage: React.FC = () => {
         if (!sessionData) return;
         
         try {
-            await chargingStationApi.stopChargingSession(sessionData.stationId);
+            await bookingApi.stopLiveSession(sessionData.stationId);
             setSessionData(null);
         } catch (err) {
             setError('Failed to stop charging session');
