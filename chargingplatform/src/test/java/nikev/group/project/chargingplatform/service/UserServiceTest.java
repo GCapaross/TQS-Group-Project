@@ -31,7 +31,7 @@ public class UserServiceTest {
     testUser.setId(1L);
     testUser.setEmail("test@example.com");
     testUser.setPassword("password123");
-    testUser.setName("Test User");
+    testUser.setUsername("Test User");
   }
 
   /**
@@ -51,7 +51,7 @@ public class UserServiceTest {
     // Assert
     assertNotNull(registeredUser);
     assertEquals(testUser.getEmail(), registeredUser.getEmail());
-    assertEquals(testUser.getName(), registeredUser.getName());
+    assertEquals(testUser.getUsername(), registeredUser.getUsername());
     verify(userRepository).save(any(User.class));
   }
 

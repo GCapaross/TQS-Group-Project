@@ -1,5 +1,6 @@
 package nikev.group.project.chargingplatform.service;
 
+import nikev.group.project.chargingplatform.model.Role;
 import nikev.group.project.chargingplatform.model.User;
 import nikev.group.project.chargingplatform.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,8 +22,7 @@ public class UserService {
             throw new RuntimeException("Email already registered");
         }
 
-        // Store password directly without encoding
-        // TODO: Maybe if needed encode password                    
+        user.setRole(Role.USER);  
         return userRepository.save(user);
     }
 
@@ -35,16 +35,5 @@ public class UserService {
         }
 
         return user;
-    }
-
-    @Transactional
-    public User updateProfile(Long userId, User updatedUser) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        user.setName(updatedUser.getName());
-        user.setEmail(updatedUser.getEmail());
-        
-        return userRepository.save(user);
     }
 } 
