@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>3.4.4</version>
-		<relativePath/> <!-- lookup parent from repository -->
+		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>nikev.group.project</groupId>
 	<artifactId>chargingplatform</artifactId>
@@ -14,23 +15,23 @@
 	<name>chargingplatform</name>
 	<description>Demo project for Spring Boot</description>
 	<licenses>
-		<license/>
+		<license />
 	</licenses>
 	<developers>
-		<developer/>
+		<developer />
 	</developers>
 	<scm>
-		<connection/>
-		<developerConnection/>
-		<tag/>
-		<url/>
+		<connection />
+		<developerConnection />
+		<tag />
+		<url />
 	</scm>
 	<properties>
 		<java.version>21</java.version>
-    <sonar.projectKey>GCapaross_TQS-Group-Project</sonar.projectKey>
-    <sonar.organization>gcapaross</sonar.organization>
-    <sonar.host.url>https://sonarcloud.io</sonar.host.url>
-  </properties>
+		<sonar.projectKey>GCapaross_TQS-Group-Project</sonar.projectKey>
+		<sonar.organization>gcapaross</sonar.organization>
+		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
+	</properties>
 
 	<dependencies>
 		<dependency>
@@ -119,10 +120,36 @@
 			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
 			<version>2.1.0</version>
 		</dependency>
+
+
+		<dependency>
+			<groupId>app.getxray</groupId>
+			<artifactId>xray-maven-plugin</artifactId>
+			<version>0.8.0</version>
+		</dependency>
+		<dependency>
+			<groupId>app.getxray</groupId>
+			<artifactId>xray-junit-extensions</artifactId>
+			<version>0.7.3</version>
+			<scope>test</scope>
+		</dependency>
+
 	</dependencies>
 
 	<build>
 		<plugins>
+			<plugin>
+				<groupId>app.getxray</groupId>
+				<artifactId>xray-maven-plugin</artifactId>
+				<version>0.7.3</version>
+				<configuration>
+					<cloud>true</cloud>
+					<clientId>372A3F9439334D4E93B979D72AC01C5E</clientId>
+					<clientSecret>251312772bc9fee3b4cb48a5f3577023acdd24d1a861639bba3be0ef40ff1807</clientSecret>
+					<reportFormat>junit</reportFormat>
+					<reportFile>target/junit.xml</reportFile>
+				</configuration>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -147,7 +174,7 @@
 					</excludes>
 				</configuration>
 			</plugin>
-      <plugin>
+			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
 				<version>0.8.12</version>
@@ -158,20 +185,19 @@
 						</goals>
 					</execution>
 
-          <execution>
-            <id>report</id>
-            <goals>
-              <goal>report</goal>
-            </goals>
-            <configuration>
-              <formats>
-                <format>XML</format>
-              </formats>
-            </configuration>
-          </execution>
-        </executions>
+					<execution>
+						<id>report</id>
+						<goals>
+							<goal>report</goal>
+						</goals>
+						<configuration>
+							<formats>
+								<format>XML</format>
+							</formats>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
-
 </project>

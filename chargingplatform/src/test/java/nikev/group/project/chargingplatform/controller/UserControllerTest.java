@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
 import nikev.group.project.chargingplatform.model.User;
 import nikev.group.project.chargingplatform.service.UserService;
 import org.flywaydb.core.internal.util.JsonUtils;
@@ -18,6 +19,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+
+//@Requirement("EDISON-1..")
 
 @WebMvcTest(UserController.class)
 public class UserControllerTest {
