@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import { Icon } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Box, Typography, CircularProgress, Alert, Paper, Grid, TextField, Button, Slider, FormControl, InputLabel, Select, MenuItem, Chip } from '@mui/material';
+import { Box, Typography, CircularProgress, Alert, Paper, Grid, Button, Slider, FormControl, InputLabel, Select, MenuItem, Chip } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { chargingStationApi } from '../services/api';
 import { ChargingStation } from '../types/responseTypes';
@@ -39,7 +39,6 @@ const ChargingStationMap: React.FC = () => {
     const [minChargingSpeed, setMinChargingSpeed] = useState<number>(0);
     const [carrierNetwork, setCarrierNetwork] = useState<string>('');
     const [minRating, setMinRating] = useState<number>(0);
-    const [radiusKm, setRadiusKm] = useState<number>(10);
 
     useEffect(() => {
         // Get user's location
