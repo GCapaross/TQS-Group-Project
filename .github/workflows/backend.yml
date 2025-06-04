@@ -45,6 +45,7 @@ jobs:
         env:
           XRAYCLOUD_CLIENT_ID: ${{ secrets.XRAYCLOUD_CLIENT_ID }}
           XRAYCLOUD_CLIENT_SECRET: ${{ secrets.XRAYCLOUD_CLIENT_SECRET }}
+          REVISION: ${{ github.ref_name}}
         run: |
           mvn \
           -Dxray.clientId=${XRAYCLOUD_CLIENT_ID} \
