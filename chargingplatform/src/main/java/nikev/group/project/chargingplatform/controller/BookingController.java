@@ -22,6 +22,10 @@ import nikev.group.project.chargingplatform.DTOs.BookingRequestDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.time.LocalDateTime;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.Timer;
+import org.springframework.beans.factory.annotation.Qualifier;
+import io.micrometer.core.instrument.MeterRegistry;
 
 @RestController
 @RequestMapping("/api/bookings")
@@ -33,12 +37,50 @@ public class BookingController {
   @Autowired
   private UserService userService;
 
+  @Autowired
+  private MeterRegistry meterRegistry;
+
+  @Autowired
+  @Qualifier("requestCounter")
+  private Counter requestCounter;
+
+  @Autowired
+  @Qualifier("requestTimer")
+  private Timer requestTimer;
+
+  private final Counter bookingSuccessCounter;
+  private final Counter bookingFailureCounter;
+  private final Timer bookingDurationTimer;
+  private final Counter cancellationSuccessCounter;
+  private final Counter cancellationFailureCounter;
+
+  public BookingController(MeterRegistry meterRegistry) {
+    this.bookingSuccessCounter = Counter.builder("app.bookings.success")
+        .description("Number of successful bookings")
+        .register(meterRegistry);
+    this.bookingFailureCounter = Counter.builder("app.bookings.failure")
+        .description("Number of failed bookings")
+        .register(meterRegistry);
+    this.bookingDurationTimer = Timer.builder("app.bookings.duration")
+        .description("Time taken to process bookings")
+        .register(meterRegistry);
+    this.cancellationSuccessCounter = Counter.builder("app.bookings.cancellation.success")
+        .description("Number of successful cancellations")
+        .register(meterRegistry);
+    this.cancellationFailureCounter = Counter.builder("app.bookings.cancellation.failure")
+        .description("Number of failed cancellations")
+        .register(meterRegistry);
+  }
+
   @PostMapping
   public ResponseEntity<Reservation> createBooking(
     @RequestBody(required = true) BookingRequestDTO request
   ) {
+    requestCounter.increment();
+    Timer.Sample sample = Timer.start();
     try {
       if (!isValidBookingRequest(request)) {
+        bookingFailureCounter.increment();
         return ResponseEntity.badRequest().build();
       }
 
@@ -55,8 +97,18 @@ public class BookingController {
         request.getEndTime()
       );
 
+      bookingSuccessCounter.increment();
+      sample.stop(Timer.builder("app.requests.latency")
+          .tag("endpoint", "createBooking")
+          .tag("status", "success")
+          .register(meterRegistry));
       return ResponseEntity.ok(session);
     } catch (RuntimeException e) {
+      bookingFailureCounter.increment();
+      sample.stop(Timer.builder("app.requests.latency")
+          .tag("endpoint", "createBooking")
+          .tag("status", "failure")
+          .register(meterRegistry));
       return ResponseEntity.badRequest().build();
     }
   }
@@ -65,10 +117,22 @@ public class BookingController {
   public ResponseEntity<Void> cancelBooking(
     @NotNull @PathVariable(required = true) Long id
   ) {
+    requestCounter.increment();
+    Timer.Sample sample = Timer.start();
     try {
       bookingService.cancelBooking(id);
+      cancellationSuccessCounter.increment();
+      sample.stop(Timer.builder("app.requests.latency")
+          .tag("endpoint", "cancelBooking")
+          .tag("status", "success")
+          .register(meterRegistry));
       return ResponseEntity.noContent().build();
     } catch (RuntimeException e) {
+      cancellationFailureCounter.increment();
+      sample.stop(Timer.builder("app.requests.latency")
+          .tag("endpoint", "cancelBooking")
+          .tag("status", "failure")
+          .register(meterRegistry));
       return ResponseEntity.notFound().build();
     }
   }
