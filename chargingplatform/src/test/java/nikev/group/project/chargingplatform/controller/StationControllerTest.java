@@ -40,7 +40,9 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import nikev.group.project.chargingplatform.DTOs.StationCreateDTO;
 import nikev.group.project.chargingplatform.DTOs.StationWithChargerSpeedsDTO;
+import nikev.group.project.chargingplatform.DTOs.StationResponseDTO;
 
 @WebMvcTest(StationController.class)
 public class StationControllerTest {
@@ -275,7 +277,7 @@ public class StationControllerTest {
     station.setId(1L);
     station.setName("New Station");
 
-    when(stationService.createStation(any(Station.class))).thenReturn(station);
+    when(stationService.createStation(any(StationCreateDTO.class))).thenReturn(new StationResponseDTO(station));
 
     Station stationRequest = new Station(
       null,
