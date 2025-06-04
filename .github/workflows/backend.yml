@@ -53,4 +53,5 @@ jobs:
           -Dxray.testEnvironment=${{ env.TEST_ENVIRONMENT }} \
           -Dxray.testPlanKey=${{ env.XRAYCLOUD_TEST_PLAN_KEY }} \
           -Dxray.revision=${{ env.REVISON }} \
+          -Dxray.reportFormat=junit -Dxray.reportFile=results/junit.xml \
           xray:import-results
