@@ -1,13 +1,21 @@
 package nikev.group.project.chargingplatform.service;
 
 import jakarta.persistence.criteria.Predicate;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+
 import nikev.group.project.chargingplatform.DTOs.SearchStationDTO;
 import nikev.group.project.chargingplatform.model.Station;
 import nikev.group.project.chargingplatform.repository.StationRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import nikev.group.project.chargingplatform.DTOs.StationWithChargerSpeedsDTO;
+import nikev.group.project.chargingplatform.model.Charger;
+import nikev.group.project.chargingplatform.repository.ChargerRepository;
 
 @Service
 public class StationService {
@@ -15,8 +23,35 @@ public class StationService {
   @Autowired
   private StationRepository stationRepository;
 
-  public List<Station> getAllStations() {
-    return stationRepository.findAll();
+  @Autowired
+  private ChargerRepository chargerRepository;
+
+  public List<StationWithChargerSpeedsDTO> getAllStations() {
+    List<Station> stations = stationRepository.findAll();
+
+    return stations.stream()
+                .map(station -> {
+                    // 2.1) Busca todos os chargers que têm station_id = station.getId()
+                    List<Charger> chargers = chargerRepository.findByStation_Id(station.getId());
+
+                    // 2.2) Extrai apenas o campo chargingSpeedKw
+                    List<Double> speeds = chargers.stream()
+                            .map(Charger::getChargingSpeedKw)
+                            .collect(Collectors.toList());
+
+                    return new StationWithChargerSpeedsDTO(
+                            station.getId(),
+                            station.getName(),
+                            station.getLocation(),
+                            station.getLatitude(),
+                            station.getLongitude(),
+                            station.getPricePerKwh(),
+                            station.getSupportedConnectors(),
+                            station.getTimetable(),
+                            speeds
+                    );
+                })
+                .collect(Collectors.toList());
   }
 
   public Station getStationById(Long id) {

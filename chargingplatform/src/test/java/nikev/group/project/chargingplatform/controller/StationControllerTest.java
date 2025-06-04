@@ -11,7 +11,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import io.swagger.v3.core.util.Json;
+
 import java.util.*;
+
 import nikev.group.project.chargingplatform.DTOs.BookingRequestDTO;
 import nikev.group.project.chargingplatform.DTOs.SearchStationDTO;
 import nikev.group.project.chargingplatform.model.Charger;
@@ -19,6 +21,7 @@ import nikev.group.project.chargingplatform.model.Reservation;
 import nikev.group.project.chargingplatform.model.Station;
 import nikev.group.project.chargingplatform.model.User;
 import nikev.group.project.chargingplatform.service.StationService;
+
 import org.flywaydb.core.internal.util.JsonUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -30,6 +33,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+
+import nikev.group.project.chargingplatform.DTOs.StationWithChargerSpeedsDTO;
 
 @WebMvcTest(StationController.class)
 public class StationControllerTest {
@@ -66,13 +71,17 @@ public class StationControllerTest {
    */
   @Test
   void whenGetAllStationsAndHasStations_thenReturnAllStations() {
-    Station station1 = new Station();
+    // Use StationWithChargerSpeedsDTO instead of Station
+    StationWithChargerSpeedsDTO station1 =
+        new StationWithChargerSpeedsDTO();
     station1.setId(1L);
     station1.setName("Station 1");
-    Station station2 = new Station();
+    StationWithChargerSpeedsDTO station2 =
+        new StationWithChargerSpeedsDTO();
     station2.setId(2L);
     station2.setName("Station 2");
-    Station station3 = new Station();
+    StationWithChargerSpeedsDTO station3 =
+        new StationWithChargerSpeedsDTO();
     station3.setId(3L);
     station3.setName("Station 3");
     when(stationService.getAllStations()).thenReturn(
