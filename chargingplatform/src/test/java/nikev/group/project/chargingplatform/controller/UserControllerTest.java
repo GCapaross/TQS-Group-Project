@@ -35,8 +35,8 @@ public class UserControllerTest {
   @MockitoBean
   private JwtTokenProvider jwtTokenProvider;
 
-  @Autowired
-  private MockMvc mockMvc;
+    @Autowired
+    private MockMvc mockMvc;
 
   /* FUNCTION public ResponseEntity<User> registerUser(User user) */
   /*
@@ -81,7 +81,7 @@ public class UserControllerTest {
    * When user registers with email test@example.com registers
    * Then bad request is returned
    */
-  @Test
+    @Test
   public void whenRegisteringExistingEmail_then400() {
     RegisterRequestDTO registerRequest = new RegisterRequestDTO();
     registerRequest.setEmail("test@example.com");
@@ -117,7 +117,7 @@ public class UserControllerTest {
    * When request body is missing required fields (email, password, name)
    * Then bad request is returned
    */
-  @Test
+    @Test
   public void whenRequestBodyIsMissingRequiredFields_then400() {
     User user = new User();
     // Intentionally leaving out required fields
@@ -129,7 +129,7 @@ public class UserControllerTest {
             .contentType("application/json")
             .content(JsonUtils.toJson(user))
         )
-        .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest());
     } catch (Exception e) {
       // Handle exception if needed
     }
@@ -145,7 +145,7 @@ public class UserControllerTest {
    * When user tries to login with that email and the correct passowrd
    * Then a status of 200 with the user is returned
    */
-  @Test
+    @Test
   public void whenLoggingInWithValidCredentials_then200() {
     User user = new User();
     user.setEmail("test@example.com");
@@ -162,7 +162,7 @@ public class UserControllerTest {
             .contentType("application/json")
             .content(JsonUtils.toJson(user))
         )
-        .andExpect(status().isOk())
+                .andExpect(status().isOk())
         .andExpect(jsonPath("$.email", is("test@example.com")))
         .andExpect(jsonPath("$.username", is("test")));
     } catch (Exception e) {
@@ -176,7 +176,7 @@ public class UserControllerTest {
    * When user tries to login with that email and an incorrect passowrd
    * a status of 401 is returned
    */
-  @Test
+    @Test
   public void whenLoggingInWithInvalidCredentials_then401() {
     User user = new User();
     user.setEmail("test@example.com");
@@ -194,7 +194,7 @@ public class UserControllerTest {
             .contentType("application/json")
             .content(JsonUtils.toJson(user))
         )
-        .andExpect(status().isUnauthorized());
+                .andExpect(status().isUnauthorized());
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -207,7 +207,7 @@ public class UserControllerTest {
    * When user tries to login with that email
    * a status of 401 is returned
    */
-  @Test
+    @Test
   public void whenLoggingInWithInvalidEmail_then401() {
     when(userService.login(anyString(), anyString())).thenThrow(
       new RuntimeException("User not found")
