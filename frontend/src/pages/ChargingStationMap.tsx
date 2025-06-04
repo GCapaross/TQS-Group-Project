@@ -146,7 +146,7 @@ const ChargingStationMap: React.FC = () => {
                     Filters
                 </Typography>
                 <Grid container spacing={2}>
-                    <Grid item xs={12}>
+                    <Grid >
                         <FormControl fullWidth>
                             <InputLabel>Connector Types</InputLabel>
                             <Select
@@ -169,7 +169,7 @@ const ChargingStationMap: React.FC = () => {
                             </Select>
                         </FormControl>
                     </Grid>
-                    <Grid item xs={12}>
+                    <Grid >
                         <Typography gutterBottom>
                             Min Charging Speed (kW)
                         </Typography>
@@ -182,7 +182,7 @@ const ChargingStationMap: React.FC = () => {
                             valueLabelDisplay="auto"
                         />
                     </Grid>
-                    <Grid item xs={12}>
+                    <Grid>
                         <FormControl fullWidth>
                             <InputLabel>Carrier Network</InputLabel>
                             <Select
@@ -198,7 +198,7 @@ const ChargingStationMap: React.FC = () => {
                             </Select>
                         </FormControl>
                     </Grid>
-                    <Grid item xs={12}>
+                    <Grid>
                         <Typography gutterBottom>
                             Min Rating
                         </Typography>
@@ -274,7 +274,7 @@ const ChargingStationMap: React.FC = () => {
                                             Price: ${station.pricePerKwh}/kWh
                                         </Typography>
                                         <Typography variant="body2">
-                                            Speed: {station.chargingSpeedKw[0]} kW
+                                            Speed: {station.chargerSpeeds[0]} kW
                                         </Typography>
                                         <Box sx={{ mt: 1, display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                                             {station.supportedConnectors.map((type) => (

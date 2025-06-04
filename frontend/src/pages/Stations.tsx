@@ -143,7 +143,7 @@ const Stations: React.FC = () => {
                                             Price: ${station.pricePerKwh}/kWh
                                         </Typography>
                                         <Typography variant="body2">
-                                            Speed: {station.chargerSpeeds[0]} kW
+                                            Speed: {station.chargingSpeedKw[0]} kW
                                         </Typography>
                                     </Box>
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
