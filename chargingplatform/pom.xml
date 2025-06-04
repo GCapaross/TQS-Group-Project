@@ -226,8 +226,6 @@
 				<version>0.7.3</version>
 				<configuration>
 					<cloud>true</cloud>
-					<clientId>372A3F9439334D4E93B979D72AC01C5E</clientId>
-					<clientSecret>251312772bc9fee3b4cb48a5f3577023acdd24d1a861639bba3be0ef40ff1807</clientSecret>
 					<reportFormat>junit</reportFormat>
 					<reportFile>results/junit.xml</reportFile>
 				</configuration>
