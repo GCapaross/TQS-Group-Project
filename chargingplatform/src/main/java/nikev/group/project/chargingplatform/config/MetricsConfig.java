@@ -30,6 +30,41 @@ public class MetricsConfig {
     }
 
     @Bean
+    public Counter bookingSuccessCounter(MeterRegistry registry) {
+        return Counter.builder("app.bookings.success")
+                .description("Number of successful bookings")
+                .register(registry);
+    }
+
+    @Bean
+    public Counter bookingFailureCounter(MeterRegistry registry) {
+        return Counter.builder("app.bookings.failure")
+                .description("Number of failed bookings")
+                .register(registry);
+    }
+
+    @Bean
+    public Timer bookingDurationTimer(MeterRegistry registry) {
+        return Timer.builder("app.bookings.duration")
+                .description("Time taken to process bookings")
+                .register(registry);
+    }
+
+    @Bean
+    public Counter cancellationSuccessCounter(MeterRegistry registry) {
+        return Counter.builder("app.bookings.cancellation.success")
+                .description("Number of successful cancellations")
+                .register(registry);
+    }
+
+    @Bean
+    public Counter cancellationFailureCounter(MeterRegistry registry) {
+        return Counter.builder("app.bookings.cancellation.failure")
+                .description("Number of failed cancellations")
+                .register(registry);
+    }
+
+    @Bean
     public ClassLoaderMetrics classLoaderMetrics() {
         return new ClassLoaderMetrics();
     }

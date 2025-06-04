@@ -6,21 +6,16 @@ import nikev.group.project.chargingplatform.DTOs.BookingRequestDTO;
 import nikev.group.project.chargingplatform.model.Reservation;
 import nikev.group.project.chargingplatform.service.BookingService;
 import nikev.group.project.chargingplatform.service.UserService;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.security.core.Authentication;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import io.micrometer.core.instrument.Counter;
-import io.micrometer.core.instrument.Timer;
-import org.springframework.beans.factory.annotation.Qualifier;
 import io.micrometer.core.instrument.MeterRegistry;
-
-import jakarta.annotation.PostConstruct;
+import io.micrometer.core.instrument.Timer;
 
 @RestController
 @RequestMapping("/api/bookings")
@@ -36,36 +31,18 @@ public class BookingController {
   @Autowired
   private MeterRegistry meterRegistry;
 
-  @Autowired
-  @Qualifier("requestCounter")
-  private Counter requestCounter;
+  private final Counter requestCounter;
+  private final Timer requestTimer;
 
-  @Autowired
-  @Qualifier("requestTimer")
-  private Timer requestTimer;
-
-  private Counter bookingSuccessCounter;
-  private Counter bookingFailureCounter;
-  private Timer bookingDurationTimer;
-  private Counter cancellationSuccessCounter;
-  private Counter cancellationFailureCounter;
-
-  @PostConstruct
-  public void initializeMetrics() {
-    this.bookingSuccessCounter = Counter.builder("app.bookings.success")
-        .description("Number of successful bookings")
+  public BookingController(MeterRegistry meterRegistry) {
+    this.meterRegistry = meterRegistry;
+    this.requestCounter = Counter.builder("app_requests_total")
+        .description("Total number of API requests")
+        .tag("application", "chargingplatform")
         .register(meterRegistry);
-    this.bookingFailureCounter = Counter.builder("app.bookings.failure")
-        .description("Number of failed bookings")
-        .register(meterRegistry);
-    this.bookingDurationTimer = Timer.builder("app.bookings.duration")
-        .description("Time taken to process bookings")
-        .register(meterRegistry);
-    this.cancellationSuccessCounter = Counter.builder("app.bookings.cancellation.success")
-        .description("Number of successful cancellations")
-        .register(meterRegistry);
-    this.cancellationFailureCounter = Counter.builder("app.bookings.cancellation.failure")
-        .description("Number of failed cancellations")
+    this.requestTimer = Timer.builder("app_requests_latency")
+        .description("Request latency in seconds")
+        .tag("application", "chargingplatform")
         .register(meterRegistry);
   }
 
@@ -74,10 +51,14 @@ public class BookingController {
     @RequestBody(required = true) BookingRequestDTO request
   ) {
     requestCounter.increment();
-    Timer.Sample sample = Timer.start();
+    Timer.Sample sample = Timer.start(meterRegistry);
+    
     try {
       if (!isValidBookingRequest(request)) {
-        bookingFailureCounter.increment();
+        sample.stop(Timer.builder("app_requests_latency")
+            .tag("endpoint", "createBooking")
+            .tag("status", "failure")
+            .register(meterRegistry));
         return ResponseEntity.badRequest().build();
       }
 
@@ -94,15 +75,13 @@ public class BookingController {
         request.getEndTime()
       );
 
-      bookingSuccessCounter.increment();
-      sample.stop(Timer.builder("app.requests.latency")
+      sample.stop(Timer.builder("app_requests_latency")
           .tag("endpoint", "createBooking")
           .tag("status", "success")
           .register(meterRegistry));
       return ResponseEntity.ok(session);
     } catch (RuntimeException e) {
-      bookingFailureCounter.increment();
-      sample.stop(Timer.builder("app.requests.latency")
+      sample.stop(Timer.builder("app_requests_latency")
           .tag("endpoint", "createBooking")
           .tag("status", "failure")
           .register(meterRegistry));
@@ -115,18 +94,17 @@ public class BookingController {
     @NotNull @PathVariable(required = true) Long id
   ) {
     requestCounter.increment();
-    Timer.Sample sample = Timer.start();
+    Timer.Sample sample = Timer.start(meterRegistry);
+    
     try {
       bookingService.cancelBooking(id);
-      cancellationSuccessCounter.increment();
-      sample.stop(Timer.builder("app.requests.latency")
+      sample.stop(Timer.builder("app_requests_latency")
           .tag("endpoint", "cancelBooking")
           .tag("status", "success")
           .register(meterRegistry));
       return ResponseEntity.noContent().build();
     } catch (RuntimeException e) {
-      cancellationFailureCounter.increment();
-      sample.stop(Timer.builder("app.requests.latency")
+      sample.stop(Timer.builder("app_requests_latency")
           .tag("endpoint", "cancelBooking")
           .tag("status", "failure")
           .register(meterRegistry));
