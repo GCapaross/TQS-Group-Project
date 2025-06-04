@@ -8,6 +8,7 @@ export const api = axios.create({
     headers: {
         'Content-Type': 'application/json',
     },
+    withCredentials: true, 
 });
 
 // Add token to requests if available

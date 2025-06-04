@@ -74,7 +74,7 @@ public class BookingServiceTest {
 
     user = new User();
     user.setId(1L);
-    user.setName("Test User");
+    user.setUsername("Test User");
     user.setEmail("test@example.com");
 
     reservation = new Reservation();
