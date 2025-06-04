@@ -1,40 +1,48 @@
 package nikev.group.project.chargingplatform.FunctionalTests;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
-import io.cucumber.java.After;
-import io.cucumber.java.Before;
-import io.cucumber.java.en.*;
-import io.cucumber.spring.CucumberContextConfiguration;
-import io.github.bonigarcia.wdm.WebDriverManager;
-
-import java.sql.DriverManager;
 import java.time.Duration;
-import java.util.List;
-import nikev.group.project.chargingplatform.model.User;
-import nikev.group.project.chargingplatform.service.UserService;
-import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.openqa.selenium.By;
-import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.firefox.ProfilesIni;
+import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.firefox.FirefoxOptions;
+import org.openqa.selenium.firefox.FirefoxProfile;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+import io.cucumber.java.After;
+import io.cucumber.java.Before;
+import io.cucumber.java.en.And;
+import io.cucumber.java.en.Given;
+import io.cucumber.java.en.Then;
+import io.cucumber.java.en.When;
+import io.github.bonigarcia.wdm.WebDriverManager;
+import nikev.group.project.chargingplatform.model.User;
+import nikev.group.project.chargingplatform.service.UserService;
 
 public class LoginSteps {
-
   private WebDriver driver;
   private static final String BASE_URL = "http://localhost:5173";
 
   @Before
   public void setUp() {
-    driver = WebDriverManager.chromedriver().create();
+    WebDriverManager.chromedriver().setup();
+    ChromeOptions options = new ChromeOptions();
+    
+    // Remove --headless for debugging
+    options.addArguments("--no-sandbox");
+    options.addArguments("--disable-dev-shm-usage");
+    options.addArguments("--disable-gpu");
+    options.addArguments("--remote-debugging-port=9222");
+    options.addArguments("--window-size=1920,1080");
+    
+    driver = new ChromeDriver(options);
   }
 
   @After
@@ -76,10 +84,11 @@ public class LoginSteps {
     WebElement loginButton = driver.findElement(By.id("login-button"));
     loginButton.click();
   }
-
+  
   @Then("the user should be redirected to the homepage")
   public void thenTheUserShouldBeRedirectedToTheHomepage() {
-    driver.findElement(By.id("login-button")).click();
-    assertThat(driver.getCurrentUrl()).isEqualTo(BASE_URL);
+    WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+    wait.until(ExpectedConditions.not(ExpectedConditions.urlContains("/login")));
+    assertThat(driver.getCurrentUrl()).isEqualTo(BASE_URL + "/");
   }
 }
