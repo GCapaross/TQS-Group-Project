@@ -1,10 +1,11 @@
 -- Create users table
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
+    username VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
-    credit_card VARCHAR(255)
+    credit_card VARCHAR(255),
+    role VARCHAR(20) NOT NULL DEFAULT 'USER'
     -- removed works_at_station_id, will be handled by a join table station_workers
 );
 

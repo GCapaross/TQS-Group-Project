@@ -57,7 +57,7 @@ class ReservationRepositoryTest {
     station = stationRepository.save(station);
 
     user = new User();
-    user.setName("Test User");
+    user.setUsername("Test User");
     user.setEmail("test@example.com");
     user = userRepository.save(user);
 

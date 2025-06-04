@@ -5,11 +5,11 @@ services:
     image: postgres:latest
     container_name: chargingplatform-postgres
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: chargingplatform
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
-      - "5433:5432"
+      - $POSTGRES_LOCAL_PORT:$POSTGRES_DOCKER_PORT
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -27,13 +27,23 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/chargingplatform
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: postgres
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
-      SPRING_FLYWAY_ENABLED: true
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS}
+      HOSTNAME: ${HOSTNAME}
+      FRONTEND_DOCKER_PORT: ${FRONTEND_DOCKER_PORT}
+      SPRING_APPLICATION_JSON: '{
+          "spring.datasource.url" : "jdbc:postgresql://postgres:$POSTGRES_DOCKER_PORT/$POSTGRES_DB",
+          "spring.datasource.username" : "$POSTGRES_USER",
+          "spring.datasource.password" : "$POSTGRES_PASSWORD",
+          "spring.datasource.driver-class-name" : "org.postgresql.Driver",
+          "spring.jpa.hibernate.ddl-auto" : "update",
+          "spring.jpa.show-sql" : "true",
+          "spring.jpa.properties.hibernate.format_sql" : "true",
+          "spring.jpa.properties.hibernate.dialect" : "org.hibernate.dialect.PostgreSQLDialect",
+          "server.port" : "$BACKEND_DOCKER_PORT"
+        }'
     ports:
-      - "8080:8080"
+      - $BACKEND_LOCAL_PORT:$BACKEND_DOCKER_PORT
     volumes:
       - .m2:/root/.m2
 
@@ -48,7 +58,7 @@ services:
       - ./frontend:/app
       - /app/node_modules
     ports:
-      - "5173:5173"
+      - $FRONTEND_LOCAL_PORT:$FRONTEND_DOCKER_PORT
 
 volumes:
   postgres_data: 
