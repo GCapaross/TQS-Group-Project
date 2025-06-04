@@ -48,6 +48,12 @@ public class StationCreateDTO {
     private List<Long> workerIds;
 
     /**
+    * Lista de chargers a serem criados junto com a estação.
+    * Cada ChargerDTO traz status e chargingSpeedKw (ID pode ser nulo na criação).
+    */
+    private List<ChargerDTO> chargers;
+
+    /**
      * Constructor to create a StationCreateDTO from a Station.
      *
      * @param station the Station to convert
@@ -69,5 +75,7 @@ public class StationCreateDTO {
                                     .map(User::getId)
                                     .toList();
         }
+
+        this.chargers = List.of();
     }
 }

@@ -215,6 +215,20 @@ public class StationService {
 
     Station saved = stationRepository.save(station);
 
+    if (dto.getChargers() != null && !dto.getChargers().isEmpty()) {
+        List<Charger> chargersToSave = dto.getChargers().stream()
+            .map(chDTO -> {
+                Charger c = new Charger();
+                c.setStatus(chDTO.getStatus());
+                c.setChargingSpeedKw(chDTO.getChargingSpeedKw());
+                c.setStation(saved);
+                return c;
+            })
+            .toList();
+
+        chargerRepository.saveAll(chargersToSave);
+    }
+
     return new StationResponseDTO(saved);
   }
 
