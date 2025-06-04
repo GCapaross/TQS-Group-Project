@@ -4,6 +4,7 @@ import io.cucumber.spring.CucumberContextConfiguration;
 import nikev.group.project.chargingplatform.TestcontainersConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.TestPropertySource;
@@ -13,6 +14,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @TestPropertySource(properties = "server.port=8080")
 @Testcontainers
+@ActiveProfiles("test") 
 @Import(TestcontainersConfiguration.class)
 public class SpringCucumberConfiguration {
 

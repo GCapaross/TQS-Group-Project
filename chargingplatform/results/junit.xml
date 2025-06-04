@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="Cucumber" time="6.015" tests="1" skipped="0" failures="0" errors="0" timestamp="2025-06-04T18:38:54.801891536Z">
-<testcase classname="User profile, register and login" name="Test if user can log-in" time="3.866">
+<testsuite name="Cucumber" time="6.033" tests="1" skipped="0" failures="0" errors="0" timestamp="2025-06-04T21:58:14.156350374Z">
+<testcase classname="User profile, register and login" name="Test if user can log-in" time="3.963">
 <system-out><![CDATA[
 Given an account with email "test@example.com" and password "password"......passed
 And the user is on the login page...........................................passed
