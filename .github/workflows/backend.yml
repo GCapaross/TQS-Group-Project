@@ -50,5 +50,4 @@ jobs:
           mvn \
           -Dxray.clientId=${XRAYCLOUD_CLIENT_ID} \
           -Dxray.clientSecret=${XRAYCLOUD_CLIENT_SECRET} \
-          -Dxray.revision=${REVISION} \
           xray:import-results
