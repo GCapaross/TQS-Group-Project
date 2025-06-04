@@ -8,6 +8,8 @@ import io.cucumber.java.Before;
 import io.cucumber.java.en.*;
 import io.cucumber.spring.CucumberContextConfiguration;
 import io.github.bonigarcia.wdm.WebDriverManager;
+
+import java.sql.DriverManager;
 import java.time.Duration;
 import java.util.List;
 import nikev.group.project.chargingplatform.model.User;
@@ -17,7 +19,8 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.firefox.ProfilesIni;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
@@ -27,12 +30,11 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 public class LoginSteps {
 
   private WebDriver driver;
-  private static final String BASE_URL = "http://localhost";
+  private static final String BASE_URL = "http://localhost:5173";
 
   @Before
   public void setUp() {
-    WebDriverManager.firefoxdriver().setup();
-    driver = new FirefoxDriver();
+    driver = WebDriverManager.chromedriver().create();
   }
 
   @After
