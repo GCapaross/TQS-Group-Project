@@ -10,6 +10,8 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import java.time.Duration;
+
+import nikev.group.project.chargingplatform.DTOs.RegisterRequestDTO;
 import nikev.group.project.chargingplatform.model.User;
 import nikev.group.project.chargingplatform.service.UserService;
 import org.openqa.selenium.By;
@@ -53,11 +55,14 @@ public class LoginSteps {
 
     @Given("an account with email {string} and password {string}")
     public void givenTheUserIsOnTheHomepage(String email, String password) {
-        User user = new User();
-        user.setEmail(email);
-        user.setPassword(password);
-        user.setName("Test User");
-        userService.registerUser(user);
+        RegisterRequestDTO request = new RegisterRequestDTO(
+            "John Doe",
+            password,
+            password,
+            email,
+            "user"
+        );
+        userService.registerUser(request);
     }
 
     @And("the user is on the login page")
