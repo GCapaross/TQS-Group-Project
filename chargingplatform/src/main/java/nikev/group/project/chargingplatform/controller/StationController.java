@@ -11,20 +11,41 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 
+// @RestController
+// @RequestMapping("/api/charging-stations")
+// public class StationController {
+
+//   @Autowired
+//   private StationService stationService;
+
+//   @Autowired
+//   private MeterRegistry meterRegistry;
+
+//   private final Counter stationCreationCounter;
+//   private final Timer stationCreationTimer;
+
+//   public StationController(MeterRegistry meterRegistry) {
+//     this.meterRegistry = meterRegistry;
+//     this.stationCreationCounter = Counter.builder("app_stations_created_total")
+//         .description("Total number of stations created")
+//         .tag("application", "chargingplatform")
+//         .register(meterRegistry);
+//     this.stationCreationTimer = Timer.builder("app_stations_creation_latency")
+//         .description("Station creation latency in seconds")
+//         .tag("application", "chargingplatform")
+//         .register(meterRegistry);
+//   }
 @RestController
 @RequestMapping("/api/charging-stations")
 public class StationController {
 
-  @Autowired
-  private StationService stationService;
-
-  @Autowired
-  private MeterRegistry meterRegistry;
-
+  private final StationService stationService;
+  private final MeterRegistry meterRegistry;
   private final Counter stationCreationCounter;
   private final Timer stationCreationTimer;
 
-  public StationController(MeterRegistry meterRegistry) {
+  public StationController(StationService stationService, MeterRegistry meterRegistry) {
+    this.stationService = stationService;
     this.meterRegistry = meterRegistry;
     this.stationCreationCounter = Counter.builder("app_stations_created_total")
         .description("Total number of stations created")
