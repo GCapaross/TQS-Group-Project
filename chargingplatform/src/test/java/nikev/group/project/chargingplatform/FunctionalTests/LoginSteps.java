@@ -14,6 +14,9 @@ import java.time.Duration;
 import nikev.group.project.chargingplatform.DTOs.RegisterRequestDTO;
 import nikev.group.project.chargingplatform.model.User;
 import nikev.group.project.chargingplatform.service.UserService;
+
+import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -25,6 +28,7 @@ import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.beans.factory.annotation.Autowired;
+
 
 public class LoginSteps {
 
@@ -41,7 +45,6 @@ public class LoginSteps {
         options.addArguments("--disable-gpu");
         options.addArguments("--remote-debugging-port=9222");
         options.addArguments("--window-size=1920,1080");
-
         driver = new ChromeDriver(options);
     }
 
