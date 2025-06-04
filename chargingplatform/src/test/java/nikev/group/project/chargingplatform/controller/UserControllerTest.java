@@ -10,12 +10,16 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import nikev.group.project.chargingplatform.model.Role;
 import nikev.group.project.chargingplatform.model.User;
+import nikev.group.project.chargingplatform.security.JwtTokenProvider;
 import nikev.group.project.chargingplatform.service.UserService;
 import org.flywaydb.core.internal.util.JsonUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -25,8 +29,11 @@ public class UserControllerTest {
   @MockitoBean
   private UserService userService;
 
+  @MockitoBean
+  private JwtTokenProvider jwtTokenProvider;
+
   @Autowired
-  MockMvc mockMvc;
+  private MockMvc mockMvc;
 
   /* FUNCTION public ResponseEntity<User> registerUser(User user) */
   /*
@@ -39,7 +46,8 @@ public class UserControllerTest {
     User user = new User();
     user.setEmail("test@example.com");
     user.setPassword("password123");
-    user.setUsername("Test User");
+    user.setUsername("test");
+    user.setRole(Role.USER);
 
     when(userService.registerUser(any(User.class))).thenReturn(user);
 
@@ -52,7 +60,7 @@ public class UserControllerTest {
         )
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.email", is("test@example.com")))
-        .andExpect(jsonPath("$.name", is("Test User")));
+        .andExpect(jsonPath("$.username", is("test")));
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -69,6 +77,7 @@ public class UserControllerTest {
     user.setEmail("test@example.com");
     user.setPassword("password123");
     user.setUsername("Test User");
+    user.setRole(Role.USER);
 
     when(userService.registerUser(any(User.class))).thenThrow(
       new RuntimeException("User already exists")
@@ -124,7 +133,8 @@ public class UserControllerTest {
     User user = new User();
     user.setEmail("test@example.com");
     user.setPassword("password123");
-    user.setUsername("Test User");
+    user.setUsername("test");
+    user.setRole(Role.USER);
 
     when(userService.login("test@example.com", "password123")).thenReturn(user);
 
@@ -137,7 +147,7 @@ public class UserControllerTest {
         )
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.email", is("test@example.com")))
-        .andExpect(jsonPath("$.name", is("Test User")));
+        .andExpect(jsonPath("$.username", is("test")));
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -155,6 +165,7 @@ public class UserControllerTest {
     user.setEmail("test@example.com");
     user.setPassword("password123");
     user.setUsername("Test User");
+    user.setRole(Role.USER);
 
     when(userService.login(anyString(), anyString())).thenThrow(
       new RuntimeException("Invalid password")
@@ -188,6 +199,7 @@ public class UserControllerTest {
     User user = new User();
     user.setEmail("test@example.com");
     user.setPassword("password123");
+    user.setRole(Role.USER);
 
     try {
       mockMvc

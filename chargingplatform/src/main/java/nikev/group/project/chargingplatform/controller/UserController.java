@@ -47,9 +47,11 @@ public class UserController {
         loginRequest.getEmail(),
         loginRequest.getPassword()
       );
+      System.out.println("User logged in: " + user.getEmail());
 
       Authentication auth = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
       String token = jwtTokenProvider.generateToken(auth);
+      System.out.println("Generated JWT token: " + token);
 
       ResponseCookie cookie = ResponseCookie.from("JWT_TOKEN", token)
           .httpOnly(true)
@@ -57,11 +59,13 @@ public class UserController {
           .path("/")
           .sameSite("Strict")
           .build();
+      System.out.println("Set cookie: " + cookie.toString());
       return ResponseEntity.ok()
           .header(HttpHeaders.SET_COOKIE, cookie.toString())
           .body(user);
 
     } catch (RuntimeException e) {
+      System.out.println("Login failed: " + e.getMessage());
       return ResponseEntity.status(401).build();
     }
   }
