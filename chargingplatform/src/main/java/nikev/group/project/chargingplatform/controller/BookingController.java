@@ -1,36 +1,32 @@
 package nikev.group.project.chargingplatform.controller;
 
 import jakarta.validation.constraints.NotNull;
-
-import java.security.Security;
 import java.time.LocalDateTime;
 import nikev.group.project.chargingplatform.DTOs.BookingRequestDTO;
 import nikev.group.project.chargingplatform.model.Reservation;
 import nikev.group.project.chargingplatform.service.BookingService;
 import nikev.group.project.chargingplatform.service.UserService;
-import nikev.group.project.chargingplatform.controller.UserController;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.security.core.Authentication; 
+import org.springframework.security.core.Authentication;
 
-import jakarta.validation.constraints.NotNull;
-import nikev.group.project.chargingplatform.DTOs.BookingRequestDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.time.LocalDateTime;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Timer;
 import org.springframework.beans.factory.annotation.Qualifier;
 import io.micrometer.core.instrument.MeterRegistry;
 
+import jakarta.annotation.PostConstruct;
+
 @RestController
 @RequestMapping("/api/bookings")
 public class BookingController {
   private static final Logger log = LoggerFactory.getLogger(BookingController.class);
+  
   @Autowired
   private BookingService bookingService;
 
@@ -48,13 +44,14 @@ public class BookingController {
   @Qualifier("requestTimer")
   private Timer requestTimer;
 
-  private final Counter bookingSuccessCounter;
-  private final Counter bookingFailureCounter;
-  private final Timer bookingDurationTimer;
-  private final Counter cancellationSuccessCounter;
-  private final Counter cancellationFailureCounter;
+  private Counter bookingSuccessCounter;
+  private Counter bookingFailureCounter;
+  private Timer bookingDurationTimer;
+  private Counter cancellationSuccessCounter;
+  private Counter cancellationFailureCounter;
 
-  public BookingController(MeterRegistry meterRegistry) {
+  @PostConstruct
+  public void initializeMetrics() {
     this.bookingSuccessCounter = Counter.builder("app.bookings.success")
         .description("Number of successful bookings")
         .register(meterRegistry);
@@ -143,7 +140,6 @@ public class BookingController {
       request.getStartTime() == null ||
       request.getEndTime() == null
     ) {
-
       return false;
     }
 

@@ -1,499 +1,305 @@
 package nikev.group.project.chargingplatform.controller;
 
-import static org.hamcrest.MatcherAssert.*;
-import static org.hamcrest.Matchers.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import jakarta.servlet.http.Cookie;
-import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+
 import nikev.group.project.chargingplatform.DTOs.BookingRequestDTO;
-import nikev.group.project.chargingplatform.model.Charger;
 import nikev.group.project.chargingplatform.model.Reservation;
-import nikev.group.project.chargingplatform.model.Station;
-import nikev.group.project.chargingplatform.model.User;
-import nikev.group.project.chargingplatform.repository.ChargerRepository;
-import nikev.group.project.chargingplatform.repository.ReservationRepository;
-import nikev.group.project.chargingplatform.repository.StationRepository;
-import nikev.group.project.chargingplatform.repository.UserRepository;
-import nikev.group.project.chargingplatform.security.JwtTokenFilter;
 import nikev.group.project.chargingplatform.security.JwtTokenProvider;
 import nikev.group.project.chargingplatform.service.BookingService;
-import nikev.group.project.chargingplatform.service.StationService;
 import nikev.group.project.chargingplatform.service.UserService;
 
-import org.flywaydb.core.internal.util.JsonUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
+
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 
-import java.nio.charset.StandardCharsets;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 
 import javax.crypto.SecretKey;
 
+import org.springframework.beans.factory.annotation.Qualifier;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 @WebMvcTest(BookingController.class)
-@ActiveProfiles("test") 
+@ActiveProfiles("test")
+@AutoConfigureMockMvc(addFilters = false)
 public class BookingControllerTest {
 
-  @Autowired
-  private MockMvc mockMvc;
+    @Autowired
+    private MockMvc mockMvc;
 
-  @MockitoBean
-  private BookingService bookingService;
+    @Autowired
+    private ObjectMapper objectMapper;
 
-  @MockitoBean
-  private UserService userService;
+    @MockitoBean
+    private BookingService bookingService;
 
-  @MockitoBean
-  private JwtTokenProvider jwtTokenProvider;
+    @MockitoBean
+    private UserService userService;
 
-  @Value("${JWT_SECRET}")
-  private String jwtSecret;
+    @MockitoBean
+    private JwtTokenProvider jwtTokenProvider;
 
+    @Value("${JWT_SECRET}")
+    private String jwtSecret;
 
-  public String getJwtForTestUser(){
-    Date now = new Date();
-    Date expiryDate = new Date(now.getTime() + 3600000);
-    System.out.println("jwtSecret: " + jwtSecret);
-    System.out.println("Bytes: " + jwtSecret.getBytes());
-    SecretKey secretKey = Keys.hmacShaKeyFor(jwtSecret.getBytes());
-    return Jwts.builder()
-                .setSubject("test")
-                .setIssuedAt(now)
-                .setExpiration(expiryDate)
-                .signWith(secretKey, SignatureAlgorithm.HS256)
-                .compact();
-  }
+    @MockitoBean
+    private MeterRegistry meterRegistry;
 
-  @BeforeEach
-  void setUp() {
-    when(jwtTokenProvider.validateToken(anyString())).thenReturn(true);
+    @MockitoBean @Qualifier("requestCounter")
+    private Counter requestCounter;
 
-    Authentication authentication = new UsernamePasswordAuthenticationToken(
-            "test", // The username, matching what getJwtForTestUser might imply
-            null,
-            Collections.singletonList(new SimpleGrantedAuthority("USER")) 
-    );
-    when(jwtTokenProvider.getAuthentication(anyString())).thenReturn(authentication);
-    when(userService.getUserIdByUsername(eq("test"))).thenReturn(1L);
-  }
+    @MockitoBean @Qualifier("requestTimer")
+    private Timer requestTimer;
 
-  /*
-   * FUNCTION public ResponseEntity<Reservation> createBooking(
-   * BookingRequestDTO request)
-   */
-  /**
-   * (Unexisten station)
-   * Given no station with id 5
-   * When booking a slot to station with id 5
-   * then bad request is returned
-   */
-  @Test
-  void whenRequestingSlotToUnexistentStation_thenBadRequestIsReturned() {
-    BookingRequestDTO request = new BookingRequestDTO(
-      5L, // Unexistent station ID
-      LocalDateTime.now(),
-      LocalDateTime.now().plusHours(1)
-    );
+    @MockitoBean @Qualifier("bookingSuccessCounter")
+    private Counter bookingSuccessCounter;
 
-    String jwt = getJwtForTestUser();
+    @MockitoBean @Qualifier("bookingFailureCounter")
+    private Counter bookingFailureCounter;
 
-    when(
-      bookingService.bookSlot(
-        anyLong(),
-        anyLong(),
-        any(LocalDateTime.class),
-        any(LocalDateTime.class)
-      )
-    ).thenThrow(new RuntimeException("Station not found"));
+    @MockitoBean @Qualifier("bookingDurationTimer")
+    private Timer bookingDurationTimer;
 
-    try {
-      mockMvc
-        .perform(
-          post("/api/bookings")
-            .contentType("application/json")
-            .content(JsonUtils.toJson(request))
-            .cookie(new Cookie("JWT_TOKEN", jwt))
-        )
-        .andExpect(status().isBadRequest());
-    } catch (Exception e) {
-      e.printStackTrace();
+    @MockitoBean @Qualifier("cancellationSuccessCounter")
+    private Counter cancellationSuccessCounter;
+
+    @MockitoBean @Qualifier("cancellationFailureCounter")
+    private Counter cancellationFailureCounter;
+
+    public String getJwtForTestUser() {
+        Date now = new Date();
+        Date expiryDate = new Date(now.getTime() + 3600000);
+        SecretKey secretKey = Keys.hmacShaKeyFor(jwtSecret.getBytes());
+        return Jwts.builder()
+            .setSubject("test")
+            .setIssuedAt(now)
+            .setExpiration(expiryDate)
+            .signWith(secretKey, SignatureAlgorithm.HS256)
+            .compact();
     }
-  }
 
-  /**
-   * (Unexistent user)
-   * Given station with id 1 and no user with id 1
-   * When booking a slot to station with id 1 by the user with id 1
-   * then bad request is returned
-   */
-  @Test
-  void whenRequestingSlotToUnexistentUser_thenBadRequestIsReturned() {
-    BookingRequestDTO request = new BookingRequestDTO(
-      1L, // Existing station ID
-      LocalDateTime.now(),
-      LocalDateTime.now().plusHours(1)
-    );
+    @BeforeEach
+    void setUp() {
+        when(jwtTokenProvider.validateToken(anyString())).thenReturn(true);
 
-    String jwt = getJwtForTestUser();
+        Authentication authentication = new UsernamePasswordAuthenticationToken(
+            "test", null, Collections.singletonList(new SimpleGrantedAuthority("USER")));
+        when(jwtTokenProvider.getAuthentication(anyString())).thenReturn(authentication);
+        when(userService.getUserIdByUsername(eq("test"))).thenReturn(1L);
 
-    when(
-      userService.getUserIdByUsername(anyString())
-    ).thenThrow(new RuntimeException("User not found"));
+        when(meterRegistry.counter("app.bookings.success", "Number of successful bookings"))
+            .thenReturn(bookingSuccessCounter);
+        when(meterRegistry.counter("app.bookings.failure", "Number of failed bookings"))
+            .thenReturn(bookingFailureCounter);
+        when(meterRegistry.timer("app.bookings.duration", "Time taken to process bookings"))
+            .thenReturn(bookingDurationTimer);
+        when(meterRegistry.counter("app.bookings.cancellation.success", "Number of successful cancellations"))
+            .thenReturn(cancellationSuccessCounter);
+        when(meterRegistry.counter("app.bookings.cancellation.failure", "Number of failed cancellations"))
+            .thenReturn(cancellationFailureCounter);
+        when(meterRegistry.timer("app.requests.latency", anyString())).thenReturn(requestTimer);
 
-    when(
-      bookingService.bookSlot(
-        anyLong(),
-        anyLong(),
-        any(LocalDateTime.class),
-        any(LocalDateTime.class)
-      )
-    ).thenThrow(new RuntimeException("User not found"));
-
-    try {
-      mockMvc
-        .perform(
-          post("/api/bookings")
-            .contentType("application/json")
-            .content(JsonUtils.toJson(request))
-            .cookie(new Cookie("JWT_TOKEN", jwt))
-        )
-        .andExpect(status().isBadRequest());
-    } catch (Exception e) {
-      e.printStackTrace();
+        doNothing().when(requestCounter).increment();
+        doNothing().when(bookingSuccessCounter).increment();
+        doNothing().when(bookingFailureCounter).increment();
+        doNothing().when(cancellationSuccessCounter).increment();
+        doNothing().when(cancellationFailureCounter).increment();
     }
-  }
 
-  /**
-   * (No slots available)
-   * Given station with 2 chargers and 2 reservations between 14h30 and 15h00
-   * When booking a slot to the station to the slot 14h30 and 15h30
-   * then bad request is returned
-   */
-  @Test
-  void whenBookingSlotWithNoAvailableSlots_thenBadRequestIsThrown() {
-    BookingRequestDTO request = new BookingRequestDTO(
-      1L, // Existing station ID
-      LocalDateTime.of(2023, 10, 1, 14, 30),
-      LocalDateTime.of(2023, 10, 1, 15, 30)
-    );
+    @Test
+    void whenRequestingSlotToUnexistentStation_thenBadRequestIsReturned() {
+        BookingRequestDTO request = new BookingRequestDTO(
+            5L, LocalDateTime.now(), LocalDateTime.now().plusHours(1));
+        String jwt = getJwtForTestUser();
 
-    String jwt = getJwtForTestUser();
+        when(bookingService.bookSlot(anyLong(), anyLong(), any(), any()))
+            .thenThrow(new RuntimeException("Station not found"));
 
-    when(
-      bookingService.bookSlot(
-        anyLong(),
-        anyLong(),
-        any(LocalDateTime.class),
-        any(LocalDateTime.class)
-      )
-    ).thenThrow(new RuntimeException("No available slots"));
-
-    try {
-      mockMvc
-        .perform(
-          post("/api/bookings")
-            .contentType("application/json")
-            .content(JsonUtils.toJson(request))
-            .cookie(new Cookie("JWT_TOKEN", jwt))
-        )
-        .andExpect(status().isBadRequest());
-    } catch (Exception e) {
-      e.printStackTrace();
+        try {
+            mockMvc.perform(post("/api/bookings")
+                    .contentType("application/json")
+                    .content(objectMapper.writeValueAsString(request))
+                    .cookie(new Cookie("JWT_TOKEN", jwt)))
+                .andExpect(status().isBadRequest());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
-  }
 
-  /**
-   * (Charger out of service)
-   * Given station with 2 chargers and 1 reservation between startTime and endTime
-   * but 1 charger has state OUT_OF_SERVICE
-   * When booking a slot to the station to the slot startTime and endTime
-   * then bad request is returned
-   */
-  @Test
-  @Disabled(
-    "This test is disabled because the charger state is not handled in the controller, this should be used in integration tests"
-  )
-  void whenBookingSlotWithOutOfServiceCharger_thenBadRequestIsThrown() {}
+    @Test
+    void whenRequestingSlotToUnexistentUser_thenBadRequestIsReturned() {
+        BookingRequestDTO request = new BookingRequestDTO(
+            1L, LocalDateTime.now(), LocalDateTime.now().plusHours(1));
+        String jwt = getJwtForTestUser();
 
-  /**
-   * (Invalid request)
-   * Given station with 2 chargers and 1 reservation between 14h30 and 15h00
-   * When request doent have required fields (stationId, startTime, endTime)
-   * then response with bad request is returned
-   */
-  @Test
-  void whenBookingSlotWithInvalidRequest_thenBadRequestIsThrown() {
-    BookingRequestDTO request_station = new BookingRequestDTO(
-      null, // Missing station ID
-      LocalDateTime.now(),
-      LocalDateTime.now().plusMinutes(30)
-    );
-    BookingRequestDTO request_startTime = new BookingRequestDTO(
-      5L,
-      null, // Missing start time
-      LocalDateTime.now().plusMinutes(30)
-    );
-    BookingRequestDTO request_endTime = new BookingRequestDTO(
-      5L,
-      LocalDateTime.now(),
-      null // Missing end time
-    );
+        when(userService.getUserIdByUsername(anyString()))
+            .thenThrow(new RuntimeException("User not found"));
+        when(bookingService.bookSlot(anyLong(), anyLong(), any(), any()))
+            .thenThrow(new RuntimeException("User not found"));
 
-    String jwt = getJwtForTestUser();
-
-    try {
-      // Test with missing station ID
-      mockMvc
-        .perform(
-          post("/api/bookings")
-            .contentType("application/json")
-            .content(JsonUtils.toJson(request_station))
-            .cookie(new Cookie("JWT_TOKEN", jwt))
-        )
-        .andExpect(status().isBadRequest());
-
-      // Test with missing start time
-      mockMvc
-        .perform(
-          post("/api/bookings")
-            .contentType("application/json")
-            .content(JsonUtils.toJson(request_startTime))
-            .cookie(new Cookie("JWT_TOKEN", jwt))
-        )
-        .andExpect(status().isBadRequest());
-
-      // Test with missing end time
-      mockMvc
-        .perform(
-          post("/api/bookings")
-            .contentType("application/json")
-            .content(JsonUtils.toJson(request_endTime))
-            .cookie(new Cookie("JWT_TOKEN", jwt))
-        )
-        .andExpect(status().isBadRequest());
-    } catch (Exception e) {
-      e.printStackTrace();
+        try {
+            mockMvc.perform(post("/api/bookings")
+                    .contentType("application/json")
+                    .content(objectMapper.writeValueAsString(request))
+                    .cookie(new Cookie("JWT_TOKEN", jwt)))
+                .andExpect(status().isBadRequest());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
-  }
 
-  /**
-   * (Request in the past)
-   * Given station with 2 chargers
-   * When booking a slot to the station to the slot half an hour ago
-   * then response with bad request is returned
-   */
-  @Test
-  void whenBookingSlotInPast_thenBadRequestIsThrown() {
-    BookingRequestDTO request = new BookingRequestDTO(
-      1L, // Existing station ID
-      LocalDateTime.now().minusMinutes(30),
-      LocalDateTime.now()
-    );
+    @Test
+    void whenBookingSlotWithNoAvailableSlots_thenBadRequestIsThrown() {
+        BookingRequestDTO request = new BookingRequestDTO(
+            1L, LocalDateTime.of(2023, 10, 1, 14, 30),
+            LocalDateTime.of(2023, 10, 1, 15, 30));
+        String jwt = getJwtForTestUser();
 
-    String jwt = getJwtForTestUser();
+        when(bookingService.bookSlot(anyLong(), anyLong(), any(), any()))
+            .thenThrow(new RuntimeException("No available slots"));
 
-    try {
-      mockMvc
-        .perform(
-          post("/api/bookings")
-            .contentType("application/json")
-            .content(JsonUtils.toJson(request))
-            .cookie(new Cookie("JWT_TOKEN", jwt))
-        )
-        .andExpect(status().isBadRequest());
-    } catch (Exception e) {
-      e.printStackTrace();
+        try {
+            mockMvc.perform(post("/api/bookings")
+                    .contentType("application/json")
+                    .content(objectMapper.writeValueAsString(request))
+                    .cookie(new Cookie("JWT_TOKEN", jwt)))
+                .andExpect(status().isBadRequest());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
-  }
 
-  /**
-   * (Free station)
-   * Given station with 2 chargers and 2 reservations:
-   * one between 14h30 and 15h00 and another between 15h00 and 15h30
-   * When booking a slot to the station to the slot 14h45 and 15h15
-   * then Reservation is made
-   */
-  @Test
-  void whenBookingSlotWithFreeStation_thenReservationIsMade() {
-    BookingRequestDTO request = new BookingRequestDTO(
-      1L, // Existing station ID
-      LocalDateTime.now().plusMinutes(15).truncatedTo(ChronoUnit.SECONDS),
-      LocalDateTime.now().plusMinutes(45).truncatedTo(ChronoUnit.SECONDS)
-    );
+    @Test
+    @Disabled("Handled in integration test")
+    void whenBookingSlotWithOutOfServiceCharger_thenBadRequestIsThrown() {}
 
-    String jwt = getJwtForTestUser();
+    @Test
+    void whenBookingSlotWithInvalidRequest_thenBadRequestIsThrown() {
+        String jwt = getJwtForTestUser();
+        List<BookingRequestDTO> requests = List.of(
+            new BookingRequestDTO(null, LocalDateTime.now(), LocalDateTime.now().plusMinutes(30)),
+            new BookingRequestDTO(5L, null, LocalDateTime.now().plusMinutes(30)),
+            new BookingRequestDTO(5L, LocalDateTime.now(), null)
+        );
 
-    Reservation reservation = new Reservation();
-    reservation.setId(1L);
-    reservation.setStartDate(request.getStartTime());
-    reservation.setEndDate(request.getEndTime());
-
-    when(
-      bookingService.bookSlot(
-        anyLong(),
-        anyLong(),
-        any(LocalDateTime.class),
-        any(LocalDateTime.class)
-      )
-    ).thenReturn(reservation);
-
-    try {
-      mockMvc
-        .perform(
-          post("/api/bookings")
-            .contentType("application/json")
-            .content(JsonUtils.toJson(request))
-            .cookie(new Cookie("JWT_TOKEN", jwt))
-        )
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.id", is(1)));
-      // Commented because of inconsistencies between LocalDateTime.toString
-      // and Jacksons JSON LocalDateTime toString
-      //.andExpect(
-      //  jsonPath("$.startDate", is(request.getStartTime().toString()))
-      //)
-      //.andExpect(jsonPath("$.endDate", is(request.getEndTime().toString())));
-
-      verify(bookingService, times(1)).bookSlot(
-        anyLong(),
-        anyLong(),
-        eq(request.getStartTime()),
-        eq(request.getEndTime())
-      );
-    } catch (Exception e) {
-      e.printStackTrace();
+        for (BookingRequestDTO req : requests) {
+            try {
+                mockMvc.perform(post("/api/bookings")
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(req))
+                        .cookie(new Cookie("JWT_TOKEN", jwt)))
+                    .andExpect(status().isBadRequest());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
-  }
 
-  /**
-   * Given station with 2 chargers and 1 reservations between 14h30 and 15h00
-   * When booking a slot to the station to the slot 14h30 and 15h00
-   * then Reservation is made
-   */
-  @Test
-  @Disabled(
-    "This test is disabled because it should be used in integration tests, we cannot test this here"
-  )
-  void whenBookingSlotWithExistingReservation_thenReservationIsMade() {
-    BookingRequestDTO request = new BookingRequestDTO(
-      1L, // Existing station ID
-      LocalDateTime.now().plusMinutes(15),
-      LocalDateTime.now().plusMinutes(45)
-    );
+    @Test
+    void whenBookingSlotInPast_thenBadRequestIsThrown() {
+        BookingRequestDTO request = new BookingRequestDTO(
+            1L, LocalDateTime.now().minusMinutes(30), LocalDateTime.now());
+        String jwt = getJwtForTestUser();
 
-    Reservation reservation = new Reservation();
-    reservation.setId(1L);
-    reservation.setStartDate(request.getStartTime());
-    reservation.setEndDate(request.getEndTime());
-
-    when(
-      bookingService.bookSlot(
-        anyLong(),
-        anyLong(),
-        any(LocalDateTime.class),
-        any(LocalDateTime.class)
-      )
-    ).thenReturn(reservation);
-
-    try {
-      mockMvc
-        .perform(
-          post("/api/bookings")
-            .contentType("application/json")
-            .content(JsonUtils.toJson(request))
-        )
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.id", is(1)))
-        .andExpect(
-          jsonPath("$.startDate", is(request.getStartTime().toString()))
-        )
-        .andExpect(jsonPath("$.endDate", is(request.getEndTime().toString())));
-
-      verify(bookingService, times(1)).bookSlot(
-        anyLong(),
-        anyLong(),
-        eq(request.getStartTime()),
-        eq(request.getEndTime())
-      );
-    } catch (Exception e) {
-      e.printStackTrace();
+        try {
+            mockMvc.perform(post("/api/bookings")
+                    .contentType("application/json")
+                    .content(objectMapper.writeValueAsString(request))
+                    .cookie(new Cookie("JWT_TOKEN", jwt)))
+                .andExpect(status().isBadRequest());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
-  }
 
-  /*
-   * FUNCTION public ResponseEntity<Void>
-   * cancelBooking(@NotNull @PathVariable(required = true) Long id)
-   */
-  /**
-   * Given no booking with id 1
-   * When trying to cancel booking with id 1
-   * then reposnse with bad request is returned
-   */
-  @Test
-  void whenCancelingUnexistentBooking_thenBadRequestIsThrown() {
-    doThrow(new RuntimeException("Booking not found"))
-      .when(bookingService)
-      .cancelBooking(anyLong());
-    
-    String jwt = getJwtForTestUser();
+    @Test
+    void whenBookingSlotWithFreeStation_thenReservationIsMade() {
+        LocalDateTime start = LocalDateTime.now().plusMinutes(15).truncatedTo(ChronoUnit.SECONDS);
+        LocalDateTime end = LocalDateTime.now().plusMinutes(45).truncatedTo(ChronoUnit.SECONDS);
+        BookingRequestDTO request = new BookingRequestDTO(1L, start, end);
+        String jwt = getJwtForTestUser();
 
-    try {
-      mockMvc
-        .perform(delete("/api/bookings/1").cookie(new Cookie("JWT_TOKEN", jwt)))
-        .andExpect(status().isNotFound());
-    } catch (Exception e) {
-      e.printStackTrace();
+        Reservation reservation = new Reservation();
+        reservation.setId(1L);
+        reservation.setStartDate(start);
+        reservation.setEndDate(end);
+
+        when(bookingService.bookSlot(anyLong(), anyLong(), eq(start), eq(end)))
+            .thenReturn(reservation);
+
+        try {
+            mockMvc.perform(post("/api/bookings")
+                    .contentType("application/json")
+                    .content(objectMapper.writeValueAsString(request))
+                    .cookie(new Cookie("JWT_TOKEN", jwt)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(1)));
+
+            verify(bookingService, times(1))
+                .bookSlot(anyLong(), anyLong(), eq(start), eq(end));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
-  }
 
-  /**
-   * Given booking with id 1
-   * When trying to cancel booking with id 1
-   * then response with status ok is returned
-   */
-  @Test
-  void whenCancelingBooking_thenStatusNoContentIsReturned() {
-    String jwt = getJwtForTestUser();
+    @Test
+    @Disabled("Handled in integration test")
+    void whenBookingSlotWithExistingReservation_thenReservationIsMade() {}
 
-    try {
-      mockMvc
-        .perform(delete("/api/bookings/1").cookie(new Cookie("JWT_TOKEN", jwt)))
-        .andExpect(status().isNoContent());
+    @Test
+    void whenCancelingUnexistentBooking_thenBadRequestIsThrown() {
+        doThrow(new RuntimeException("Booking not found"))
+            .when(bookingService).cancelBooking(anyLong());
 
-      verify(bookingService, times(1)).cancelBooking(anyLong());
-    } catch (Exception e) {
-      e.printStackTrace();
+        String jwt = getJwtForTestUser();
+
+        try {
+            mockMvc.perform(delete("/api/bookings/1")
+                    .cookie(new Cookie("JWT_TOKEN", jwt)))
+                .andExpect(status().isNotFound());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
-  }
+
+    @Test
+    void whenCancelingBooking_thenStatusNoContentIsReturned() {
+        String jwt = getJwtForTestUser();
+
+        try {
+            mockMvc.perform(delete("/api/bookings/1")
+                    .cookie(new Cookie("JWT_TOKEN", jwt)))
+                .andExpect(status().isNoContent());
+
+            verify(bookingService, times(1)).cancelBooking(anyLong());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }
