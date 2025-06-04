@@ -278,7 +278,7 @@ const CreateStation: React.FC = () => {
         </Typography>
 
         <Grid container spacing={2} sx={{ mb: 2 }}>
-          <Grid item xs={4}>
+          <Grid xs={4}>
             <TextField
               fullWidth
               label="Charger ID"
@@ -287,7 +287,7 @@ const CreateStation: React.FC = () => {
               onChange={e => setChargerIdInput(e.target.value === '' ? '' : Number(e.target.value))}
             />
           </Grid>
-          <Grid item xs={4}>
+          <Grid xs={4}>
             <FormControl fullWidth>
               <InputLabel id="charger-status-label">Status</InputLabel>
               <Select
@@ -303,7 +303,7 @@ const CreateStation: React.FC = () => {
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={4}>
+          <Grid xs={4}>
             <TextField
               fullWidth
               label="Speed (kW)"
