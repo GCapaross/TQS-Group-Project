@@ -1,13 +1,21 @@
 package nikev.group.project.chargingplatform.controller;
 
 import jakarta.validation.constraints.NotNull;
+
+import java.security.Security;
 import java.time.LocalDateTime;
 import nikev.group.project.chargingplatform.DTOs.BookingRequestDTO;
 import nikev.group.project.chargingplatform.model.Reservation;
 import nikev.group.project.chargingplatform.service.BookingService;
+import nikev.group.project.chargingplatform.service.UserService;
+import nikev.group.project.chargingplatform.controller.UserController;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication; 
 
 import jakarta.validation.constraints.NotNull;
 import nikev.group.project.chargingplatform.DTOs.BookingRequestDTO;
@@ -18,9 +26,12 @@ import java.time.LocalDateTime;
 @RestController
 @RequestMapping("/api/bookings")
 public class BookingController {
-    private static final Logger log = LoggerFactory.getLogger(BookingController.class);
-    @Autowired
-    private BookingService bookingService;
+  private static final Logger log = LoggerFactory.getLogger(BookingController.class);
+  @Autowired
+  private BookingService bookingService;
+
+  @Autowired
+  private UserService userService;
 
   @PostMapping
   public ResponseEntity<Reservation> createBooking(
@@ -31,7 +42,11 @@ public class BookingController {
         return ResponseEntity.badRequest().build();
       }
 
-      Long userId = 1L;
+      Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+      String username = authentication.getName();
+      log.info("Authenticated user: {}", username);
+      Long userId = userService.getUserIdByUsername(username);
+      log.info("User ID for {}: {}", username, userId);
 
       Reservation session = bookingService.bookSlot(
         request.getStationId(),

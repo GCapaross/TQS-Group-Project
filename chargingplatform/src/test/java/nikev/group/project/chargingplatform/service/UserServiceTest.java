@@ -5,6 +5,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import java.util.Optional;
+
+import nikev.group.project.chargingplatform.DTOs.RegisterRequestDTO;
 import nikev.group.project.chargingplatform.model.User;
 import nikev.group.project.chargingplatform.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,13 +27,22 @@ public class UserServiceTest {
 
   private User testUser;
 
+  private RegisterRequestDTO registerRequestDTO;
+
   @BeforeEach
   void setUp() {
     testUser = new User();
     testUser.setId(1L);
     testUser.setEmail("test@example.com");
     testUser.setPassword("password123");
-    testUser.setName("Test User");
+    testUser.setUsername("Test User");
+
+    registerRequestDTO = new RegisterRequestDTO();
+    registerRequestDTO.setEmail(testUser.getEmail());
+    registerRequestDTO.setPassword(testUser.getPassword());
+    registerRequestDTO.setConfirmPassword(testUser.getPassword());
+    registerRequestDTO.setUsername(testUser.getUsername());
+    registerRequestDTO.setAccountType("user");
   }
 
   /**
@@ -46,12 +57,12 @@ public class UserServiceTest {
     when(userRepository.save(any())).thenAnswer(i -> i.getArguments()[0]);
 
     // Act
-    User registeredUser = userService.registerUser(testUser);
+    User registeredUser = userService.registerUser(registerRequestDTO);
 
     // Assert
     assertNotNull(registeredUser);
     assertEquals(testUser.getEmail(), registeredUser.getEmail());
-    assertEquals(testUser.getName(), registeredUser.getName());
+    assertEquals(testUser.getUsername(), registeredUser.getUsername());
     verify(userRepository).save(any(User.class));
   }
 
@@ -67,7 +78,7 @@ public class UserServiceTest {
 
     // Act & Assert
     assertThrows(RuntimeException.class, () ->
-      userService.registerUser(testUser)
+      userService.registerUser(registerRequestDTO)
     );
   }
 

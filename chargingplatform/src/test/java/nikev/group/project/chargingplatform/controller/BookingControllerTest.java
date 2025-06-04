@@ -5,11 +5,13 @@ import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import jakarta.servlet.http.Cookie;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -23,8 +25,12 @@ import nikev.group.project.chargingplatform.repository.ChargerRepository;
 import nikev.group.project.chargingplatform.repository.ReservationRepository;
 import nikev.group.project.chargingplatform.repository.StationRepository;
 import nikev.group.project.chargingplatform.repository.UserRepository;
+import nikev.group.project.chargingplatform.security.JwtTokenFilter;
+import nikev.group.project.chargingplatform.security.JwtTokenProvider;
 import nikev.group.project.chargingplatform.service.BookingService;
 import nikev.group.project.chargingplatform.service.StationService;
+import nikev.group.project.chargingplatform.service.UserService;
+
 import org.flywaydb.core.internal.util.JsonUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -34,18 +40,73 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
+
+import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+
+import javax.crypto.SecretKey;
 
 @WebMvcTest(BookingController.class)
+@ActiveProfiles("test") 
 public class BookingControllerTest {
 
   @Autowired
   private MockMvc mockMvc;
 
   @MockitoBean
-  private BookingService BookingService;
+  private BookingService bookingService;
+
+  @MockitoBean
+  private UserService userService;
+
+  @MockitoBean
+  private JwtTokenProvider jwtTokenProvider;
+
+  @Value("${JWT_SECRET}")
+  private String jwtSecret;
+
+
+  public String getJwtForTestUser(){
+    Date now = new Date();
+    Date expiryDate = new Date(now.getTime() + 3600000);
+    System.out.println("jwtSecret: " + jwtSecret);
+    System.out.println("Bytes: " + jwtSecret.getBytes());
+    SecretKey secretKey = Keys.hmacShaKeyFor(jwtSecret.getBytes());
+    return Jwts.builder()
+                .setSubject("test")
+                .setIssuedAt(now)
+                .setExpiration(expiryDate)
+                .signWith(secretKey, SignatureAlgorithm.HS256)
+                .compact();
+  }
+
+  @BeforeEach
+  void setUp() {
+    when(jwtTokenProvider.validateToken(anyString())).thenReturn(true);
+
+    Authentication authentication = new UsernamePasswordAuthenticationToken(
+            "test", // The username, matching what getJwtForTestUser might imply
+            null,
+            Collections.singletonList(new SimpleGrantedAuthority("USER")) 
+    );
+    when(jwtTokenProvider.getAuthentication(anyString())).thenReturn(authentication);
+    when(userService.getUserIdByUsername(eq("test"))).thenReturn(1L);
+  }
 
   /*
    * FUNCTION public ResponseEntity<Reservation> createBooking(
@@ -65,8 +126,10 @@ public class BookingControllerTest {
       LocalDateTime.now().plusHours(1)
     );
 
+    String jwt = getJwtForTestUser();
+
     when(
-      BookingService.bookSlot(
+      bookingService.bookSlot(
         anyLong(),
         anyLong(),
         any(LocalDateTime.class),
@@ -80,6 +143,7 @@ public class BookingControllerTest {
           post("/api/bookings")
             .contentType("application/json")
             .content(JsonUtils.toJson(request))
+            .cookie(new Cookie("JWT_TOKEN", jwt))
         )
         .andExpect(status().isBadRequest());
     } catch (Exception e) {
@@ -94,9 +158,6 @@ public class BookingControllerTest {
    * then bad request is returned
    */
   @Test
-  @Disabled(
-    "This test is disabled because the user ID is hardcoded in the controller"
-  )
   void whenRequestingSlotToUnexistentUser_thenBadRequestIsReturned() {
     BookingRequestDTO request = new BookingRequestDTO(
       1L, // Existing station ID
@@ -104,8 +165,14 @@ public class BookingControllerTest {
       LocalDateTime.now().plusHours(1)
     );
 
+    String jwt = getJwtForTestUser();
+
     when(
-      BookingService.bookSlot(
+      userService.getUserIdByUsername(anyString())
+    ).thenThrow(new RuntimeException("User not found"));
+
+    when(
+      bookingService.bookSlot(
         anyLong(),
         anyLong(),
         any(LocalDateTime.class),
@@ -119,6 +186,7 @@ public class BookingControllerTest {
           post("/api/bookings")
             .contentType("application/json")
             .content(JsonUtils.toJson(request))
+            .cookie(new Cookie("JWT_TOKEN", jwt))
         )
         .andExpect(status().isBadRequest());
     } catch (Exception e) {
@@ -140,8 +208,10 @@ public class BookingControllerTest {
       LocalDateTime.of(2023, 10, 1, 15, 30)
     );
 
+    String jwt = getJwtForTestUser();
+
     when(
-      BookingService.bookSlot(
+      bookingService.bookSlot(
         anyLong(),
         anyLong(),
         any(LocalDateTime.class),
@@ -155,6 +225,7 @@ public class BookingControllerTest {
           post("/api/bookings")
             .contentType("application/json")
             .content(JsonUtils.toJson(request))
+            .cookie(new Cookie("JWT_TOKEN", jwt))
         )
         .andExpect(status().isBadRequest());
     } catch (Exception e) {
@@ -199,6 +270,8 @@ public class BookingControllerTest {
       null // Missing end time
     );
 
+    String jwt = getJwtForTestUser();
+
     try {
       // Test with missing station ID
       mockMvc
@@ -206,6 +279,7 @@ public class BookingControllerTest {
           post("/api/bookings")
             .contentType("application/json")
             .content(JsonUtils.toJson(request_station))
+            .cookie(new Cookie("JWT_TOKEN", jwt))
         )
         .andExpect(status().isBadRequest());
 
@@ -215,6 +289,7 @@ public class BookingControllerTest {
           post("/api/bookings")
             .contentType("application/json")
             .content(JsonUtils.toJson(request_startTime))
+            .cookie(new Cookie("JWT_TOKEN", jwt))
         )
         .andExpect(status().isBadRequest());
 
@@ -224,6 +299,7 @@ public class BookingControllerTest {
           post("/api/bookings")
             .contentType("application/json")
             .content(JsonUtils.toJson(request_endTime))
+            .cookie(new Cookie("JWT_TOKEN", jwt))
         )
         .andExpect(status().isBadRequest());
     } catch (Exception e) {
@@ -245,12 +321,15 @@ public class BookingControllerTest {
       LocalDateTime.now()
     );
 
+    String jwt = getJwtForTestUser();
+
     try {
       mockMvc
         .perform(
           post("/api/bookings")
             .contentType("application/json")
             .content(JsonUtils.toJson(request))
+            .cookie(new Cookie("JWT_TOKEN", jwt))
         )
         .andExpect(status().isBadRequest());
     } catch (Exception e) {
@@ -273,13 +352,15 @@ public class BookingControllerTest {
       LocalDateTime.now().plusMinutes(45).truncatedTo(ChronoUnit.SECONDS)
     );
 
+    String jwt = getJwtForTestUser();
+
     Reservation reservation = new Reservation();
     reservation.setId(1L);
     reservation.setStartDate(request.getStartTime());
     reservation.setEndDate(request.getEndTime());
 
     when(
-      BookingService.bookSlot(
+      bookingService.bookSlot(
         anyLong(),
         anyLong(),
         any(LocalDateTime.class),
@@ -293,6 +374,7 @@ public class BookingControllerTest {
           post("/api/bookings")
             .contentType("application/json")
             .content(JsonUtils.toJson(request))
+            .cookie(new Cookie("JWT_TOKEN", jwt))
         )
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id", is(1)));
@@ -303,7 +385,7 @@ public class BookingControllerTest {
       //)
       //.andExpect(jsonPath("$.endDate", is(request.getEndTime().toString())));
 
-      verify(BookingService, times(1)).bookSlot(
+      verify(bookingService, times(1)).bookSlot(
         anyLong(),
         anyLong(),
         eq(request.getStartTime()),
@@ -336,7 +418,7 @@ public class BookingControllerTest {
     reservation.setEndDate(request.getEndTime());
 
     when(
-      BookingService.bookSlot(
+      bookingService.bookSlot(
         anyLong(),
         anyLong(),
         any(LocalDateTime.class),
@@ -358,7 +440,7 @@ public class BookingControllerTest {
         )
         .andExpect(jsonPath("$.endDate", is(request.getEndTime().toString())));
 
-      verify(BookingService, times(1)).bookSlot(
+      verify(bookingService, times(1)).bookSlot(
         anyLong(),
         anyLong(),
         eq(request.getStartTime()),
@@ -381,12 +463,14 @@ public class BookingControllerTest {
   @Test
   void whenCancelingUnexistentBooking_thenBadRequestIsThrown() {
     doThrow(new RuntimeException("Booking not found"))
-      .when(BookingService)
+      .when(bookingService)
       .cancelBooking(anyLong());
+    
+    String jwt = getJwtForTestUser();
 
     try {
       mockMvc
-        .perform(delete("/api/bookings/1"))
+        .perform(delete("/api/bookings/1").cookie(new Cookie("JWT_TOKEN", jwt)))
         .andExpect(status().isNotFound());
     } catch (Exception e) {
       e.printStackTrace();
@@ -400,12 +484,14 @@ public class BookingControllerTest {
    */
   @Test
   void whenCancelingBooking_thenStatusNoContentIsReturned() {
+    String jwt = getJwtForTestUser();
+
     try {
       mockMvc
-        .perform(delete("/api/bookings/1"))
+        .perform(delete("/api/bookings/1").cookie(new Cookie("JWT_TOKEN", jwt)))
         .andExpect(status().isNoContent());
 
-      verify(BookingService, times(1)).cancelBooking(anyLong());
+      verify(bookingService, times(1)).cancelBooking(anyLong());
     } catch (Exception e) {
       e.printStackTrace();
     }
