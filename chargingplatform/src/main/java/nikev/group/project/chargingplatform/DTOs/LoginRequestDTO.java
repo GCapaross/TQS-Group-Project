@@ -1,6 +1,6 @@
 package nikev.group.project.chargingplatform.DTOs;
 
-public class LoginRequest {
+public class LoginRequestDTO {
     private String email;
     private String password;
 

@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import nikev.group.project.chargingplatform.DTOs.RegisterRequestDTO;
 import nikev.group.project.chargingplatform.model.Role;
 import nikev.group.project.chargingplatform.model.User;
 import nikev.group.project.chargingplatform.security.JwtTokenProvider;
@@ -17,7 +18,9 @@ import nikev.group.project.chargingplatform.service.UserService;
 import org.flywaydb.core.internal.util.JsonUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -43,20 +46,27 @@ public class UserControllerTest {
    */
   @Test
   public void whenRegisteringNewUser_thenUserIsCreated() {
+    RegisterRequestDTO registerRequest = new RegisterRequestDTO();
+    registerRequest.setEmail("test@example.com");
+    registerRequest.setPassword("password123");
+    registerRequest.setConfirmPassword("password123");
+    registerRequest.setUsername("test");
+    registerRequest.setAccountType("user");
+
     User user = new User();
     user.setEmail("test@example.com");
     user.setPassword("password123");
     user.setUsername("test");
     user.setRole(Role.USER);
 
-    when(userService.registerUser(any(User.class))).thenReturn(user);
+    when(userService.registerUser(any(RegisterRequestDTO.class))).thenReturn(user);
 
     try {
       mockMvc
         .perform(
           post("/api/users/register")
             .contentType("application/json")
-            .content(JsonUtils.toJson(user))
+            .content(JsonUtils.toJson(registerRequest))
         )
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.email", is("test@example.com")))
@@ -73,13 +83,20 @@ public class UserControllerTest {
    */
   @Test
   public void whenRegisteringExistingEmail_then400() {
+    RegisterRequestDTO registerRequest = new RegisterRequestDTO();
+    registerRequest.setEmail("test@example.com");
+    registerRequest.setPassword("password123");
+    registerRequest.setConfirmPassword("password123");
+    registerRequest.setUsername("test");
+    registerRequest.setAccountType("user");
+
     User user = new User();
     user.setEmail("test@example.com");
     user.setPassword("password123");
-    user.setUsername("Test User");
+    user.setUsername("test");
     user.setRole(Role.USER);
 
-    when(userService.registerUser(any(User.class))).thenThrow(
+    when(userService.registerUser(any(RegisterRequestDTO.class))).thenThrow(
       new RuntimeException("User already exists")
     );
 

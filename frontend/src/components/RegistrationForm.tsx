@@ -19,6 +19,7 @@ import {
   Visibility as VisibilityIcon,
   VisibilityOff as VisibilityOffIcon
 } from '@mui/icons-material';
+import { api } from '../services/api';
 
 interface RegistrationFormProps {
   accountType: 'user' | 'operator';
@@ -27,7 +28,7 @@ interface RegistrationFormProps {
 const RegistrationForm: React.FC<RegistrationFormProps> = ({ accountType }) => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    name: '',
+    username: '',
     email: '',
     password: '',
     confirmPassword: ''
@@ -39,8 +40,8 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ accountType }) => {
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
     
-    if (!formData.name.trim()) {
-      newErrors.name = 'Name is required';
+    if (!formData.username.trim()) {
+      newErrors.username = 'Username is required';
     }
     
     if (!formData.email.trim()) {
@@ -71,21 +72,15 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ accountType }) => {
     }
     
     try {
-      const response = await fetch('/api/users/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...formData,
-          accountType
-        }),
+      const response = await api.post('/users/register', {
+        ...formData,
+        accountType
       });
-      
-      if (response.ok) {
+
+      if (response.status === 200) {
         navigate('/login');
       } else {
-        const data = await response.json();
+        const data = await response.data;
         setErrors({ submit: data.message || 'Registration failed' });
       }
     } catch (error) {
@@ -145,12 +140,12 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ accountType }) => {
               margin="normal"
               required
               fullWidth
-              id="name"
-              label="Full Name"
-              name="name"
-              autoComplete="name"
+              id="username"
+              label="Username"
+              name="username"
+              autoComplete="username"
               autoFocus
-              value={formData.name}
+              value={formData.username}
               onChange={handleChange}
               error={!!errors.name}
               helperText={errors.name}

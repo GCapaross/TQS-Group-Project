@@ -40,7 +40,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -59,6 +62,7 @@ import java.time.temporal.ChronoUnit;
 import javax.crypto.SecretKey;
 
 @WebMvcTest(BookingController.class)
+@ActiveProfiles("test") 
 public class BookingControllerTest {
 
   @Autowired
@@ -73,12 +77,16 @@ public class BookingControllerTest {
   @MockitoBean
   private JwtTokenProvider jwtTokenProvider;
 
+  @Value("${JWT_SECRET}")
+  private String jwtSecret;
+
 
   public String getJwtForTestUser(){
-    String secret = "myTestSecretKeyWhichIsVeryLongAndSecureForTestsOnly";
     Date now = new Date();
     Date expiryDate = new Date(now.getTime() + 3600000);
-    SecretKey secretKey = Keys.hmacShaKeyFor(secret.getBytes());
+    System.out.println("jwtSecret: " + jwtSecret);
+    System.out.println("Bytes: " + jwtSecret.getBytes());
+    SecretKey secretKey = Keys.hmacShaKeyFor(jwtSecret.getBytes());
     return Jwts.builder()
                 .setSubject("test")
                 .setIssuedAt(now)
@@ -150,9 +158,6 @@ public class BookingControllerTest {
    * then bad request is returned
    */
   @Test
-  @Disabled(
-    "This test is disabled because the user ID is hardcoded in the controller"
-  )
   void whenRequestingSlotToUnexistentUser_thenBadRequestIsReturned() {
     BookingRequestDTO request = new BookingRequestDTO(
       1L, // Existing station ID
@@ -161,6 +166,10 @@ public class BookingControllerTest {
     );
 
     String jwt = getJwtForTestUser();
+
+    when(
+      userService.getUserIdByUsername(anyString())
+    ).thenThrow(new RuntimeException("User not found"));
 
     when(
       bookingService.bookSlot(
