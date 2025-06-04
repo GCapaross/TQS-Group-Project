@@ -31,12 +31,12 @@
 		<sonar.projectKey>GCapaross_TQS-Group-Project</sonar.projectKey>
 		<sonar.organization>gcapaross</sonar.organization>
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
-        <junit-platform-suite.version>1.12.0</junit-platform-suite.version>
+    <junit-platform-suite.version>1.12.0</junit-platform-suite.version>
 		<cucumber.version>7.21.1</cucumber.version>
 		<selenium.version>4.29.0</selenium.version>
 		<selenide.version>7.7.3</selenide.version>
 		<rest-assured.version>5.5.1</rest-assured.version>
-        <wdm.version>5.9.2</wdm.version>
+    <wdm.version>5.9.2</wdm.version>
 	</properties>
 
 	<dependencies>
@@ -118,18 +118,18 @@
 			<scope>test</scope>
 		</dependency>
 
-		 <dependency>
-            <groupId>org.junit.platform</groupId>
-            <artifactId>junit-platform-suite</artifactId>
-            <version>${junit-platform-suite.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-          <groupId>org.junit.platform</groupId>
-          <artifactId>junit-platform-engine</artifactId>
-          <version>${junit-platform-suite.version}</version>
-          <scope>test</scope>
-        </dependency>
+		<dependency>
+      <groupId>org.junit.platform</groupId>
+      <artifactId>junit-platform-suite</artifactId>
+      <version>${junit-platform-suite.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.platform</groupId>
+      <artifactId>junit-platform-engine</artifactId>
+      <version>${junit-platform-suite.version}</version>
+      <scope>test</scope>
+    </dependency>
 		<dependency>
 			<groupId>org.junit.platform</groupId>
 			<artifactId>junit-platform-commons</artifactId>
@@ -176,31 +176,31 @@
 			<scope>test</scope>
 		</dependency>
 
-        <dependency>
-            <groupId>io.github.bonigarcia</groupId>
-            <artifactId>webdrivermanager</artifactId>
-            <version>${wdm.version}</version>
-            <scope>test</scope>
-        </dependency>
+    <dependency>
+      <groupId>io.github.bonigarcia</groupId>
+      <artifactId>webdrivermanager</artifactId>
+      <version>${wdm.version}</version>
+      <scope>test</scope>
+    </dependency>
 
-        <dependency>
-            <groupId>org.seleniumhq.selenium</groupId>
-            <artifactId>selenium-grid</artifactId>
-            <version>${selenium.version}</version>
-            <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.bouncycastle</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>io.github.bonigarcia</groupId>
-            <artifactId>selenium-jupiter</artifactId>
-            <version>5.1.1</version>
-            <scope>test</scope>
-        </dependency>
+    <dependency>
+      <groupId>org.seleniumhq.selenium</groupId>
+      <artifactId>selenium-grid</artifactId>
+      <version>${selenium.version}</version>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.bouncycastle</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>io.github.bonigarcia</groupId>
+      <artifactId>selenium-jupiter</artifactId>
+      <version>5.1.1</version>
+      <scope>test</scope>
+    </dependency>
 	</dependencies>
 
 	<build>
@@ -214,7 +214,7 @@
 					<clientId>372A3F9439334D4E93B979D72AC01C5E</clientId>
 					<clientSecret>251312772bc9fee3b4cb48a5f3577023acdd24d1a861639bba3be0ef40ff1807</clientSecret>
 					<reportFormat>junit</reportFormat>
-					<reportFile>target/junit.xml</reportFile>
+					<reportFile>results/junit.xml</reportFile>
 				</configuration>
 			</plugin>
 			<plugin>
