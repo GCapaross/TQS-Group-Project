@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import nikev.group.project.chargingplatform.DTOs.StationCreateDTO;
+import nikev.group.project.chargingplatform.DTOs.StationResponseDTO;
 import nikev.group.project.chargingplatform.DTOs.StationWithChargerSpeedsDTO;
 
 @RestController
@@ -55,7 +57,7 @@ public class StationController {
   }
 
   @PostMapping
-  public ResponseEntity<Station> createStation(@RequestBody Station station) {
+  public ResponseEntity<StationResponseDTO> createStation(@RequestBody StationCreateDTO station) {
     return ResponseEntity.ok(stationService.createStation(station));
   }
 
