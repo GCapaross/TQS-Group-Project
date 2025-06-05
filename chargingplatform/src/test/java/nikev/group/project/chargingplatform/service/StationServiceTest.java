@@ -9,8 +9,11 @@ import static org.mockito.Mockito.*;
 
 import jakarta.persistence.criteria.Predicate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+
+import nikev.group.project.chargingplatform.DTOs.SearchStationDTO;
 import nikev.group.project.chargingplatform.model.Station;
 import nikev.group.project.chargingplatform.repository.ChargerRepository;
 import nikev.group.project.chargingplatform.repository.StationRepository;
@@ -277,4 +280,133 @@ public class StationServiceTest {
     doNothing().when(stationRepository).delete(any(Station.class));
     assertDoesNotThrow(() -> stationService.deleteStation(5L));
   }
+
+  /**
+   * Given a station with id 1
+   * When checking for it's information
+   * Then RuntimeException is thrown
+   */
+  @Test
+  void whenStationDoesntExist_thenReturnRuntimeException() {
+    when(stationRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+    assertThrows(RuntimeException.class, () -> stationService.getStationById(1L));
+  }
+
+  @Test
+    void testFindNearbyStations() {
+        double latitude = 40.7128;
+        double longitude = -74.0060;
+        double radiusKm = 10.0;
+
+        Station station1 = new Station(
+          1L,
+          "Station 1",
+          "Location 1",
+          40.7130,
+          -74.0050,
+          1.0,
+          List.of("Type1", "Type2"),
+          null,
+          new ArrayList<>()
+        );
+
+        Station station2 = new Station(
+          2L,
+          "Station 2",
+          "Location 2",
+          40.7150,
+          -74.0070,
+          1.0,
+          List.of("Type1", "Type2"),
+          null,
+          new ArrayList<>()
+        );
+        when(stationRepository.findAll(ArgumentMatchers.<Specification<Station>>any()))
+            .thenReturn(Arrays.asList(station1, station2));
+
+        List<Station> result = stationService.findNearbyStations(latitude, longitude, radiusKm);
+
+        assertEquals(2, result.size());
+        verify(stationRepository).findAll(ArgumentMatchers.<Specification<Station>>any());
+    }
+
+    @Test
+    void testSearchStationsByName() {
+        SearchStationDTO searchStation = new SearchStationDTO();
+        searchStation.setName("Test Station");
+
+        Station station = new Station(
+          2L,
+          "Test Station",
+          "Location 2",
+          40.7150,
+          -74.0070,
+          1.0,
+          List.of("Type1", "Type2"),
+          null,
+          new ArrayList<>()
+        );
+        when(stationRepository.findAll(ArgumentMatchers.<Specification<Station>>any()))
+            .thenReturn(Arrays.asList(station));
+
+        List<Station> result = stationService.searchStations(searchStation);
+
+        assertEquals(1, result.size());
+        assertEquals("Test Station", result.get(0).getName());
+        verify(stationRepository).findAll(ArgumentMatchers.<Specification<Station>>any());
+    }
+
+    @Test
+    void testSearchStationsByLocation() {
+        SearchStationDTO searchStation = new SearchStationDTO();
+        searchStation.setLocation("Location");
+
+        Station station = new Station(
+          2L,
+          "Test Station",
+          "Location",
+          40.7150,
+          -74.0070,
+          1.0,
+          List.of("Type1", "Type2"),
+          null,
+          new ArrayList<>()
+        );
+        when(stationRepository.findAll(ArgumentMatchers.<Specification<Station>>any()))
+            .thenReturn(Arrays.asList(station));
+
+        List<Station> result = stationService.searchStations(searchStation);
+
+        assertEquals(1, result.size());
+        assertEquals("Location", result.get(0).getLocation());
+        verify(stationRepository).findAll(ArgumentMatchers.<Specification<Station>>any());
+    }
+
+    @Test
+    void testSearchStationsByDistance() {
+        SearchStationDTO searchStation = new SearchStationDTO();
+        searchStation.setLatitude(40.7128);
+        searchStation.setLongitude(-74.0060);
+        searchStation.setRadiusKm(10.0);
+
+        Station station = new Station(
+          2L,
+          "Test Station",
+          "Location",
+          40.7130,
+          -74.0050,
+          1.0,
+          List.of("Type1", "Type2"),
+          null,
+          new ArrayList<>()
+        );
+        when(stationRepository.findAll(ArgumentMatchers.<Specification<Station>>any()))
+            .thenReturn(Arrays.asList(station));
+
+        List<Station> result = stationService.searchStations(searchStation);
+
+        assertEquals(1, result.size());
+        verify(stationRepository).findAll(ArgumentMatchers.<Specification<Station>>any());
+    }
 }
