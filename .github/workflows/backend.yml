@@ -52,6 +52,7 @@ jobs:
             mvn \
               -Dxray.clientId=${XRAYCLOUD_CLIENT_ID} \
               -Dxray.clientSecret=${XRAYCLOUD_CLIENT_SECRET} \
+              -Dxray.projectKey=EDISON \
               -Dxray.cloud=true \
               app.getxray:xray-maven-plugin:0.9.0:import-results --debug
           else
