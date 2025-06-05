@@ -54,7 +54,7 @@ jobs:
               -Dxray.clientSecret=${XRAYCLOUD_CLIENT_SECRET} \
               -Dxray.projectKey=EDISON \
               -Dxray.cloud=true \
-              -Dxray.revision=${REVISION} \
+              -Dxray.revision=${REVISION} \ 
               -Dxray.
               app.getxray:xray-maven-plugin:0.9.0:import-results --debug
           else
