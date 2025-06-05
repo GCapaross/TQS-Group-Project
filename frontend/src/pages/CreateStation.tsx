@@ -19,7 +19,7 @@ import axios from 'axios';
 
 interface ChargerInput {
   id: number;
-  status: 'AVAILABLE' | 'CHARGING' | 'RESERVED' | 'OUT_OF_SERVICE';
+  status: 'AVAILABLE' | 'IN_USE' | 'OUT_OF_SERVICE';
   chargingSpeedKw: number;
 }
 
@@ -70,7 +70,7 @@ const CreateStation: React.FC = () => {
         setCompanies(response.data);
       } catch (err) {
         console.error('Error fetching company names:', err);
-        setCompaniesError('Falha ao carregar lista de empresas.');
+        setCompaniesError('Failed to load company names. Please try again later.');
       } finally {
         setCompaniesLoading(false);
       }
@@ -118,7 +118,7 @@ const CreateStation: React.FC = () => {
       !timetable.trim() ||
       !companyName.trim()
     ) {
-      setSubmitError('Por favor, preencha todos os campos.');
+      setSubmitError('Please fill in all required fields.');
       return;
     }
 
@@ -155,7 +155,7 @@ const CreateStation: React.FC = () => {
       navigate('/stations');
     } catch (err) {
       console.error('Error creating station:', err);
-      setSubmitError('Falha ao criar nova estação. Tente novamente.');
+      setSubmitError('Failied to create station. Please check your input and try again.');
       setSubmitting(false);
     }
   };
@@ -172,7 +172,7 @@ const CreateStation: React.FC = () => {
     <Container maxWidth="sm" sx={{ mt: 4, mb: 4 }}>
       <Box component="form" onSubmit={handleSubmit} noValidate>
         <Typography variant="h4" component="h1" gutterBottom>
-          Criar Nova Estação
+          Create New Station
         </Typography>
 
         {companiesError && (
@@ -298,7 +298,6 @@ const CreateStation: React.FC = () => {
               >
                 <MenuItem value="AVAILABLE">AVAILABLE</MenuItem>
                 <MenuItem value="CHARGING">CHARGING</MenuItem>
-                <MenuItem value="RESERVED">RESERVED</MenuItem>
                 <MenuItem value="OUT_OF_SERVICE">OUT_OF_SERVICE</MenuItem>
               </Select>
             </FormControl>
@@ -340,7 +339,7 @@ const CreateStation: React.FC = () => {
             color="primary"
             disabled={submitting}
           >
-            {submitting ? 'Criando...' : 'Criar Estação'}
+            {submitting ? 'Creating...' : 'Create Station'}
           </Button>
         </Box>
       </Box>
