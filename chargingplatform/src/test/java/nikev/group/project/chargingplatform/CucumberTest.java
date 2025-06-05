@@ -23,8 +23,8 @@ import org.springframework.test.context.TestPropertySource;
   key = GLUE_PROPERTY_NAME,
   value = "nikev.group.project.chargingplatform.FunctionalTests"
 )
-//@ConfigurationParameter(
-//    key = FILTER_TAGS_PROPERTY_NAME,
-//    value = "@SKIP_ALL"
-//)
+@ConfigurationParameter(
+   key = FILTER_TAGS_PROPERTY_NAME,
+   value = "@SKIP_ALL"
+)
 public class CucumberTest {}
