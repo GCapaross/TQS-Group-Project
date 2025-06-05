@@ -7,7 +7,6 @@ import {
     CardContent,
     Typography,
     Chip,
-    Rating,
     CircularProgress,
     Alert,
     TextField,
@@ -30,6 +29,7 @@ const Stations: React.FC = () => {
         const fetchStations = async () => {
             try {
                 const data = await chargingStationApi.getAll();
+                console.log('Fetched stations:', data);
                 setStations(data);
             } catch (err) {
                 setError('Failed to load charging stations');
@@ -101,7 +101,7 @@ const Stations: React.FC = () => {
                     sx={{ mb: 4 }}
                     onClick={() => navigate('/stations/create')}
                 >
-                    Criate New Station
+                    Create New Station
                 </Button>
 
                 <Grid container spacing={3}>
@@ -137,19 +137,10 @@ const Stations: React.FC = () => {
                                     </Typography>
                                     <Box sx={{ mb: 2 }}>
                                         <Typography variant="body2">
-                                            Available Slots: {station.availableSlots}/{station.maxSlots}
-                                        </Typography>
-                                        <Typography variant="body2">
                                             Price: ${station.pricePerKwh}/kWh
                                         </Typography>
                                         <Typography variant="body2">
-                                            Speed: {station.chargerSpeeds[0]} kW
-                                        </Typography>
-                                    </Box>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                        <Rating value={station.averageRating} precision={0.5} readOnly size="small" />
-                                        <Typography variant="body2" color="text.secondary">
-                                            ({station.averageRating})
+                                            Speed: {station.chargers[0].chargingSpeedKw} kW
                                         </Typography>
                                     </Box>
                                     <Box sx={{ mt: 2, display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>

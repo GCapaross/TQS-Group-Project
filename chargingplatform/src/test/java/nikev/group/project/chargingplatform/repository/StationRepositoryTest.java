@@ -29,7 +29,6 @@ public class StationRepositoryTest {
         s.setLongitude(-9.1);
         s.setPricePerKwh(0.20);
         s.setSupportedConnectors(Arrays.asList("Type2", "CHAdeMO"));
-        s.setTimetable("24h");
 
         Station saved = stationRepository.save(s);
 
@@ -54,7 +53,6 @@ public class StationRepositoryTest {
         s.setLongitude(-8.6);
         s.setPricePerKwh(0.25);
         s.setSupportedConnectors(List.of("CCS"));
-        s.setTimetable("08-20h");
         Station saved = stationRepository.save(s);
 
         boolean exists = stationRepository.existsById(saved.getId());
@@ -71,7 +69,6 @@ public class StationRepositoryTest {
         s.setLongitude(-8.4);
         s.setPricePerKwh(0.18);
         s.setSupportedConnectors(List.of("Type1"));
-        s.setTimetable("10-22h");
         Station saved = stationRepository.save(s);
 
         assertThat(stationRepository.existsById(saved.getId())).isTrue();

@@ -17,6 +17,7 @@ import java.util.*;
 
 import nikev.group.project.chargingplatform.DTOs.BookingRequestDTO;
 import nikev.group.project.chargingplatform.DTOs.SearchStationDTO;
+import nikev.group.project.chargingplatform.DTOs.StationDTO;
 import nikev.group.project.chargingplatform.model.Charger;
 import nikev.group.project.chargingplatform.model.Reservation;
 import nikev.group.project.chargingplatform.model.Station;
@@ -83,17 +84,13 @@ public class StationControllerTest {
    */
   @Test
   void whenGetAllStationsAndHasStations_thenReturnAllStations() {
-    // Use StationWithChargerSpeedsDTO instead of Station
-    StationWithChargerSpeedsDTO station1 =
-        new StationWithChargerSpeedsDTO();
+    StationDTO station1 = new StationDTO();
     station1.setId(1L);
     station1.setName("Station 1");
-    StationWithChargerSpeedsDTO station2 =
-        new StationWithChargerSpeedsDTO();
+    StationDTO station2 = new StationDTO();
     station2.setId(2L);
     station2.setName("Station 2");
-    StationWithChargerSpeedsDTO station3 =
-        new StationWithChargerSpeedsDTO();
+    StationDTO station3 = new StationDTO();
     station3.setId(3L);
     station3.setName("Station 3");
     when(stationService.getAllStations()).thenReturn(
@@ -125,7 +122,7 @@ public class StationControllerTest {
    */
   @Test
   void whenGetStationByIdAndExists_thenReturnStation() {
-    Station station = new Station();
+    StationDTO station = new StationDTO();
     station.setId(1L);
     station.setName("Station 1");
     when(stationService.getStationById(anyLong())).thenReturn(station);
@@ -285,7 +282,6 @@ public class StationControllerTest {
     station.setLongitude(0.0);
     station.setPricePerKwh(0.0);
     station.setSupportedConnectors(List.of("Type1", "Type2"));
-    station.setTimetable("9:00-18:00");
 
     when(stationService.createStation(any(StationCreateDTO.class))).thenReturn(new StationResponseDTO(station));
 
@@ -345,7 +341,6 @@ public class StationControllerTest {
       1.0,
       1.0,
       1.0,
-      null,
       null,
       null,
       null

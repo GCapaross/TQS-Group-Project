@@ -1,24 +1,29 @@
 package nikev.group.project.chargingplatform.DTOs;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.util.List;
 
-import nikev.group.project.chargingplatform.model.Station;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import nikev.group.project.chargingplatform.model.Charger;
 
 @Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class StationWithChargerSpeedsDTO {
+public class StationDTO {
     private Long id;
     private String name;
     private String location;
     private double latitude;
     private double longitude;
     private double pricePerKwh;
-    private List<String> supportedConnectors;
-    private List<Double> chargerSpeeds;
-
+    private List<String> supportedConnectors; 
+    private String companyName;
+    private List<WorkerDTO> workers;
+    private String status;
+    private List<Charger> chargers;
 }

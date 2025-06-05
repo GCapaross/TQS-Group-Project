@@ -10,10 +10,18 @@ import static org.mockito.Mockito.*;
 import jakarta.persistence.criteria.Predicate;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import nikev.group.project.chargingplatform.DTOs.SearchStationDTO;
+import nikev.group.project.chargingplatform.model.Charger;
+import nikev.group.project.chargingplatform.model.Company;
 import nikev.group.project.chargingplatform.model.Station;
+import nikev.group.project.chargingplatform.model.User;
+import nikev.group.project.chargingplatform.DTOs.StationDTO;
+import nikev.group.project.chargingplatform.DTOs.WorkerDTO;
+import nikev.group.project.chargingplatform.repository.ChargerRepository;
 import nikev.group.project.chargingplatform.repository.StationRepository;
 
 import org.junit.jupiter.api.Test;
@@ -226,7 +234,6 @@ public class StationServiceTest {
     station.setLongitude(1.0);
     station.setPricePerKwh(1.0);
     station.setSupportedConnectors(List.of("Type1", "Type2"));
-    station.setTimetable("8:00-18:00");
     station.setCompany(fakeCompany);
     station.setWorkers(new ArrayList<>());
     StationCreateDTO stationCreateDTO = new StationCreateDTO(station);
@@ -267,7 +274,6 @@ public class StationServiceTest {
       0.0,
       0.0,
       new ArrayList<>(),
-      "9:00-17:00",
       null,
       new ArrayList<>()
     );
@@ -280,7 +286,6 @@ public class StationServiceTest {
       1.0,
       1.0,
       List.of("Type1", "Type2"),
-      "8:00-18:00",
       null,
       new ArrayList<>()
     );
@@ -323,77 +328,214 @@ public class StationServiceTest {
     assertDoesNotThrow(() -> stationService.deleteStation(5L));
   }
 
-    @Test
-    void whenCreateStationWithoutChargers_thenNoChargerSaved() {
-        // Prepare fake Company
-        Company fakeCompany = new Company();
-        fakeCompany.setId(200L);
-        fakeCompany.setName("NoChargerCorp");
-        when(companyRepository.findByName("NoChargerCorp"))
-            .thenReturn(Optional.of(fakeCompany));
+  /**
+   * Given a station with id 1
+   * When checking for it's information
+   * Then RuntimeException is thrown
+   */
+  @Test
+  void whenStationDoesntExist_thenReturnRuntimeException() {
+    when(stationRepository.findById(anyLong())).thenReturn(Optional.empty());
 
-        StationCreateDTO dto = new StationCreateDTO();
-        dto.setName("Station B");
-        dto.setLocation("Loc B");
-        dto.setLatitude(5.0);
-        dto.setLongitude(15.0);
-        dto.setPricePerKwh(1.00);
-        dto.setSupportedConnectors(List.of("TypeX"));
-        dto.setTimetable("09:00-19:00");
-        dto.setCompanyName("NoChargerCorp");
-        dto.setWorkerIds(List.of()); // no workers
-        dto.setChargers(List.of()); // empty list
+    assertThrows(RuntimeException.class, () -> stationService.getStationById(1L));
+  }
 
-        Station savedStation = new Station();
-        savedStation.setId(84L);
-        savedStation.setName("Station B");
-        savedStation.setLocation("Loc B");
-        savedStation.setLatitude(5.0);
-        savedStation.setLongitude(15.0);
-        savedStation.setPricePerKwh(1.00);
-        savedStation.setSupportedConnectors(List.of("TypeX"));
-        savedStation.setTimetable("09:00-19:00");
-        savedStation.setCompany(fakeCompany);
-        savedStation.setWorkers(new ArrayList<>());
+  @Test
+    void testFindNearbyStations() {
+        double latitude = 40.7128;
+        double longitude = -74.0060;
+        double radiusKm = 10.0;
 
-        when(stationRepository.save(any(Station.class)))
-            .thenReturn(savedStation);
+        Station station1 = new Station(
+          1L,
+          "Station 1",
+          "Location 1",
+          40.7130,
+          -74.0050,
+          1.0,
+          List.of("Type1", "Type2"),
+          null,
+          new ArrayList<>()
+        );
 
-        StationResponseDTO response = stationService.createStation(dto);
+        Station station2 = new Station(
+          2L,
+          "Station 2",
+          "Location 2",
+          40.7150,
+          -74.0070,
+          1.0,
+          List.of("Type1", "Type2"),
+          null,
+          new ArrayList<>()
+        );
+        when(stationRepository.findAll(ArgumentMatchers.<Specification<Station>>any()))
+            .thenReturn(Arrays.asList(station1, station2));
 
-        verify(companyRepository, times(1)).findByName("NoChargerCorp");
-        verify(stationRepository, times(1)).save(any(Station.class));
-        verify(chargerRepository, never()).saveAll(anyList());
+        List<Station> result = stationService.findNearbyStations(latitude, longitude, radiusKm);
+
+        assertEquals(2, result.size());
+        verify(stationRepository).findAll(ArgumentMatchers.<Specification<Station>>any());
     }
 
     @Test
-    void whenWorkerNotFound_thenThrowEntityNotFoundExceptionBeforeChargerLogic() {
-        Company fakeCompany = new Company();
-        fakeCompany.setId(500L);
-        fakeCompany.setName("WorkerFailCorp");
-        when(companyRepository.findByName("WorkerFailCorp"))
-            .thenReturn(Optional.of(fakeCompany));
+    void testSearchStationsByName() {
+        SearchStationDTO searchStation = new SearchStationDTO();
+        searchStation.setName("Test Station");
 
-        when(userRepository.findAllById(anyList()))
-            .thenReturn(List.of()); // no users returned
+        Station station = new Station(
+          2L,
+          "Test Station",
+          "Location 2",
+          40.7150,
+          -74.0070,
+          1.0,
+          List.of("Type1", "Type2"),
+          null,
+          new ArrayList<>()
+        );
+        when(stationRepository.findAll(ArgumentMatchers.<Specification<Station>>any()))
+            .thenReturn(Arrays.asList(station));
 
-        StationCreateDTO dto = new StationCreateDTO();
-        dto.setName("Station D");
-        dto.setLocation("Loc D");
-        dto.setLatitude(0.0);
-        dto.setLongitude(0.0);
-        dto.setPricePerKwh(1.50);
-        dto.setSupportedConnectors(List.of("TypeZ"));
-        dto.setTimetable("07:00-17:00");
-        dto.setCompanyName("WorkerFailCorp");
-        dto.setWorkerIds(List.of(999L)); // request one worker
-        dto.setChargers(List.of(new ChargerDTO(0L, ChargerStatus.AVAILABLE, 30.0)));
+        List<Station> result = stationService.searchStations(searchStation);
 
-        assertThrows(EntityNotFoundException.class, () -> stationService.createStation(dto));
-
-        verify(companyRepository, times(1)).findByName("WorkerFailCorp");
-        verify(userRepository, times(1)).findAllById(List.of(999L));
-        verify(stationRepository, never()).save(any(Station.class));
-        verify(chargerRepository, never()).saveAll(anyList());
+        assertEquals(1, result.size());
+        assertEquals("Test Station", result.get(0).getName());
+        verify(stationRepository).findAll(ArgumentMatchers.<Specification<Station>>any());
     }
+
+    @Test
+    void testSearchStationsByLocation() {
+        SearchStationDTO searchStation = new SearchStationDTO();
+        searchStation.setLocation("Location");
+
+        Station station = new Station(
+          2L,
+          "Test Station",
+          "Location",
+          40.7150,
+          -74.0070,
+          1.0,
+          List.of("Type1", "Type2"),
+          null,
+          new ArrayList<>()
+        );
+        when(stationRepository.findAll(ArgumentMatchers.<Specification<Station>>any()))
+            .thenReturn(Arrays.asList(station));
+
+        List<Station> result = stationService.searchStations(searchStation);
+
+        assertEquals(1, result.size());
+        assertEquals("Location", result.get(0).getLocation());
+        verify(stationRepository).findAll(ArgumentMatchers.<Specification<Station>>any());
+    }
+
+    @Test
+    void testSearchStationsByDistance() {
+        SearchStationDTO searchStation = new SearchStationDTO();
+        searchStation.setLatitude(40.7128);
+        searchStation.setLongitude(-74.0060);
+        searchStation.setRadiusKm(10.0);
+
+        Station station = new Station(
+          2L,
+          "Test Station",
+          "Location",
+          40.7130,
+          -74.0050,
+          1.0,
+          List.of("Type1", "Type2"),
+          null,
+          new ArrayList<>()
+        );
+        when(stationRepository.findAll(ArgumentMatchers.<Specification<Station>>any()))
+            .thenReturn(Arrays.asList(station));
+
+        List<Station> result = stationService.searchStations(searchStation);
+
+        assertEquals(1, result.size());
+        verify(stationRepository).findAll(ArgumentMatchers.<Specification<Station>>any());
+    }
+
+    @Test
+    void testAreAllChargersOutOfService_allOut() {
+        Long stationId = 50L;
+        Charger c1 = new Charger(); c1.setStatus(Charger.ChargerStatus.OUT_OF_SERVICE);
+        Charger c2 = new Charger(); c2.setStatus(Charger.ChargerStatus.OUT_OF_SERVICE);
+        when(chargerRepository.findByStation_Id(stationId)).thenReturn(List.of(c1, c2));
+
+        boolean result = stationService.areAllChargersOutOfService(stationId);
+        assertTrue(result);
+        verify(chargerRepository).findByStation_Id(stationId);
+    }
+
+    @Test
+    void testAreAllChargersOutOfService_someAvailable() {
+        Long stationId = 60L;
+        Charger c1 = new Charger(); c1.setStatus(Charger.ChargerStatus.OUT_OF_SERVICE);
+        Charger c2 = new Charger(); c2.setStatus(Charger.ChargerStatus.AVAILABLE);
+        when(chargerRepository.findByStation_Id(stationId)).thenReturn(List.of(c1, c2));
+
+        boolean result = stationService.areAllChargersOutOfService(stationId);
+        assertFalse(result);
+        verify(chargerRepository).findByStation_Id(stationId);
+    }
+
+    @Test
+    void testConvertToStationDTO_fullData() {
+        Station station = new Station();
+        station.setId(100L);
+        station.setName("StName");
+        station.setLocation("Loc");
+        station.setLatitude(1.1);
+        station.setLongitude(2.2);
+        station.setPricePerKwh(3.3);
+        station.setSupportedConnectors(List.of("A", "B"));
+        Company company = new Company();
+         company.setName("TestCompany");
+        station.setCompany(company);
+        User worker = new User(); 
+        worker.setId(10L); 
+        worker.setUsername("user1"); 
+        worker.setEmail("u1@test");
+        station.setWorkers(List.of(worker));
+        Charger c1 = new Charger(); 
+        c1.setId(200L); 
+        c1.setStatus(Charger.ChargerStatus.OUT_OF_SERVICE);
+        Charger c2 = new Charger();
+        c2.setId(201L); 
+        c2.setStatus(Charger.ChargerStatus.AVAILABLE);
+        when(chargerRepository.findByStation_Id(100L)).thenReturn(List.of(c1, c2));
+
+        StationDTO dto = stationService.convertToStationDTO(station);
+        assertEquals(100L, dto.getId());
+        assertEquals("StName", dto.getName());
+        assertEquals("Loc", dto.getLocation());
+        assertEquals(1.1, dto.getLatitude());
+        assertEquals(2.2, dto.getLongitude());
+        assertEquals(3.3, dto.getPricePerKwh());
+        assertIterableEquals(List.of("A", "B"), dto.getSupportedConnectors());
+        assertEquals("TestCompany", dto.getCompanyName());
+        assertEquals(1, dto.getWorkers().size());
+        WorkerDTO wd = dto.getWorkers().get(0);
+        assertEquals(10L, wd.getId());
+        assertEquals("user1", wd.getUsername());
+        assertEquals("u1@test", wd.getEmail());
+        assertEquals(List.of(c1, c2), dto.getChargers());
+        assertEquals("Available", dto.getStatus());
+    }
+
+    @Test
+    void testConvertToStationDTO_emptyData() {
+        Station station = new Station(); 
+        station.setId(101L);
+        when(chargerRepository.findByStation_Id(101L)).thenReturn(new ArrayList<>());
+
+        StationDTO dto = stationService.convertToStationDTO(station);
+        assertNull(dto.getCompanyName());
+        assertTrue(dto.getWorkers().isEmpty());
+        assertTrue(dto.getChargers().isEmpty());
+        assertEquals("Out of Service", dto.getStatus());
+    }
+
 }

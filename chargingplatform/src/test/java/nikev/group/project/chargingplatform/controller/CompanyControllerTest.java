@@ -25,7 +25,7 @@ class CompanyControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private CompanyRepository companyRepository;
 
     @MockitoBean

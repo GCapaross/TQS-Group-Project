@@ -3,6 +3,7 @@ package nikev.group.project.chargingplatform.controller;
 import java.util.List;
 
 import nikev.group.project.chargingplatform.DTOs.SearchStationDTO;
+import nikev.group.project.chargingplatform.DTOs.StationDTO;
 import nikev.group.project.chargingplatform.model.Station;
 import nikev.group.project.chargingplatform.service.StationService;
 
@@ -22,14 +23,14 @@ public class StationController {
   private StationService stationService;
 
   @GetMapping
-  public ResponseEntity<List<StationWithChargerSpeedsDTO>> getAllStations() {
+  public ResponseEntity<List<StationDTO>> getAllStations() {
     return ResponseEntity.ok(stationService.getAllStations());
   }
 
   @GetMapping("/{id}")
-  public ResponseEntity<Station> getStationById(@PathVariable Long id) {
+  public ResponseEntity<StationDTO> getStationById(@PathVariable Long id) {
     try {
-      Station station = stationService.getStationById(id);
+      StationDTO station = stationService.getStationById(id);
       return ResponseEntity.ok(station);
     } catch (RuntimeException e) {
       return ResponseEntity.notFound().build();
