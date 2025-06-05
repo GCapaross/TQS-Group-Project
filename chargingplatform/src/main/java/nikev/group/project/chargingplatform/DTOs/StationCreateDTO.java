@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import nikev.group.project.chargingplatform.model.Station;
 import nikev.group.project.chargingplatform.model.User;
+import nikev.group.project.chargingplatform.utils.Utils;
 
 /**
  * DTO for creating a new charging station.
@@ -19,7 +20,7 @@ import nikev.group.project.chargingplatform.model.User;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class StationCreateDTO {
+public class StationCreateDTO implements  StationBasicDTO {
 
     @NotBlank(message = "O nome da estação é obrigatório")
     private String name;
@@ -59,23 +60,6 @@ public class StationCreateDTO {
      * @param station the Station to convert
      */
     public StationCreateDTO(Station station) {
-        this.name = station.getName();
-        this.location = station.getLocation();
-        this.latitude = station.getLatitude();
-        this.longitude = station.getLongitude();
-        this.pricePerKwh = station.getPricePerKwh();
-        this.supportedConnectors = station.getSupportedConnectors();
-        this.timetable = station.getTimetable();
-        if (station.getCompany() != null) {
-            this.companyName = station.getCompany().getName();
-        }
-        if (station.getWorkers() != null && !station.getWorkers().isEmpty()) {
-            this.workerIds = station.getWorkers()
-                                    .stream()
-                                    .map(User::getId)
-                                    .toList();
-        }
-
-        this.chargers = List.of();
+        Utils.updateStationsDTOs(station, this);
     }
 }
