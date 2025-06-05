@@ -17,6 +17,7 @@ import java.util.Date;
 import javax.crypto.SecretKey;
 
 import nikev.group.project.chargingplatform.DTOs.RegisterRequestDTO;
+import nikev.group.project.chargingplatform.TestMetricConfig;
 import nikev.group.project.chargingplatform.model.Role;
 import nikev.group.project.chargingplatform.model.User;
 import nikev.group.project.chargingplatform.security.JwtTokenProvider;
@@ -29,6 +30,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -48,6 +50,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 @WebMvcTest(UserController.class)
 @ActiveProfiles("test")
+@Import(TestMetricConfig.class)
 public class UserControllerTest {
 
   @MockitoBean
@@ -97,7 +100,9 @@ public class UserControllerTest {
     user.setUsername("test");
     user.setRole(Role.USER);
 
-    when(userService.registerUser(any(RegisterRequestDTO.class))).thenReturn(user);
+    when(userService.registerUser(any(RegisterRequestDTO.class))).thenReturn(
+      user
+    );
 
     try {
       mockMvc

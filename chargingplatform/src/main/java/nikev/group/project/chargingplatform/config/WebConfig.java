@@ -61,6 +61,7 @@ public class WebConfig implements WebMvcConfigurer {
                         "/swagger-ui.html",
                         "/swagger-ui/**"
                     ).permitAll()
+                    .requestMatchers("/actuator/**").permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/bookings").authenticated()
                     .requestMatchers(HttpMethod.DELETE, "/api/bookings/{id}").authenticated()
                     .requestMatchers(HttpMethod.GET, "/api/users/me").authenticated()

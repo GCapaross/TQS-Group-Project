@@ -63,5 +63,48 @@ services:
     ports:
       - $FRONTEND_LOCAL_PORT:$FRONTEND_DOCKER_PORT
 
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: chargingplatform-prometheus
+    ports:
+      - ${PROMETHEUS_LOCAL_PORT}:${PROMETHEUS_DOCKER_PORT}
+    volumes:
+      - ./chargingplatform/prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    depends_on:
+      - backend
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: chargingplatform-grafana
+    ports:
+      - ${GRAFANA_LOCAL_PORT}:${GRAFANA_DOCKER_PORT}
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GF_SECURITY_ADMIN_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD}
+      - GF_INSTALL_PLUGINS=grafana-piechart-panel,grafana-worldmap-panel
+    volumes:
+      - grafana-storage:/var/lib/grafana
+    depends_on:
+      - prometheus
+      - backend
+
+  nagios:
+    image: jasonrivers/nagios:latest
+    container_name: chargingplatform-nagios
+    ports:
+      - ${NAGIOS_LOCAL_PORT}:${NAGIOS_DOCKER_PORT}
+    environment:
+      - NAGIOSADMIN_USER=$(NAGIOSADMIN_USER)
+      - NAGIOSADMIN_PASS=$(NGIOSADMIN_PASS)
+    volumes:
+      - ./nagios/custom:/opt/nagios/etc/objects/custom
+      - ./nagios/custom/cgi.cfg:/opt/nagios/etc/cgi.cfg
+    depends_on:
+      - backend
+      - postgres
+
 volumes:
-  postgres_data: 
+  postgres_data:
+  grafana-storage: 
