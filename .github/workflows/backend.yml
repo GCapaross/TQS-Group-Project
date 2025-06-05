@@ -48,6 +48,7 @@ jobs:
           REVISION: ${{ github.ref_name}}
         run: |
           if [ -f results/junit.xml ]; then
+            echo < results/junit.xml
             mvn \
               -Dxray.clientId=${XRAYCLOUD_CLIENT_ID} \
               -Dxray.clientSecret=${XRAYCLOUD_CLIENT_SECRET} \
