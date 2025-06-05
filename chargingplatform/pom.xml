@@ -162,7 +162,7 @@
 					</excludes>
 				</configuration>
 			</plugin>
-      <plugin>
+      		<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
 				<version>0.8.12</version>
@@ -172,19 +172,21 @@
 							<goal>prepare-agent</goal>
 						</goals>
 					</execution>
-
-          <execution>
-            <id>report</id>
-            <goals>
-              <goal>report</goal>
-            </goals>
-            <configuration>
-              <formats>
-                <format>XML</format>
-              </formats>
-            </configuration>
-          </execution>
-        </executions>
+      		    	<execution>
+      		      		<id>report</id>
+      		      		<goals>
+      		        		<goal>report</goal>
+      		      		</goals>
+      		      		<configuration>
+      		        		<formats>
+      		          			<format>XML</format>
+      		        		</formats>
+      		      		</configuration>
+      		    	</execution>
+      		  	</executions>
+			    <excludes>
+        		    <exclude>nikev/group/project/chargingplatform/security/**</exclude>
+        		</excludes>
 			</plugin>
 		</plugins>
 	</build>
