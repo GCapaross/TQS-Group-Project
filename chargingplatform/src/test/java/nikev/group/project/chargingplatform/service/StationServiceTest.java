@@ -8,11 +8,14 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 import jakarta.persistence.criteria.Predicate;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
 import nikev.group.project.chargingplatform.model.Station;
 import nikev.group.project.chargingplatform.repository.StationRepository;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatchers;
@@ -21,6 +24,17 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Example;
 import org.springframework.data.jpa.domain.Specification;
+
+import jakarta.persistence.EntityNotFoundException;
+import nikev.group.project.chargingplatform.DTOs.ChargerDTO;
+import nikev.group.project.chargingplatform.DTOs.StationCreateDTO;
+import nikev.group.project.chargingplatform.DTOs.StationResponseDTO;
+import nikev.group.project.chargingplatform.model.Charger;
+import nikev.group.project.chargingplatform.model.Charger.ChargerStatus;
+import nikev.group.project.chargingplatform.model.Company;
+import nikev.group.project.chargingplatform.repository.ChargerRepository;
+import nikev.group.project.chargingplatform.repository.CompanyRepository;
+import nikev.group.project.chargingplatform.repository.UserRepository;
 
 @ExtendWith(MockitoExtension.class)
 public class StationServiceTest {
@@ -33,6 +47,15 @@ public class StationServiceTest {
    */
   @Mock
   private StationRepository stationRepository;
+
+  @Mock
+  private ChargerRepository chargerRepository;
+
+  @Mock
+  private CompanyRepository companyRepository;
+
+  @Mock
+  private UserRepository userRepository;
 
   @InjectMocks
   private StationService stationService;
@@ -189,10 +212,34 @@ public class StationServiceTest {
    */
   @Test
   void whenCreateStation_thenReturnCreatedStation() {
-    Station station = new Station();
-    when(stationRepository.save(any(Station.class))).thenReturn(station);
+    Company fakeCompany = new Company();
+    fakeCompany.setId(42L);
+    fakeCompany.setName("MinhaEmpresaX");
 
-    assertThat(stationService.createStation(station), is(station));
+    when(companyRepository.findByName("MinhaEmpresaX"))
+        .thenReturn(Optional.of(fakeCompany));
+    
+    Station station = new Station();
+    station.setName("Test Station");
+    station.setLocation("Test Location");
+    station.setLatitude(1.0);
+    station.setLongitude(1.0);
+    station.setPricePerKwh(1.0);
+    station.setSupportedConnectors(List.of("Type1", "Type2"));
+    station.setTimetable("8:00-18:00");
+    station.setCompany(fakeCompany);
+    station.setWorkers(new ArrayList<>());
+    StationCreateDTO stationCreateDTO = new StationCreateDTO(station);
+
+    when(stationRepository.save(any(Station.class)))
+        .thenReturn(station);
+
+    StationResponseDTO result = stationService.createStation(stationCreateDTO);
+    
+    verify(stationRepository, times(1)).save(any(Station.class));
+    verify(companyRepository, times(1)).findByName("MinhaEmpresaX");
+    assertThat(result.getCompanyName(), is("MinhaEmpresaX"));
+
   }
 
   /* FUNCTION public Station updateStation(Long id, Station stationDetails) */
@@ -275,4 +322,78 @@ public class StationServiceTest {
     doNothing().when(stationRepository).delete(any(Station.class));
     assertDoesNotThrow(() -> stationService.deleteStation(5L));
   }
+
+    @Test
+    void whenCreateStationWithoutChargers_thenNoChargerSaved() {
+        // Prepare fake Company
+        Company fakeCompany = new Company();
+        fakeCompany.setId(200L);
+        fakeCompany.setName("NoChargerCorp");
+        when(companyRepository.findByName("NoChargerCorp"))
+            .thenReturn(Optional.of(fakeCompany));
+
+        StationCreateDTO dto = new StationCreateDTO();
+        dto.setName("Station B");
+        dto.setLocation("Loc B");
+        dto.setLatitude(5.0);
+        dto.setLongitude(15.0);
+        dto.setPricePerKwh(1.00);
+        dto.setSupportedConnectors(List.of("TypeX"));
+        dto.setTimetable("09:00-19:00");
+        dto.setCompanyName("NoChargerCorp");
+        dto.setWorkerIds(List.of()); // no workers
+        dto.setChargers(List.of()); // empty list
+
+        Station savedStation = new Station();
+        savedStation.setId(84L);
+        savedStation.setName("Station B");
+        savedStation.setLocation("Loc B");
+        savedStation.setLatitude(5.0);
+        savedStation.setLongitude(15.0);
+        savedStation.setPricePerKwh(1.00);
+        savedStation.setSupportedConnectors(List.of("TypeX"));
+        savedStation.setTimetable("09:00-19:00");
+        savedStation.setCompany(fakeCompany);
+        savedStation.setWorkers(new ArrayList<>());
+
+        when(stationRepository.save(any(Station.class)))
+            .thenReturn(savedStation);
+
+        StationResponseDTO response = stationService.createStation(dto);
+
+        verify(companyRepository, times(1)).findByName("NoChargerCorp");
+        verify(stationRepository, times(1)).save(any(Station.class));
+        verify(chargerRepository, never()).saveAll(anyList());
+    }
+
+    @Test
+    void whenWorkerNotFound_thenThrowEntityNotFoundExceptionBeforeChargerLogic() {
+        Company fakeCompany = new Company();
+        fakeCompany.setId(500L);
+        fakeCompany.setName("WorkerFailCorp");
+        when(companyRepository.findByName("WorkerFailCorp"))
+            .thenReturn(Optional.of(fakeCompany));
+
+        when(userRepository.findAllById(anyList()))
+            .thenReturn(List.of()); // no users returned
+
+        StationCreateDTO dto = new StationCreateDTO();
+        dto.setName("Station D");
+        dto.setLocation("Loc D");
+        dto.setLatitude(0.0);
+        dto.setLongitude(0.0);
+        dto.setPricePerKwh(1.50);
+        dto.setSupportedConnectors(List.of("TypeZ"));
+        dto.setTimetable("07:00-17:00");
+        dto.setCompanyName("WorkerFailCorp");
+        dto.setWorkerIds(List.of(999L)); // request one worker
+        dto.setChargers(List.of(new ChargerDTO(0L, ChargerStatus.AVAILABLE, 30.0)));
+
+        assertThrows(EntityNotFoundException.class, () -> stationService.createStation(dto));
+
+        verify(companyRepository, times(1)).findByName("WorkerFailCorp");
+        verify(userRepository, times(1)).findAllById(List.of(999L));
+        verify(stationRepository, never()).save(any(Station.class));
+        verify(chargerRepository, never()).saveAll(anyList());
+    }
 }
