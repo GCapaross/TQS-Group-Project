@@ -24,6 +24,9 @@
 - [ ] I have followed the project's coding standards and conventions.
 - [ ] I have run the tests locally and they are passing.
 
+## Step-by-step (How was it tested)
+
+
 ## Screenshots (if applicable)
 <!-- If your PR involves UI changes, please include relevant screenshots. -->
 

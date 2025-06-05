@@ -7,7 +7,6 @@ public interface StationBasicDTO {
     void setLongitude(Double longitude);
     void setPricePerKwh(Double pricePerKwh);
     void setSupportedConnectors(java.util.List<String> supportedConnectors);
-    void setTimetable(String timetable);
     void setCompanyName(String companyName);
     void setWorkerIds(java.util.List<Long> workerIds);
 }

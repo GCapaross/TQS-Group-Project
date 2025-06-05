@@ -1,4 +1,4 @@
-import { ChargingStation } from "../types/ChargingStation";
+import { ChargingStation } from "../types/responseTypes";
 
 export const mockStations: ChargingStation[] = [
   {
@@ -8,13 +8,18 @@ export const mockStations: ChargingStation[] = [
     latitude: 40.7128,
     longitude: -74.006,
     status: "AVAILABLE",
-    maxSlots: 4,
-    availableSlots: 2,
     pricePerKwh: 0.45,
     supportedConnectors: ["CCS", "Type 2"],
-    chargerSpeeds: 50,
-    carrierNetwork: "ChargePoint",
-    averageRating: 4.5,
+    companyName: "Downtown Energy Co.",
+    workers: [
+      { id: 101, username: "alice_w", email: "alice@downtownenergy.com" },
+      { id: 102, username: "bob_m", email: "bob@downtownenergy.com" },
+    ],
+    chargers: [
+      { id: 201, status: "AVAILABLE", chargingSpeedKw: 50 },
+      { id: 202, status: "IN_USE", chargingSpeedKw: 100 },
+      { id: 203, status: "OUT_OF_SERVICE", chargingSpeedKw: 22 },
+    ],
   },
   {
     id: 2,
@@ -22,14 +27,19 @@ export const mockStations: ChargingStation[] = [
     location: "456 Retail Avenue, Shopping District",
     latitude: 40.7145,
     longitude: -74.008,
-    status: "IN_USE",
-    maxSlots: 6,
-    availableSlots: 1,
-    pricePerKwh: 0.4,
+    status: "AVAILABLE",
+    pricePerKwh: 0.45,
     supportedConnectors: ["CCS", "CHAdeMO", "Type 2"],
-    chargerSpeeds: 150,
-    carrierNetwork: "Tesla",
-    averageRating: 4.8,
+    companyName: "Downtown Energy Co.",
+    workers: [
+      { id: 101, username: "alice_w", email: "alice@downtownenergy.com" },
+      { id: 102, username: "bob_m", email: "bob@downtownenergy.com" },
+    ],
+    chargers: [
+      { id: 201, status: "AVAILABLE", chargingSpeedKw: 50 },
+      { id: 202, status: "IN_USE", chargingSpeedKw: 100 },
+      { id: 203, status: "OUT_OF_SERVICE", chargingSpeedKw: 22 },
+    ],
   },
   {
     id: 3,
@@ -38,12 +48,17 @@ export const mockStations: ChargingStation[] = [
     latitude: 40.711,
     longitude: -74.004,
     status: "AVAILABLE",
-    maxSlots: 2,
-    availableSlots: 2,
     pricePerKwh: 0.35,
     supportedConnectors: ["Type 2"],
-    chargerSpeeds: 22,
-    carrierNetwork: "GreenPower",
-    averageRating: 4.2,
+    companyName: "Downtown Energy Co.",
+    workers: [
+      { id: 101, username: "alice_w", email: "alice@downtownenergy.com" },
+      { id: 102, username: "bob_m", email: "bob@downtownenergy.com" },
+    ],
+    chargers: [
+      { id: 201, status: "AVAILABLE", chargingSpeedKw: 50 },
+      { id: 202, status: "IN_USE", chargingSpeedKw: 100 },
+      { id: 203, status: "OUT_OF_SERVICE", chargingSpeedKw: 22 },
+    ],
   },
 ];

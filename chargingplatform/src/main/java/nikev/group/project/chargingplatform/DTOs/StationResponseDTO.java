@@ -20,7 +20,6 @@ public class StationResponseDTO implements StationBasicDTO {
     private Double longitude;
     private Double pricePerKwh;
     private List<String> supportedConnectors;
-    private String timetable;
     private String companyName;
     private List<Long> workerIds;
 

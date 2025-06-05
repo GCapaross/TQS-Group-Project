@@ -16,7 +16,6 @@ public class Utils {
         dto.setLongitude(station.getLongitude());
         dto.setPricePerKwh(station.getPricePerKwh());
         dto.setSupportedConnectors(station.getSupportedConnectors());
-        dto.setTimetable(station.getTimetable());
         if (station.getCompany() != null) {
             dto.setCompanyName(station.getCompany().getName());
         }

@@ -11,11 +11,9 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class RegisterRequestDTO {
+public class WorkerDTO {
 
+    private Long id;
     private String username;
-    private String password;
-    private String confirmPassword;
     private String email;
-    private String accountType;
 }

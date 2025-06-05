@@ -1,0 +1,68 @@
+name: Deploy no Self-Hosted Runner
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, linux]
+
+    steps:
+      - name: Checkout of repository
+        uses: actions/checkout@v3
+
+      - name: Getting into the project directory
+        run: |
+          cd .
+
+      - name: Criar arquivo .env
+        run: |
+          cat > .env <<EOF
+          POSTGRES_PORT=${{ secrets.POSTGRES_PORT }}
+          POSTGRES_USER=${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB=${{ secrets.POSTGRES_DB }}
+          POSTGRES_DOCKER_PORT=${{ secrets.POSTGRES_DOCKER_PORT }}
+          POSTGRES_LOCAL_PORT=${{ secrets.POSTGRES_LOCAL_PORT }}
+          
+          BACKEND_PORT=${{ secrets.BACKEND_PORT }}
+          BACKEND_LOCAL_PORT=${{ secrets.BACKEND_LOCAL_PORT }}
+          BACKEND_DOCKER_PORT=${{ secrets.BACKEND_DOCKER_PORT }}
+
+          FRONTEND_PORT=${{ secrets.FRONTEND_PORT }}
+          FRONTEND_LOCAL_PORT=${{ secrets.FRONTEND_LOCAL_PORT }}
+          FRONTEND_DOCKER_PORT=${{ secrets.FRONTEND_DOCKER_PORT }}
+
+          HOSTNAME=localhost
+
+          JWT_SECRET=${{ secrets.JWT_SECRET }}
+          JWT_EXPIRATION_MS=${{ secrets.JWT_EXPIRATION_MS }}
+
+          GF_SECURITY_ADMIN_USER=${{ secrets.GF_SECURITY_ADMIN_USER }}
+          GF_SECURITY_ADMIN_PASSWORD=${{ secrets.GF_SECURITY_ADMIN_PASSWORD }}
+
+          GRAFANA_LOCAL_PORT=${{ secrets.GRAFANA_LOCAL_PORT }}
+          GRAFANA_DOCKER_PORT=${{ secrets.GRAFANA_DOCKER_PORT }}
+
+          PROMETHEUS_LOCAL_PORT=${{ secrets.PROMETHEUS_LOCAL_PORT }}
+          PROMETHEUS_DOCKER_PORT=${{ secrets.PROMETHEUS_DOCKER_PORT }}
+
+          NAGIOSADMIN_USER=${{ secrets.NAGIOSADMIN_USER }}
+          NAGIOSADMIN_PASS=${{ secrets.NAGIOSADMIN_PASS }}
+          NAGIOS_LOCAL_PORT=${{ secrets.NAGIOS_LOCAL_PORT }}
+          NAGIOS_DOCKER_PORT=${{ secrets.NAGIOS_DOCKER_PORT }}
+          EOF
+
+      - name: Stop previous containers
+        run: |
+          docker compose down || true
+
+      - name: Pull de imagens, se for o caso
+        run: |
+          docker compose pull || true
+
+      - name: Run app with Docker Compose
+        run: |
+          docker compose up -d --build

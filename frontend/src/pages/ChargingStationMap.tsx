@@ -55,8 +55,6 @@ const ChargingStationMap: React.FC = () => {
   // Filter states
   const [supportedConnectors, setSupportedConnectors] = useState<string[]>([]);
   const [minChargingSpeed, setMinChargingSpeed] = useState<number>(0);
-  const [carrierNetwork, setCarrierNetwork] = useState<string>("");
-  const [minRating, setMinRating] = useState<number>(0);
 
   useEffect(() => {
     // Get user's location
@@ -101,30 +99,14 @@ const ChargingStationMap: React.FC = () => {
 
     if (minChargingSpeed > 0) {
       filtered = filtered.filter((station) =>
-        station.chargerSpeeds.some((speed) => speed >= minChargingSpeed)
-      );
-    }
-
-    if (carrierNetwork) {
-      filtered = filtered.filter(
-        (station) => station.carrierNetwork === carrierNetwork
-      );
-    }
-
-    if (minRating > 0) {
-      filtered = filtered.filter(
-        (station) => station.averageRating >= minRating
+        station.chargers.some(
+          (charger) => charger.chargingSpeedKw >= minChargingSpeed
+        )
       );
     }
 
     setFilteredStations(filtered);
-  }, [
-    stations,
-    supportedConnectors,
-    minChargingSpeed,
-    carrierNetwork,
-    minRating,
-  ]);
+  }, [stations, supportedConnectors, minChargingSpeed]);
 
   const handleStationClick = (stationId: number) => {
     navigate(`/stations/${stationId}/book`);
@@ -216,33 +198,6 @@ const ChargingStationMap: React.FC = () => {
               valueLabelDisplay="auto"
             />
           </Grid>
-          <Grid>
-            <FormControl fullWidth>
-              <InputLabel>Carrier Network</InputLabel>
-              <Select
-                value={carrierNetwork}
-                onChange={(e) => setCarrierNetwork(e.target.value)}
-              >
-                <MenuItem value="">Any</MenuItem>
-                {["ChargePoint", "Tesla", "GreenPower"].map((network) => (
-                  <MenuItem key={network} value={network}>
-                    {network}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid>
-            <Typography gutterBottom>Min Rating</Typography>
-            <Slider
-              value={minRating}
-              onChange={(_, value) => setMinRating(value as number)}
-              min={0}
-              max={5}
-              step={0.5}
-              valueLabelDisplay="auto"
-            />
-          </Grid>
         </Grid>
       </Paper>
 
@@ -300,14 +255,10 @@ const ChargingStationMap: React.FC = () => {
                       {station.location}
                     </Typography>
                     <Typography variant="body2">
-                      Available Slots: {station.availableSlots}/
-                      {station.maxSlots}
-                    </Typography>
-                    <Typography variant="body2">
                       Price: ${station.pricePerKwh}/kWh
                     </Typography>
                     <Typography variant="body2">
-                      Speed: {station.chargerSpeeds[0]} kW
+                      Speed: {station.chargers[0].chargingSpeedKw} kW
                     </Typography>
                     <Box
                       sx={{
