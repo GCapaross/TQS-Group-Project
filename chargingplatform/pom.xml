@@ -228,6 +228,8 @@
 					<cloud>true</cloud>
 					<reportFormat>junit</reportFormat>
 					<reportFile>results/junit.xml</reportFile>
+          <skip>${xray.skip}</skip>
+          <xrayCloudBaseUrl>https://eu.xray.cloud.getxray.app</xrayCloudBaseUrl>
 				</configuration>
 			</plugin>
 			<plugin>
