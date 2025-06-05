@@ -35,7 +35,7 @@ const ChargingStationMap: React.FC = () => {
     const navigate = useNavigate();
 
     // Filter states
-    const [connectorTypes, setConnectorTypes] = useState<string[]>([]);
+    const [supportedConnectors, setSupportedConnectors] = useState<string[]>([]);
     const [minChargingSpeed, setMinChargingSpeed] = useState<number>(0);
     const [carrierNetwork, setCarrierNetwork] = useState<string>('');
     const [minRating, setMinRating] = useState<number>(0);
@@ -55,6 +55,7 @@ const ChargingStationMap: React.FC = () => {
         const fetchStations = async () => {
             try {
                 const data = await chargingStationApi.getAll();
+                console.log('Fetched stations:', data);
                 setStations(data);
                 setFilteredStations(data);
             } catch (err) {
@@ -72,17 +73,22 @@ const ChargingStationMap: React.FC = () => {
     useEffect(() => {
         let filtered = [...stations];
 
-        if (connectorTypes.length > 0) {
+        if (supportedConnectors.length > 0) {
             filtered = filtered.filter(station =>
+<<<<<<< HEAD
                 connectorTypes.some(type => station.supportedConnectors.includes(type))
+=======
+                supportedConnectors.some(type => station.supportedConnectors.includes(type))
+>>>>>>> dev
             );
         }
 
         if (minChargingSpeed > 0) {
             filtered = filtered.filter(station =>
-                station.chargingSpeedKw >= minChargingSpeed
+                station.chargerSpeeds.some(speed => speed >= minChargingSpeed)
             );
         }
+
 
         if (carrierNetwork) {
             filtered = filtered.filter(station =>
@@ -97,7 +103,7 @@ const ChargingStationMap: React.FC = () => {
         }
 
         setFilteredStations(filtered);
-    }, [stations, connectorTypes, minChargingSpeed, carrierNetwork, minRating]);
+    }, [stations, supportedConnectors, minChargingSpeed, carrierNetwork, minRating]);
 
     const handleStationClick = (stationId: number) => {
         navigate(`/stations/${stationId}/book`);
@@ -144,13 +150,13 @@ const ChargingStationMap: React.FC = () => {
                     Filters
                 </Typography>
                 <Grid container spacing={2}>
-                    <Grid item xs={12}>
+                    <Grid >
                         <FormControl fullWidth>
                             <InputLabel>Connector Types</InputLabel>
                             <Select
                                 multiple
-                                value={connectorTypes}
-                                onChange={(e) => setConnectorTypes(e.target.value as string[])}
+                                value={supportedConnectors}
+                                onChange={(e) => setSupportedConnectors(e.target.value as string[])}
                                 renderValue={(selected) => (
                                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                                         {selected.map((value) => (
@@ -167,7 +173,7 @@ const ChargingStationMap: React.FC = () => {
                             </Select>
                         </FormControl>
                     </Grid>
-                    <Grid item xs={12}>
+                    <Grid >
                         <Typography gutterBottom>
                             Min Charging Speed (kW)
                         </Typography>
@@ -180,7 +186,7 @@ const ChargingStationMap: React.FC = () => {
                             valueLabelDisplay="auto"
                         />
                     </Grid>
-                    <Grid item xs={12}>
+                    <Grid>
                         <FormControl fullWidth>
                             <InputLabel>Carrier Network</InputLabel>
                             <Select
@@ -196,7 +202,7 @@ const ChargingStationMap: React.FC = () => {
                             </Select>
                         </FormControl>
                     </Grid>
-                    <Grid item xs={12}>
+                    <Grid>
                         <Typography gutterBottom>
                             Min Rating
                         </Typography>
@@ -269,7 +275,11 @@ const ChargingStationMap: React.FC = () => {
                                             Price: ${station.pricePerKwh}/kWh
                                         </Typography>
                                         <Typography variant="body2">
+<<<<<<< HEAD
                                             Speed: {station.chargers[0].chargingSpeedKw} kW
+=======
+                                            Speed: {station.chargerSpeeds[0]} kW
+>>>>>>> dev
                                         </Typography>
                                         <Box sx={{ mt: 1, display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                                             {station.supportedConnectors.map((type) => (

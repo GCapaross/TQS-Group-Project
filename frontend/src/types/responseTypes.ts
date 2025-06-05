@@ -7,6 +7,7 @@ export interface ChargingStation {
     longitude: number;
     pricePerKwh: number;
     supportedConnectors: string[];
+<<<<<<< HEAD
     companyName: string;
     workers: Worker[];
     chargers: Charger[];
@@ -22,6 +23,11 @@ export interface Worker {
     id: number;
     username: string;
     email: string;
+=======
+    chargerSpeeds: number[];
+    carrierNetwork: string;
+    averageRating: number;
+>>>>>>> dev
 }
 
 export interface Booking {

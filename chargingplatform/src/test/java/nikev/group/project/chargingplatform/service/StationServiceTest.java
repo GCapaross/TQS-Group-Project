@@ -8,6 +8,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 import jakarta.persistence.criteria.Predicate;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -22,6 +23,7 @@ import nikev.group.project.chargingplatform.DTOs.StationDTO;
 import nikev.group.project.chargingplatform.DTOs.WorkerDTO;
 import nikev.group.project.chargingplatform.repository.ChargerRepository;
 import nikev.group.project.chargingplatform.repository.StationRepository;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatchers;
@@ -30,6 +32,17 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Example;
 import org.springframework.data.jpa.domain.Specification;
+
+import jakarta.persistence.EntityNotFoundException;
+import nikev.group.project.chargingplatform.DTOs.ChargerDTO;
+import nikev.group.project.chargingplatform.DTOs.StationCreateDTO;
+import nikev.group.project.chargingplatform.DTOs.StationResponseDTO;
+import nikev.group.project.chargingplatform.model.Charger;
+import nikev.group.project.chargingplatform.model.Charger.ChargerStatus;
+import nikev.group.project.chargingplatform.model.Company;
+import nikev.group.project.chargingplatform.repository.ChargerRepository;
+import nikev.group.project.chargingplatform.repository.CompanyRepository;
+import nikev.group.project.chargingplatform.repository.UserRepository;
 
 @ExtendWith(MockitoExtension.class)
 public class StationServiceTest {
@@ -45,6 +58,12 @@ public class StationServiceTest {
 
   @Mock
   private ChargerRepository chargerRepository;
+
+  @Mock
+  private CompanyRepository companyRepository;
+
+  @Mock
+  private UserRepository userRepository;
 
   @InjectMocks
   private StationService stationService;
@@ -201,10 +220,33 @@ public class StationServiceTest {
    */
   @Test
   void whenCreateStation_thenReturnCreatedStation() {
-    Station station = new Station();
-    when(stationRepository.save(any(Station.class))).thenReturn(station);
+    Company fakeCompany = new Company();
+    fakeCompany.setId(42L);
+    fakeCompany.setName("MinhaEmpresaX");
 
-    assertThat(stationService.createStation(station), is(station));
+    when(companyRepository.findByName("MinhaEmpresaX"))
+        .thenReturn(Optional.of(fakeCompany));
+    
+    Station station = new Station();
+    station.setName("Test Station");
+    station.setLocation("Test Location");
+    station.setLatitude(1.0);
+    station.setLongitude(1.0);
+    station.setPricePerKwh(1.0);
+    station.setSupportedConnectors(List.of("Type1", "Type2"));
+    station.setCompany(fakeCompany);
+    station.setWorkers(new ArrayList<>());
+    StationCreateDTO stationCreateDTO = new StationCreateDTO(station);
+
+    when(stationRepository.save(any(Station.class)))
+        .thenReturn(station);
+
+    StationResponseDTO result = stationService.createStation(stationCreateDTO);
+    
+    verify(stationRepository, times(1)).save(any(Station.class));
+    verify(companyRepository, times(1)).findByName("MinhaEmpresaX");
+    assertThat(result.getCompanyName(), is("MinhaEmpresaX"));
+
   }
 
   /* FUNCTION public Station updateStation(Long id, Station stationDetails) */

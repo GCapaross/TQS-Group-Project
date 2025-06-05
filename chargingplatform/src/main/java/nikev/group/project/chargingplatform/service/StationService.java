@@ -1,9 +1,14 @@
 package nikev.group.project.chargingplatform.service;
 
 import jakarta.persistence.criteria.Predicate;
+
 import java.util.ArrayList;
 import java.util.List;
+<<<<<<< HEAD
 import java.util.Optional;
+=======
+import java.util.stream.Collectors;
+>>>>>>> dev
 
 import nikev.group.project.chargingplatform.DTOs.SearchStationDTO;
 import nikev.group.project.chargingplatform.DTOs.StationDTO;
@@ -14,8 +19,20 @@ import nikev.group.project.chargingplatform.model.Station;
 import nikev.group.project.chargingplatform.model.User;
 import nikev.group.project.chargingplatform.repository.ChargerRepository;
 import nikev.group.project.chargingplatform.repository.StationRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import jakarta.persistence.EntityNotFoundException;
+import nikev.group.project.chargingplatform.DTOs.StationCreateDTO;
+import nikev.group.project.chargingplatform.DTOs.StationResponseDTO;
+import nikev.group.project.chargingplatform.DTOs.StationWithChargerSpeedsDTO;
+import nikev.group.project.chargingplatform.model.Charger;
+import nikev.group.project.chargingplatform.model.Company;
+import nikev.group.project.chargingplatform.model.User;
+import nikev.group.project.chargingplatform.repository.ChargerRepository;
+import nikev.group.project.chargingplatform.repository.CompanyRepository;
+import nikev.group.project.chargingplatform.repository.UserRepository;
 
 @Service
 public class StationService {
@@ -24,7 +41,13 @@ public class StationService {
   private StationRepository stationRepository;
 
   @Autowired
+  private CompanyRepository companyRepository;
+
+  @Autowired
   private ChargerRepository chargerRepository;
+
+  @Autowired
+  private UserRepository userRepository;
 
   public List<StationDTO> getAllStations() {
     List<Station> stations = stationRepository.findAll();
@@ -146,8 +169,52 @@ public class StationService {
     });
   }
 
-  public Station createStation(Station station) {
-    return stationRepository.save(station);
+  public StationResponseDTO createStation(StationCreateDTO dto) {
+    Company company = companyRepository
+                .findByName(dto.getCompanyName())
+                .orElseThrow(() -> new EntityNotFoundException(
+                    "Company '" + dto.getCompanyName() + "' not found"
+                ));
+
+    List<User> workers = List.of();
+    if (dto.getWorkerIds() != null && !dto.getWorkerIds().isEmpty()) {
+        workers = userRepository.findAllById(dto.getWorkerIds());
+        if (workers.size() != dto.getWorkerIds().size()) {
+            throw new EntityNotFoundException(
+                "Some workers not found with provided IDs"
+            );
+        }
+    }
+
+    Station station = new Station();
+    station.setName(dto.getName());
+    station.setLocation(dto.getLocation());
+    station.setLatitude(dto.getLatitude());
+    station.setLongitude(dto.getLongitude());
+    station.setPricePerKwh(dto.getPricePerKwh());
+    station.setSupportedConnectors(dto.getSupportedConnectors());
+    if (company != null) {
+        station.setCompany(company);
+    }
+    station.setWorkers(workers);
+
+    Station saved = stationRepository.save(station);
+
+    if (dto.getChargers() != null && !dto.getChargers().isEmpty()) {
+        List<Charger> chargersToSave = dto.getChargers().stream()
+            .map(chDTO -> {
+                Charger c = new Charger();
+                c.setStatus(chDTO.getStatus());
+                c.setChargingSpeedKw(chDTO.getChargingSpeedKw());
+                c.setStation(saved);
+                return c;
+            })
+            .toList();
+
+        chargerRepository.saveAll(chargersToSave);
+    }
+
+    return new StationResponseDTO(saved);
   }
 
   public Station updateStation(Long id, Station stationDetails) {
