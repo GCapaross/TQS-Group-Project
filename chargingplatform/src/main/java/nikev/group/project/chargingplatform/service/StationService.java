@@ -84,9 +84,6 @@ public class StationService {
       !searchStation.getSupportedConnectors().isEmpty();
     boolean hasMinimumEnergyPrice = searchStation.getMaxPricePerKwh() != null;
     boolean hasMaximumEnergyPrice = searchStation.getMaxPricePerKwh() != null;
-    boolean isSearchingByTimetable =
-      searchStation.getTimetable() != null &&
-      !searchStation.getTimetable().isEmpty();
     boolean isSearchingByDistance =
       searchStation.getLatitude() != null &&
       searchStation.getLongitude() != null &&
@@ -124,15 +121,6 @@ public class StationService {
       if (hasMaximumEnergyPrice) {
         predicates.add(
           cb.le(root.get("pricePerKwh"), searchStation.getMaxPricePerKwh())
-        );
-      }
-
-      if (isSearchingByTimetable) {
-        predicates.add(
-          cb.like(
-            root.get("timetable"),
-            "%" + searchStation.getTimetable() + "%"
-          )
         );
       }
 
@@ -192,6 +180,9 @@ public class StationService {
 
   public StationDTO convertToStationDTO(Station station){
     StationDTO stationDTO = new StationDTO();
+    // ensure lists are initialized
+    stationDTO.setWorkers(new ArrayList<>());
+    stationDTO.setChargers(new ArrayList<>());
     stationDTO.setId(station.getId());
     stationDTO.setName(station.getName());
     stationDTO.setLocation(station.getLocation());
@@ -201,29 +192,29 @@ public class StationService {
     stationDTO.setSupportedConnectors(station.getSupportedConnectors());
     Company company = station.getCompany();
     if (company != null) {
-      stationDTO.setCompanyName(company.getName());
+        stationDTO.setCompanyName(company.getName());
     } else {
-      stationDTO.setCompanyName(null);
+        stationDTO.setCompanyName(null);
     }
     List<User> workers = station.getWorkers();
     if (workers == null) {
-      workers = new ArrayList<>();
+        workers = new ArrayList<>();
     } else {
-      for (User worker : workers) {
-        stationDTO.getWorkers().add(new WorkerDTO(worker.getId(), worker.getUsername(), worker.getEmail()));
-      }
+        for (User worker : workers) {
+            stationDTO.getWorkers().add(new WorkerDTO(worker.getId(), worker.getUsername(), worker.getEmail()));
+        }
     }
     
     List<Charger> chargers = chargerRepository.findByStation_Id(station.getId());
     if (chargers == null) {
-      chargers = new ArrayList<>();
+        chargers = new ArrayList<>();
     } else{
-      stationDTO.setChargers(chargers);
+        stationDTO.setChargers(chargers);
     }
     if (areAllChargersOutOfService(station.getId()) || chargers.isEmpty()) {
-      stationDTO.setStatus("Out of Service");
+        stationDTO.setStatus("Out of Service");
     } else {
-      stationDTO.setStatus("Available");
+        stationDTO.setStatus("Available");
     }
 
     return stationDTO;

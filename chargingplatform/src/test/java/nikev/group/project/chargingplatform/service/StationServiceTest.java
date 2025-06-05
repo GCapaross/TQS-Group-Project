@@ -14,7 +14,12 @@ import java.util.List;
 import java.util.Optional;
 
 import nikev.group.project.chargingplatform.DTOs.SearchStationDTO;
+import nikev.group.project.chargingplatform.model.Charger;
+import nikev.group.project.chargingplatform.model.Company;
 import nikev.group.project.chargingplatform.model.Station;
+import nikev.group.project.chargingplatform.model.User;
+import nikev.group.project.chargingplatform.DTOs.StationDTO;
+import nikev.group.project.chargingplatform.DTOs.WorkerDTO;
 import nikev.group.project.chargingplatform.repository.ChargerRepository;
 import nikev.group.project.chargingplatform.repository.StationRepository;
 import org.junit.jupiter.api.Test;
@@ -409,4 +414,86 @@ public class StationServiceTest {
         assertEquals(1, result.size());
         verify(stationRepository).findAll(ArgumentMatchers.<Specification<Station>>any());
     }
+
+    @Test
+    void testAreAllChargersOutOfService_allOut() {
+        Long stationId = 50L;
+        Charger c1 = new Charger(); c1.setStatus(Charger.ChargerStatus.OUT_OF_SERVICE);
+        Charger c2 = new Charger(); c2.setStatus(Charger.ChargerStatus.OUT_OF_SERVICE);
+        when(chargerRepository.findByStation_Id(stationId)).thenReturn(List.of(c1, c2));
+
+        boolean result = stationService.areAllChargersOutOfService(stationId);
+        assertTrue(result);
+        verify(chargerRepository).findByStation_Id(stationId);
+    }
+
+    @Test
+    void testAreAllChargersOutOfService_someAvailable() {
+        Long stationId = 60L;
+        Charger c1 = new Charger(); c1.setStatus(Charger.ChargerStatus.OUT_OF_SERVICE);
+        Charger c2 = new Charger(); c2.setStatus(Charger.ChargerStatus.AVAILABLE);
+        when(chargerRepository.findByStation_Id(stationId)).thenReturn(List.of(c1, c2));
+
+        boolean result = stationService.areAllChargersOutOfService(stationId);
+        assertFalse(result);
+        verify(chargerRepository).findByStation_Id(stationId);
+    }
+
+    @Test
+    void testConvertToStationDTO_fullData() {
+        Station station = new Station();
+        station.setId(100L);
+        station.setName("StName");
+        station.setLocation("Loc");
+        station.setLatitude(1.1);
+        station.setLongitude(2.2);
+        station.setPricePerKwh(3.3);
+        station.setSupportedConnectors(List.of("A", "B"));
+        Company company = new Company();
+         company.setName("TestCompany");
+        station.setCompany(company);
+        User worker = new User(); 
+        worker.setId(10L); 
+        worker.setUsername("user1"); 
+        worker.setEmail("u1@test");
+        station.setWorkers(List.of(worker));
+        Charger c1 = new Charger(); 
+        c1.setId(200L); 
+        c1.setStatus(Charger.ChargerStatus.OUT_OF_SERVICE);
+        Charger c2 = new Charger();
+        c2.setId(201L); 
+        c2.setStatus(Charger.ChargerStatus.AVAILABLE);
+        when(chargerRepository.findByStation_Id(100L)).thenReturn(List.of(c1, c2));
+
+        StationDTO dto = stationService.convertToStationDTO(station);
+        assertEquals(100L, dto.getId());
+        assertEquals("StName", dto.getName());
+        assertEquals("Loc", dto.getLocation());
+        assertEquals(1.1, dto.getLatitude());
+        assertEquals(2.2, dto.getLongitude());
+        assertEquals(3.3, dto.getPricePerKwh());
+        assertIterableEquals(List.of("A", "B"), dto.getSupportedConnectors());
+        assertEquals("TestCompany", dto.getCompanyName());
+        assertEquals(1, dto.getWorkers().size());
+        WorkerDTO wd = dto.getWorkers().get(0);
+        assertEquals(10L, wd.getId());
+        assertEquals("user1", wd.getUsername());
+        assertEquals("u1@test", wd.getEmail());
+        assertEquals(List.of(c1, c2), dto.getChargers());
+        assertEquals("Available", dto.getStatus());
+    }
+
+    @Test
+    void testConvertToStationDTO_emptyData() {
+        Station station = new Station(); 
+        station.setId(101L);
+        when(chargerRepository.findByStation_Id(101L)).thenReturn(new ArrayList<>());
+
+        StationDTO dto = stationService.convertToStationDTO(station);
+        assertNull(dto.getCompanyName());
+        assertTrue(dto.getWorkers().isEmpty());
+        assertTrue(dto.getChargers().isEmpty());
+        assertEquals("Out of Service", dto.getStatus());
+    }
+
 }
