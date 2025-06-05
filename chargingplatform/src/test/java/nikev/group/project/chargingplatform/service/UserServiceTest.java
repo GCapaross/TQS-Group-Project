@@ -1,128 +1,146 @@
 package nikev.group.project.chargingplatform.service;
 
-import nikev.group.project.chargingplatform.model.User;
-import nikev.group.project.chargingplatform.repository.UserRepository;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.security.crypto.password.PasswordEncoder;
-
-import java.util.Optional;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@SpringBootTest
+import java.util.Optional;
+
+import nikev.group.project.chargingplatform.DTOs.RegisterRequestDTO;
+import nikev.group.project.chargingplatform.model.User;
+import nikev.group.project.chargingplatform.repository.UserRepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
 public class UserServiceTest {
 
-    @Mock
-    private UserRepository userRepository;
+  @Mock
+  private UserRepository userRepository;
 
-    @Mock
-    private PasswordEncoder passwordEncoder;
+  @InjectMocks
+  private UserService userService;
 
-    @InjectMocks
-    private UserService userService;
+  private User testUser;
 
-    private User testUser;
+  private RegisterRequestDTO registerRequestDTO;
 
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
+  @BeforeEach
+  void setUp() {
+    testUser = new User();
+    testUser.setId(1L);
+    testUser.setEmail("test@example.com");
+    testUser.setPassword("password123");
+    testUser.setUsername("Test User");
 
-        testUser = new User();
-        testUser.setId(1L);
-        testUser.setEmail("test@example.com");
-        testUser.setPassword("password123");
-        testUser.setName("Test User");
-    }
+    registerRequestDTO = new RegisterRequestDTO();
+    registerRequestDTO.setEmail(testUser.getEmail());
+    registerRequestDTO.setPassword(testUser.getPassword());
+    registerRequestDTO.setConfirmPassword(testUser.getPassword());
+    registerRequestDTO.setUsername(testUser.getUsername());
+    registerRequestDTO.setAccountType("user");
+  }
 
-    @Test
-    void whenRegisteringNewUser_thenUserIsCreated() {
-        // Arrange
-        when(userRepository.findByEmail(any())).thenReturn(Optional.empty());
-        when(passwordEncoder.encode(any())).thenReturn("encodedPassword");
-        when(userRepository.save(any())).thenAnswer(i -> i.getArguments()[0]);
+  /**
+   * Given no user with the email test@example.com exists
+   * When a new user tries to register with the email test@example.com
+   * Then a new User with email test@example.com is created
+   */
+  @Test
+  void whenRegisteringNewUser_thenUserIsCreated() {
+    // Arrange
+    when(userRepository.findByEmail(any())).thenReturn(Optional.empty());
+    when(userRepository.save(any())).thenAnswer(i -> i.getArguments()[0]);
 
-        // Act
-        User registeredUser = userService.registerUser(testUser);
+    // Act
+    User registeredUser = userService.registerUser(registerRequestDTO);
 
-        // Assert
-        assertNotNull(registeredUser);
-        assertEquals(testUser.getEmail(), registeredUser.getEmail());
-        assertEquals(testUser.getName(), registeredUser.getName());
-        verify(userRepository).save(any(User.class));
-    }
+    // Assert
+    assertNotNull(registeredUser);
+    assertEquals(testUser.getEmail(), registeredUser.getEmail());
+    assertEquals(testUser.getUsername(), registeredUser.getUsername());
+    verify(userRepository).save(any(User.class));
+  }
 
-    @Test
-    void whenRegisteringExistingEmail_thenThrowsException() {
-        // Arrange
-        when(userRepository.findByEmail(any())).thenReturn(Optional.of(testUser));
+  /**
+   * Given a User with email test@example.com
+   * When an another user tries to register with the email test@example.com
+   * Then RuntimeException is thrown
+   */
+  @Test
+  void whenRegisteringExistingEmail_thenThrowsException() {
+    // Arrange
+    when(userRepository.findByEmail(any())).thenReturn(Optional.of(testUser));
 
-        // Act & Assert
-        assertThrows(RuntimeException.class, () -> 
-            userService.registerUser(testUser)
-        );
-    }
+    // Act & Assert
+    assertThrows(RuntimeException.class, () ->
+      userService.registerUser(registerRequestDTO)
+    );
+  }
 
-    @Test
-    void whenLoggingInWithValidCredentials_thenReturnsUser() {
-        // Arrange
-        when(userRepository.findByEmail(testUser.getEmail())).thenReturn(Optional.of(testUser));
-        when(passwordEncoder.matches(any(), any())).thenReturn(true);
+  /**
+   * Given an email that has a users associated
+   * When user tries to login with that email and the correct passowrd
+   * Then the user associated with that email is returned
+   */
+  @Test
+  void whenLoggingInWithValidCredentials_thenReturnsUser() {
+    // Arrange
+    when(userRepository.findByEmail(testUser.getEmail())).thenReturn(
+      Optional.of(testUser)
+    );
 
-        // Act
-        User loggedInUser = userService.login(testUser.getEmail(), testUser.getPassword());
+    // Act
+    User loggedInUser = userService.login(
+      testUser.getEmail(),
+      testUser.getPassword()
+    );
 
-        // Assert
-        assertNotNull(loggedInUser);
-        assertEquals(testUser.getEmail(), loggedInUser.getEmail());
-    }
+    // Assert
+    assertNotNull(loggedInUser);
+    assertEquals(testUser.getEmail(), loggedInUser.getEmail());
+  }
 
-    @Test
-    void whenLoggingInWithInvalidCredentials_thenThrowsException() {
-        // Arrange
-        when(userRepository.findByEmail(testUser.getEmail())).thenReturn(Optional.of(testUser));
-        when(passwordEncoder.matches(any(), any())).thenReturn(false);
+  /**
+   * Given an email that has a users associated
+   * When user tries to login with that email and an incorrect passowrd
+   * Then RuntimeException with the message "Invalid passowrd" is thrown
+   */
+  @Test
+  void whenLoggingInWithInvalidCredentials_thenThrowsException() {
+    // Arrange
+    when(userRepository.findByEmail(testUser.getEmail())).thenReturn(
+      Optional.of(testUser)
+    );
 
-        // Act & Assert
-        assertThrows(RuntimeException.class, () -> 
-            userService.login(testUser.getEmail(), "wrongPassword")
-        );
-    }
+    User loginUser = new User();
+    loginUser.setEmail(testUser.getEmail());
+    loginUser.setPassword("IncorrectPassword");
+    // Act & Assert
+    assertThrows(RuntimeException.class, () ->
+      userService.login(loginUser.getEmail(), "wrongPassword")
+    );
+  }
 
-    @Test
-    void whenUpdatingUserProfile_thenProfileIsUpdated() {
-        // Arrange
-        when(userRepository.findById(testUser.getId())).thenReturn(Optional.of(testUser));
-        when(userRepository.save(any())).thenAnswer(i -> i.getArguments()[0]);
+  /**
+   * Given an email that has no users associated
+   * When user tries to login with that email
+   * Then RuntimeException with the message "User not found" is thrown
+   */
+  @Test
+  void whenLoggingInWithInvalidEmail_thenThrowsException() {
+    // Arrange
+    when(userRepository.findByEmail(testUser.getEmail())).thenReturn(
+      Optional.empty()
+    );
 
-        User updatedUser = new User();
-        updatedUser.setName("Updated Name");
-        updatedUser.setEmail("updated@example.com");
-
-        // Act
-        User result = userService.updateProfile(testUser.getId(), updatedUser);
-
-        // Assert
-        assertNotNull(result);
-        assertEquals(updatedUser.getName(), result.getName());
-        assertEquals(updatedUser.getEmail(), result.getEmail());
-        verify(userRepository).save(any(User.class));
-    }
-
-    @Test
-    void whenUpdatingNonExistentUser_thenThrowsException() {
-        // Arrange
-        when(userRepository.findById(any())).thenReturn(Optional.empty());
-
-        // Act & Assert
-        assertThrows(RuntimeException.class, () -> 
-            userService.updateProfile(999L, testUser)
-        );
-    }
-} 
+    // Act & Assert
+    assertThrows(RuntimeException.class, () ->
+      userService.login(testUser.getEmail(), "password")
+    );
+  }
+}

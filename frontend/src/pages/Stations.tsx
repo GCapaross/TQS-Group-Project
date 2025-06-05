@@ -7,16 +7,16 @@ import {
     CardContent,
     Typography,
     Chip,
-    Rating,
     CircularProgress,
     Alert,
     TextField,
-    InputAdornment
+    InputAdornment,
+    Button
 } from '@mui/material';
 import { Search as SearchIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { chargingStationApi } from '../services/api';
-import { ChargingStation } from '../types/api';
+import { ChargingStation } from '../types/responseTypes';
 
 const Stations: React.FC = () => {
     const [stations, setStations] = useState<ChargingStation[]>([]);
@@ -29,6 +29,7 @@ const Stations: React.FC = () => {
         const fetchStations = async () => {
             try {
                 const data = await chargingStationApi.getAll();
+                console.log('Fetched stations:', data);
                 setStations(data);
             } catch (err) {
                 setError('Failed to load charging stations');
@@ -93,6 +94,16 @@ const Stations: React.FC = () => {
                     }}
                     sx={{ mb: 4 }}
                 />
+
+                <Button
+                    variant="contained"
+                    color="primary"
+                    sx={{ mb: 4 }}
+                    onClick={() => navigate('/stations/create')}
+                >
+                    Create New Station
+                </Button>
+
                 <Grid container spacing={3}>
                     {filteredStations.map((station) => (
                         <Grid key={station.id}>
@@ -126,23 +137,14 @@ const Stations: React.FC = () => {
                                     </Typography>
                                     <Box sx={{ mb: 2 }}>
                                         <Typography variant="body2">
-                                            Available Slots: {station.availableSlots}/{station.maxSlots}
-                                        </Typography>
-                                        <Typography variant="body2">
                                             Price: ${station.pricePerKwh}/kWh
                                         </Typography>
                                         <Typography variant="body2">
-                                            Speed: {station.chargingSpeedKw} kW
-                                        </Typography>
-                                    </Box>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                        <Rating value={station.averageRating} precision={0.5} readOnly size="small" />
-                                        <Typography variant="body2" color="text.secondary">
-                                            ({station.averageRating})
+                                            Speed: {station.chargers[0].chargingSpeedKw} kW
                                         </Typography>
                                     </Box>
                                     <Box sx={{ mt: 2, display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                                        {station.connectorTypes.map((type) => (
+                                        {station.supportedConnectors.map((type) => (
                                             <Chip
                                                 key={type}
                                                 label={type}
