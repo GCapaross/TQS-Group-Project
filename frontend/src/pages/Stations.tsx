@@ -101,7 +101,7 @@ const Stations: React.FC = () => {
                     sx={{ mb: 4 }}
                     onClick={() => navigate('/stations/create')}
                 >
-                    Criate New Station
+                    Create New Station
                 </Button>
 
                 <Grid container spacing={3}>
@@ -140,17 +140,7 @@ const Stations: React.FC = () => {
                                             Price: ${station.pricePerKwh}/kWh
                                         </Typography>
                                         <Typography variant="body2">
-<<<<<<< HEAD
                                             Speed: {station.chargers[0].chargingSpeedKw} kW
-=======
-                                            Speed: {station.chargerSpeeds[0]} kW
-                                        </Typography>
-                                    </Box>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                        <Rating value={station.averageRating} precision={0.5} readOnly size="small" />
-                                        <Typography variant="body2" color="text.secondary">
-                                            ({station.averageRating})
->>>>>>> dev
                                         </Typography>
                                     </Box>
                                     <Box sx={{ mt: 2, display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>

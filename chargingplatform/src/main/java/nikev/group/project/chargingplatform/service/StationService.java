@@ -4,11 +4,8 @@ import jakarta.persistence.criteria.Predicate;
 
 import java.util.ArrayList;
 import java.util.List;
-<<<<<<< HEAD
 import java.util.Optional;
-=======
 import java.util.stream.Collectors;
->>>>>>> dev
 
 import nikev.group.project.chargingplatform.DTOs.SearchStationDTO;
 import nikev.group.project.chargingplatform.DTOs.StationDTO;
