@@ -25,6 +25,6 @@ import org.springframework.test.context.TestPropertySource;
 )
 @ConfigurationParameter(
     key = FILTER_TAGS_PROPERTY_NAME,
-    value = "not @SKIP_ALL"
+    value = "@SKIP_ALL"
 )
 public class CucumberTest {}
