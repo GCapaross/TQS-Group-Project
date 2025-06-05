@@ -226,9 +226,9 @@
 				<version>0.7.3</version>
 				<configuration>
 					<cloud>true</cloud>
-					<reportFormat>cucumber</reportFormat>
-					<reportFile>report.json</reportFile>
-					<xrayCloudBaseUrl>https://eu.xray.cloud.getxray.app</xrayCloudBaseUrl>
+					<reportFormat>junit</reportFormat>
+					<reportFile>results/junit.xml</reportFile>
+          <cloudApiBaseUrl>https://eu.xray.cloud.getxray.app/api/v2</cloudApiBaseUrl>
 				</configuration>
 			</plugin>
 			<plugin>
