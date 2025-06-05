@@ -27,6 +27,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 import javax.crypto.SecretKey;
 import nikev.group.project.chargingplatform.DTOs.BookingRequestDTO;
+import nikev.group.project.chargingplatform.TestMetricConfig;
 import nikev.group.project.chargingplatform.model.Charger;
 import nikev.group.project.chargingplatform.model.Reservation;
 import nikev.group.project.chargingplatform.model.Station;
@@ -53,6 +54,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -63,6 +65,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(BookingController.class)
 @ActiveProfiles("test")
+@Import(TestMetricConfig.class)
 public class BookingControllerTest {
 
   @Autowired

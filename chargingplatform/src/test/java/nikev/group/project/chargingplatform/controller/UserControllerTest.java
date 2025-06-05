@@ -11,6 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import nikev.group.project.chargingplatform.DTOs.RegisterRequestDTO;
+import nikev.group.project.chargingplatform.TestMetricConfig;
 import nikev.group.project.chargingplatform.model.Role;
 import nikev.group.project.chargingplatform.model.User;
 import nikev.group.project.chargingplatform.security.JwtTokenProvider;
@@ -21,12 +22,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(UserController.class)
+@Import(TestMetricConfig.class)
 public class UserControllerTest {
 
   @MockitoBean
@@ -35,8 +38,8 @@ public class UserControllerTest {
   @MockitoBean
   private JwtTokenProvider jwtTokenProvider;
 
-    @Autowired
-    private MockMvc mockMvc;
+  @Autowired
+  private MockMvc mockMvc;
 
   /* FUNCTION public ResponseEntity<User> registerUser(User user) */
   /*
@@ -59,7 +62,9 @@ public class UserControllerTest {
     user.setUsername("test");
     user.setRole(Role.USER);
 
-    when(userService.registerUser(any(RegisterRequestDTO.class))).thenReturn(user);
+    when(userService.registerUser(any(RegisterRequestDTO.class))).thenReturn(
+      user
+    );
 
     try {
       mockMvc
@@ -81,7 +86,7 @@ public class UserControllerTest {
    * When user registers with email test@example.com registers
    * Then bad request is returned
    */
-    @Test
+  @Test
   public void whenRegisteringExistingEmail_then400() {
     RegisterRequestDTO registerRequest = new RegisterRequestDTO();
     registerRequest.setEmail("test@example.com");
@@ -117,7 +122,7 @@ public class UserControllerTest {
    * When request body is missing required fields (email, password, name)
    * Then bad request is returned
    */
-    @Test
+  @Test
   public void whenRequestBodyIsMissingRequiredFields_then400() {
     User user = new User();
     // Intentionally leaving out required fields
@@ -129,7 +134,7 @@ public class UserControllerTest {
             .contentType("application/json")
             .content(JsonUtils.toJson(user))
         )
-                .andExpect(status().isBadRequest());
+        .andExpect(status().isBadRequest());
     } catch (Exception e) {
       // Handle exception if needed
     }
@@ -145,7 +150,7 @@ public class UserControllerTest {
    * When user tries to login with that email and the correct passowrd
    * Then a status of 200 with the user is returned
    */
-    @Test
+  @Test
   public void whenLoggingInWithValidCredentials_then200() {
     User user = new User();
     user.setEmail("test@example.com");
@@ -162,7 +167,7 @@ public class UserControllerTest {
             .contentType("application/json")
             .content(JsonUtils.toJson(user))
         )
-                .andExpect(status().isOk())
+        .andExpect(status().isOk())
         .andExpect(jsonPath("$.email", is("test@example.com")))
         .andExpect(jsonPath("$.username", is("test")));
     } catch (Exception e) {
@@ -176,7 +181,7 @@ public class UserControllerTest {
    * When user tries to login with that email and an incorrect passowrd
    * a status of 401 is returned
    */
-    @Test
+  @Test
   public void whenLoggingInWithInvalidCredentials_then401() {
     User user = new User();
     user.setEmail("test@example.com");
@@ -194,7 +199,7 @@ public class UserControllerTest {
             .contentType("application/json")
             .content(JsonUtils.toJson(user))
         )
-                .andExpect(status().isUnauthorized());
+        .andExpect(status().isUnauthorized());
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -207,7 +212,7 @@ public class UserControllerTest {
    * When user tries to login with that email
    * a status of 401 is returned
    */
-    @Test
+  @Test
   public void whenLoggingInWithInvalidEmail_then401() {
     when(userService.login(anyString(), anyString())).thenThrow(
       new RuntimeException("User not found")

@@ -56,9 +56,6 @@ public class StationControllerTest {
   @MockitoBean
   private JwtTokenProvider jwtTokenProvider;
 
-  @MockitoBean
-  private MeterRegistry meterRegistry;
-
   /* FUNCTION public ResponseEntity<List<Station>> getAllStations() */
   /**
    * Given no stations
