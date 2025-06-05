@@ -9,6 +9,7 @@ import BookingPage from './pages/BookingPage';
 import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
 import { AuthProvider } from './contexts/AuthContext';
 import "./App.css";
+import CreateStation from "./pages/CreateStation";
 
 const theme = createTheme({
   palette: {
@@ -48,6 +49,7 @@ function App() {
                 <Route path="/register" element={<RegisterPage />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/stations/:stationId/book" element={<BookingPage />} />
+                <Route path="/stations/create" element={<CreateStation />} />
               </Routes>
             </div>
           </div>
