@@ -11,12 +11,23 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import jakarta.servlet.http.Cookie;
 import jakarta.validation.constraints.NotNull;
+import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
+import javax.crypto.SecretKey;
 import nikev.group.project.chargingplatform.DTOs.BookingRequestDTO;
+import nikev.group.project.chargingplatform.TestMetricConfig;
 import nikev.group.project.chargingplatform.model.Charger;
 import nikev.group.project.chargingplatform.model.Reservation;
 import nikev.group.project.chargingplatform.model.Station;
@@ -30,7 +41,6 @@ import nikev.group.project.chargingplatform.security.JwtTokenProvider;
 import nikev.group.project.chargingplatform.service.BookingService;
 import nikev.group.project.chargingplatform.service.StationService;
 import nikev.group.project.chargingplatform.service.UserService;
-
 import org.flywaydb.core.internal.util.JsonUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -44,6 +54,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -51,18 +62,10 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.security.Keys;
-
-import java.nio.charset.StandardCharsets;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-
-import javax.crypto.SecretKey;
 
 @WebMvcTest(BookingController.class)
-@ActiveProfiles("test") 
+@ActiveProfiles("test")
+@Import(TestMetricConfig.class)
 public class BookingControllerTest {
 
   @Autowired
@@ -80,19 +83,18 @@ public class BookingControllerTest {
   @Value("${JWT_SECRET}")
   private String jwtSecret;
 
-
-  public String getJwtForTestUser(){
+  public String getJwtForTestUser() {
     Date now = new Date();
     Date expiryDate = new Date(now.getTime() + 3600000);
     System.out.println("jwtSecret: " + jwtSecret);
     System.out.println("Bytes: " + jwtSecret.getBytes());
     SecretKey secretKey = Keys.hmacShaKeyFor(jwtSecret.getBytes());
     return Jwts.builder()
-                .setSubject("test")
-                .setIssuedAt(now)
-                .setExpiration(expiryDate)
-                .signWith(secretKey, SignatureAlgorithm.HS256)
-                .compact();
+      .setSubject("test")
+      .setIssuedAt(now)
+      .setExpiration(expiryDate)
+      .signWith(secretKey, SignatureAlgorithm.HS256)
+      .compact();
   }
 
   @BeforeEach
@@ -100,11 +102,13 @@ public class BookingControllerTest {
     when(jwtTokenProvider.validateToken(anyString())).thenReturn(true);
 
     Authentication authentication = new UsernamePasswordAuthenticationToken(
-            "test", // The username, matching what getJwtForTestUser might imply
-            null,
-            Collections.singletonList(new SimpleGrantedAuthority("USER")) 
+      "test",
+      null,
+      Collections.singletonList(new SimpleGrantedAuthority("USER"))
     );
-    when(jwtTokenProvider.getAuthentication(anyString())).thenReturn(authentication);
+    when(jwtTokenProvider.getAuthentication(anyString())).thenReturn(
+      authentication
+    );
     when(userService.getUserIdByUsername(eq("test"))).thenReturn(1L);
   }
 
@@ -167,9 +171,9 @@ public class BookingControllerTest {
 
     String jwt = getJwtForTestUser();
 
-    when(
-      userService.getUserIdByUsername(anyString())
-    ).thenThrow(new RuntimeException("User not found"));
+    when(userService.getUserIdByUsername(anyString())).thenThrow(
+      new RuntimeException("User not found")
+    );
 
     when(
       bookingService.bookSlot(
@@ -465,7 +469,7 @@ public class BookingControllerTest {
     doThrow(new RuntimeException("Booking not found"))
       .when(bookingService)
       .cancelBooking(anyLong());
-    
+
     String jwt = getJwtForTestUser();
 
     try {

@@ -1,9 +1,15 @@
 package nikev.group.project.chargingplatform.controller;
 
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import java.util.List;
 
 import nikev.group.project.chargingplatform.DTOs.SearchStationDTO;
+import nikev.group.project.chargingplatform.DTOs.StationCreateDTO;
 import nikev.group.project.chargingplatform.DTOs.StationDTO;
+import nikev.group.project.chargingplatform.DTOs.StationResponseDTO;
+import nikev.group.project.chargingplatform.DTOs.StationWithChargerSpeedsDTO;
 import nikev.group.project.chargingplatform.model.Station;
 import nikev.group.project.chargingplatform.service.StationService;
 
@@ -19,8 +25,26 @@ import nikev.group.project.chargingplatform.DTOs.StationWithChargerSpeedsDTO;
 @RequestMapping("/api/charging-stations")
 public class StationController {
 
-  @Autowired
-  private StationService stationService;
+  private final StationService stationService;
+  private final MeterRegistry meterRegistry;
+  private final Counter stationCreationCounter;
+  private final Timer stationCreationTimer;
+
+  public StationController(
+    StationService stationService,
+    MeterRegistry meterRegistry
+  ) {
+    this.stationService = stationService;
+    this.meterRegistry = meterRegistry;
+    this.stationCreationCounter = Counter.builder("app_stations_created_total")
+      .description("Total number of stations created")
+      .tag("application", "chargingplatform")
+      .register(meterRegistry);
+    this.stationCreationTimer = Timer.builder("app_stations_creation_latency")
+      .description("Station creation latency in seconds")
+      .tag("application", "chargingplatform")
+      .register(meterRegistry);
+  }
 
   @GetMapping
   public ResponseEntity<List<StationDTO>> getAllStations() {
@@ -58,8 +82,27 @@ public class StationController {
   }
 
   @PostMapping
-  public ResponseEntity<StationResponseDTO> createStation(@RequestBody StationCreateDTO station) {
-    return ResponseEntity.ok(stationService.createStation(station));
+  public ResponseEntity<StationResponseDTO> createStation(
+    @RequestBody StationCreateDTO station
+  ) {
+    stationCreationCounter.increment();
+    Timer.Sample sample = Timer.start(meterRegistry);
+
+    try {
+      sample.stop(
+        Timer.builder("app_stations_creation_latency")
+          .tag("status", "success")
+          .register(meterRegistry)
+      );
+      return ResponseEntity.ok(stationService.createStation(station));
+    } catch (RuntimeException e) {
+      sample.stop(
+        Timer.builder("app_stations_creation_latency")
+          .tag("status", "failure")
+          .register(meterRegistry)
+      );
+      return ResponseEntity.badRequest().build();
+    }
   }
 
   @PutMapping("/{id}")
