@@ -40,6 +40,7 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import nikev.group.project.chargingplatform.DTOs.ChargerDTO;
 import nikev.group.project.chargingplatform.DTOs.StationCreateDTO;
 import nikev.group.project.chargingplatform.DTOs.StationWithChargerSpeedsDTO;
 import nikev.group.project.chargingplatform.DTOs.StationResponseDTO;
@@ -274,29 +275,41 @@ public class StationControllerTest {
   @Test
   void whenCreateStation_thenReturnCreatedStation() {
     Station station = new Station();
+    User user = new User();
+    user.setId(1L);
+    station.setWorkers(List.of(user));
     station.setId(1L);
     station.setName("New Station");
+    station.setLocation("Location");
+    station.setLatitude(0.0);
+    station.setLongitude(0.0);
+    station.setPricePerKwh(0.0);
+    station.setSupportedConnectors(List.of("Type1", "Type2"));
+    station.setTimetable("9:00-18:00");
 
     when(stationService.createStation(any(StationCreateDTO.class))).thenReturn(new StationResponseDTO(station));
 
-    Station stationRequest = new Station(
-      null,
-      "New Station",
-      "Location",
-      0.0,
-      0.0,
-      0.0,
-      null,
-      null,
-      null,
-      null
-    );
+    StationCreateDTO stationCreateDTO = new StationCreateDTO();
+    stationCreateDTO.setName(station.getName());
+    stationCreateDTO.setLocation(station.getLocation());
+    stationCreateDTO.setLatitude(station.getLatitude());
+    stationCreateDTO.setLongitude(station.getLongitude());
+    stationCreateDTO.setWorkerIds(station.getWorkers().stream()
+      .map(User::getId)
+      .toList());
+
+    ChargerDTO chargerDTO = new ChargerDTO();
+    chargerDTO.setStatus(Charger.ChargerStatus.AVAILABLE);
+    chargerDTO.setChargingSpeedKw(22.0);
+    stationCreateDTO.setChargers(List.of(chargerDTO));
+
+
     try {
       mockMvc
         .perform(
           post("/api/charging-stations")
             .contentType("application/json")
-            .content(JsonUtils.toJson(stationRequest))
+            .content(JsonUtils.toJson(stationCreateDTO))
         )
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id", is(1)))

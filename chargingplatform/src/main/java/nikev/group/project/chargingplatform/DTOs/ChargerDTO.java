@@ -20,18 +20,4 @@ public class ChargerDTO {
 
     @NotNull(message = "Velocity of the charger is required")
     private Double chargingSpeedKw;
-
-    public ChargerDTO(Charger charger) {
-        this.id = charger.getId();
-        this.status = charger.getStatus();
-        this.chargingSpeedKw = charger.getChargingSpeedKw();
-    }
-
-    public Charger toCharger() {
-        Charger charger = new Charger();
-        charger.setId(this.id);
-        charger.setStatus(this.status);
-        charger.setChargingSpeedKw(this.chargingSpeedKw);
-        return charger;
-    }
 }

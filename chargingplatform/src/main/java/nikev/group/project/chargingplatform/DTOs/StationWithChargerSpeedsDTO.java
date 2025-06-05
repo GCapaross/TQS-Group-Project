@@ -23,21 +23,4 @@ public class StationWithChargerSpeedsDTO {
 
     private List<Double> chargerSpeeds;
 
-    /**
-     * Constructor to create a StationWithChargerSpeedsDTO from a Station.
-     *
-     * @param station the Station to convert
-     */
-    public StationWithChargerSpeedsDTO(Station station) {
-        this.id = station.getId();
-        this.name = station.getName();
-        this.location = station.getLocation();
-        this.latitude = station.getLatitude();
-        this.longitude = station.getLongitude();
-        this.pricePerKwh = station.getPricePerKwh();
-        this.supportedConnectors = station.getSupportedConnectors();
-        this.timetable = station.getTimetable();
-        
-        this.chargerSpeeds = null;
-    }
 }
