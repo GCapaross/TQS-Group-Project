@@ -64,7 +64,6 @@ public class BookingServiceTest {
     station.setLongitude(-74.0060);
     station.setPricePerKwh(0.5);
     station.setSupportedConnectors(Arrays.asList("CCS", "Type 2"));
-    station.setTimetable("24/7");
     stationCharger = new Charger(
       111L,
       Charger.ChargerStatus.OUT_OF_SERVICE,
@@ -280,7 +279,7 @@ public class BookingServiceTest {
     );
     Charger charger2 = new Charger(
       2L,
-      Charger.ChargerStatus.CHARGING,
+      Charger.ChargerStatus.IN_USE,
       1.45,
       station
     );
@@ -307,7 +306,7 @@ public class BookingServiceTest {
     );
     Charger charger2 = new Charger(
       2L,
-      Charger.ChargerStatus.CHARGING,
+      Charger.ChargerStatus.IN_USE,
       1.45,
       station
     );
@@ -389,7 +388,7 @@ public class BookingServiceTest {
     );
     Charger charger2 = new Charger(
       2L,
-      Charger.ChargerStatus.CHARGING,
+      Charger.ChargerStatus.IN_USE,
       1.45,
       station
     );
@@ -427,7 +426,7 @@ public class BookingServiceTest {
     );
     Charger charger2 = new Charger(
       2L,
-      Charger.ChargerStatus.CHARGING,
+      Charger.ChargerStatus.IN_USE,
       1.45,
       station
     );

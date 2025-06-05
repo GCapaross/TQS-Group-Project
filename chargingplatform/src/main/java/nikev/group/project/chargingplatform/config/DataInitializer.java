@@ -66,7 +66,6 @@ public class DataInitializer implements CommandLineRunner {
             lisbon.setLongitude(-9.1393);
             lisbon.setPricePerKwh(0.35);
             lisbon.setSupportedConnectors(Arrays.asList("CCS", "Type 2", "CHAdeMO"));
-            lisbon.setTimetable("24/7");
             stations.add(lisbon);
 
             Station porto = new Station();
@@ -76,7 +75,6 @@ public class DataInitializer implements CommandLineRunner {
             porto.setLongitude(-8.6161);
             porto.setPricePerKwh(0.32);
             porto.setSupportedConnectors(Arrays.asList("CCS", "Type 2"));
-            porto.setTimetable("24/7");
             stations.add(porto);
 
             Station faro = new Station();
@@ -86,7 +84,6 @@ public class DataInitializer implements CommandLineRunner {
             faro.setLongitude(-7.9659);
             faro.setPricePerKwh(0.38);
             faro.setSupportedConnectors(Arrays.asList("CCS", "Type 2", "CHAdeMO"));
-            faro.setTimetable("24/7");
             stations.add(faro);
 
             Station coimbra = new Station();
@@ -96,7 +93,6 @@ public class DataInitializer implements CommandLineRunner {
             coimbra.setLongitude(-8.4257);
             coimbra.setPricePerKwh(0.30);
             coimbra.setSupportedConnectors(Arrays.asList("CCS", "Type 2"));
-            coimbra.setTimetable("24/7");
             stations.add(coimbra);
 
             stationRepository.saveAll(stations);

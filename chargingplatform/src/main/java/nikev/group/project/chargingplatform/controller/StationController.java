@@ -1,40 +1,23 @@
 package nikev.group.project.chargingplatform.controller;
 
 import java.util.List;
+
 import nikev.group.project.chargingplatform.DTOs.SearchStationDTO;
+import nikev.group.project.chargingplatform.DTOs.StationDTO;
 import nikev.group.project.chargingplatform.model.Station;
 import nikev.group.project.chargingplatform.service.StationService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
+import nikev.group.project.chargingplatform.DTOs.StationCreateDTO;
+import nikev.group.project.chargingplatform.DTOs.StationResponseDTO;
+import nikev.group.project.chargingplatform.DTOs.StationWithChargerSpeedsDTO;
 
-// @RestController
-// @RequestMapping("/api/charging-stations")
-// public class StationController {
-
-//   @Autowired
-//   private StationService stationService;
-
-//   @Autowired
-//   private MeterRegistry meterRegistry;
-
-//   private final Counter stationCreationCounter;
-//   private final Timer stationCreationTimer;
-
-//   public StationController(MeterRegistry meterRegistry) {
-//     this.meterRegistry = meterRegistry;
-//     this.stationCreationCounter = Counter.builder("app_stations_created_total")
-//         .description("Total number of stations created")
-//         .tag("application", "chargingplatform")
-//         .register(meterRegistry);
-//     this.stationCreationTimer = Timer.builder("app_stations_creation_latency")
-//         .description("Station creation latency in seconds")
-//         .tag("application", "chargingplatform")
-//         .register(meterRegistry);
-//   }
 @RestController
 @RequestMapping("/api/charging-stations")
 public class StationController {
@@ -58,14 +41,14 @@ public class StationController {
   }
 
   @GetMapping
-  public ResponseEntity<List<Station>> getAllStations() {
+  public ResponseEntity<List<StationDTO>> getAllStations() {
     return ResponseEntity.ok(stationService.getAllStations());
   }
 
   @GetMapping("/{id}")
-  public ResponseEntity<Station> getStationById(@PathVariable Long id) {
+  public ResponseEntity<StationDTO> getStationById(@PathVariable Long id) {
     try {
-      Station station = stationService.getStationById(id);
+      StationDTO station = stationService.getStationById(id);
       return ResponseEntity.ok(station);
     } catch (RuntimeException e) {
       return ResponseEntity.notFound().build();
@@ -93,22 +76,21 @@ public class StationController {
   }
 
   @PostMapping
-  public ResponseEntity<Station> createStation(@RequestBody Station station) {
+  public ResponseEntity<StationResponseDTO> createStation(@RequestBody StationCreateDTO station) {
+
     stationCreationCounter.increment();
     Timer.Sample sample = Timer.start(meterRegistry);
     
     try {
-      Station createdStation = stationService.createStation(station);
       sample.stop(Timer.builder("app_stations_creation_latency")
           .tag("status", "success")
           .register(meterRegistry));
-      return ResponseEntity.ok(createdStation);
+      return ResponseEntity.ok(stationService.createStation(station));
     } catch (RuntimeException e) {
       sample.stop(Timer.builder("app_stations_creation_latency")
           .tag("status", "failure")
           .register(meterRegistry));
       return ResponseEntity.badRequest().build();
-    }
   }
 
   @PutMapping("/{id}")
