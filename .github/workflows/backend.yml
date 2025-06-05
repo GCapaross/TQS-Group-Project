@@ -40,36 +40,19 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: mvn verify -B org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=GCapaross_TQS-Group-Project -Dxray.skip=true
 
-      # - name: Push results to Xray on Jira Cloud
-      #   working-directory: chargingplatform
-      #   env:
-      #     XRAYCLOUD_CLIENT_ID: ${{ secrets.XRAYCLOUD_CLIENT_ID }}
-      #     XRAYCLOUD_CLIENT_SECRET: ${{ secrets.XRAYCLOUD_CLIENT_SECRET }}
-      #     REVISION: ${{ github.ref_name}}
-      #   run: |
-      #     mvn \
-      #     -Dxray.clientId=${XRAYCLOUD_CLIENT_ID} \
-      #     -Dxray.clientSecret=${XRAYCLOUD_CLIENT_SECRET} \
-      #     -Dxray.revision=${REVISION} \
-      #     xray:import-results
-      - name: generate auxiliary JSON for authenticating with Xray cloud and obtain token
+      - name: Push results to Xray on Jira Cloud
+        working-directory: chargingplatform
+        env:
+          XRAYCLOUD_CLIENT_ID: ${{ secrets.XRAYCLOUD_CLIENT_ID }}
+          XRAYCLOUD_CLIENT_SECRET: ${{ secrets.XRAYCLOUD_CLIENT_SECRET }}
+          REVISION: ${{ github.ref_name}}
         run: |
-          cat cloud_auth.json.sample  | sed s/CLIENT_ID/${{ secrets.XRAYCLOUD_CLIENT_ID }}/g | sed s/CLIENT_SECRET/${{ secrets.XRAYCLOUD_CLIENT_SECRET }}/g > cloud_auth.json
-          echo token=$(curl -H "Content-Type: application/json" -X POST --data @"cloud_auth.json" ${{ secrets.XRAYCLOUD_BASE_URL }}/api/v2/authenticate| tr -d '"') >> $GITHUB_ENV
-      - name: Export scenarios from Xray and generate .feature file(s)
-        run: |
-          FEATURES_FILE=features.zip
-          rm -f $FEATURES_FILE
-          curl -H "Content-Type: application/json" -X GET -H "Authorization: Bearer ${{ env.token }}" "${{ secrets.XRAYCLOUD_BASE_URL }}/api/v2/export/cucumber?keys=${{ github.event.inputs.test_plan_key }}" -o $FEATURES_FILE
-          rm -f features/*.feature
-          unzip -o $FEATURES_FILE  -d features
-      - name: Run tests
-        run: mvn -fn test -Dcucumber.plugin="json:report.json" -Dcucumber.features="features/"
-      - name: generate auxiliary JSON to define some fields on the Test Execution to be created
-        if: always()
-        run: |
-          cat testexec_cloud_template.json  | sed s/PROJECT_KEY/${{ secrets.JIRACLOUD_PROJECT_KEY }}/g | sed s/TEST_ENVIRONMENT_NAME/jdk${{ env.JDK_VERSION }}/g | sed s/TESTPLAN_KEY/${{ github.event.inputs.test_plan_key }}/g > test_exec.json
-      - name: "Import results to Xray (cloud) using multipart endpoint"
-        if: always()
-        run: |
-          curl -X POST -H "Authorization: Bearer ${{ env.token }}"  -F info=@test_exec.json -F results=@"report.json" "${{ secrets.XRAYCLOUD_BASE_URL }}/api/v2/import/execution/cucumber/multipart"
+          BASE_URL=https://eu.xray.cloud.getxray.app &&
+          token=$(curl -H "Content-Type: application/json" -X POST --data @"cloud_auth.json" "$BASE_URL/api/v2/authenticate"| tr -d '"') &&
+          curl -H "Content-Type: application/json" -X POST -H "Authorization: Bearer $token"  --data @"report.json" "$BASE_URL/api/v2/import/execution/cucumber"
+
+          # mvn \
+          # -Dxray.clientId=${XRAYCLOUD_CLIENT_ID} \
+          # -Dxray.clientSecret=${XRAYCLOUD_CLIENT_SECRET} \
+          # -Dxray.revision=${REVISION} \
+          # xray:import-results
