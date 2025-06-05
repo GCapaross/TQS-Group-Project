@@ -223,7 +223,7 @@
 			<plugin>
 				<groupId>app.getxray</groupId>
 				<artifactId>xray-maven-plugin</artifactId>
-				<version>0.7.3</version>
+				<version>0.9.0</version>
 				<configuration>
 					<cloud>true</cloud>
 					<reportFormat>junit</reportFormat>
