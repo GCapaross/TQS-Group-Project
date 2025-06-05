@@ -63,6 +63,7 @@ public class WebConfig implements WebMvcConfigurer {
                     ).permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/bookings").authenticated()
                     .requestMatchers(HttpMethod.DELETE, "/api/bookings/{id}").authenticated()
+                    .requestMatchers(HttpMethod.GET, "/api/users/me").authenticated()
                     .anyRequest().permitAll()
                 )
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)

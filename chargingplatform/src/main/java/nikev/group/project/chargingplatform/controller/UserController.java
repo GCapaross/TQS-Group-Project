@@ -72,4 +72,15 @@ public class UserController {
       return ResponseEntity.status(401).build();
     }
   }
+
+  @GetMapping("/me")
+  public ResponseEntity<User> getCurrentUser() {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    if (authentication == null || !authentication.isAuthenticated()) {
+      return ResponseEntity.status(401).build();
+    }
+    User user = (User) authentication.getPrincipal();
+    return ResponseEntity.ok(user);
+  }
 }
+

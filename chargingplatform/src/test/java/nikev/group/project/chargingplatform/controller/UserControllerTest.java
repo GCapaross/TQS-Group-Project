@@ -5,19 +5,27 @@ import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.util.Collections;
+import java.util.Date;
+
+import javax.crypto.SecretKey;
 
 import nikev.group.project.chargingplatform.DTOs.RegisterRequestDTO;
 import nikev.group.project.chargingplatform.model.Role;
 import nikev.group.project.chargingplatform.model.User;
 import nikev.group.project.chargingplatform.security.JwtTokenProvider;
 import nikev.group.project.chargingplatform.service.UserService;
+
 import org.flywaydb.core.internal.util.JsonUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -26,7 +34,20 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.Cookie;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.hamcrest.Matchers.is;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+
 @WebMvcTest(UserController.class)
+@ActiveProfiles("test")
 public class UserControllerTest {
 
   @MockitoBean
@@ -37,6 +58,23 @@ public class UserControllerTest {
 
   @Autowired
   private MockMvc mockMvc;
+
+  @Value("${JWT_SECRET}")
+  private String jwtSecret;
+
+  public String getJwtForTestUser(){
+    Date now = new Date();
+    Date expiryDate = new Date(now.getTime() + 3600000);
+    System.out.println("jwtSecret: " + jwtSecret);
+    System.out.println("Bytes: " + jwtSecret.getBytes());
+    SecretKey secretKey = Keys.hmacShaKeyFor(jwtSecret.getBytes());
+    return Jwts.builder()
+                .setSubject("test")
+                .setIssuedAt(now)
+                .setExpiration(expiryDate)
+                .signWith(secretKey, SignatureAlgorithm.HS256)
+                .compact();
+  }
 
   /* FUNCTION public ResponseEntity<User> registerUser(User user) */
   /*
@@ -230,5 +268,57 @@ public class UserControllerTest {
       e.printStackTrace();
     }
     verify(userService, times(1)).login(anyString(), anyString());
+  }
+
+  @Test
+  public void whenGetCurrentUserUnauthenticated_then401() throws Exception {
+    // ensure no authentication is present
+    SecurityContextHolder.clearContext();
+
+    when(jwtTokenProvider.validateToken(anyString())).thenReturn(false);
+    Authentication authentication = new UsernamePasswordAuthenticationToken(
+            "test", // The username, matching what getJwtForTestUser might imply
+            null,
+            Collections.singletonList(new SimpleGrantedAuthority("USER")) 
+    );
+    when(jwtTokenProvider.getAuthentication(anyString())).thenReturn(authentication);
+    when(userService.getUserIdByUsername(eq("test"))).thenReturn(1L);
+
+    mockMvc.perform(get("/api/users/me"))
+           .andExpect(status().isForbidden());
+  }
+
+  @Test
+  public void whenGetCurrentUserAuthenticated_then200() throws Exception {
+    // 1) token is valid
+    when(jwtTokenProvider.validateToken(anyString())).thenReturn(true);
+
+    // 2) prepare a real domain User as principal
+    User user = new User();
+    user.setId(1L);
+    user.setEmail("me@example.com");
+    user.setUsername("me");
+    user.setRole(Role.USER);
+
+    // 3) return that User in your Authentication
+    Authentication authentication = new UsernamePasswordAuthenticationToken(
+      user,
+      null,
+      Collections.singletonList(new SimpleGrantedAuthority("USER"))
+    );
+    when(jwtTokenProvider.getAuthentication(anyString()))
+      .thenReturn(authentication);
+
+    // 4) stub service calls your controller will make
+    when(userService.getUserIdByUsername("me")).thenReturn(1L);
+
+    // 5) generate a JWT so your filter sees a cookie
+    String jwt = getJwtForTestUser();
+
+    mockMvc.perform(get("/api/users/me")
+            .cookie(new Cookie("JWT_TOKEN", jwt)))
+           .andExpect(status().isOk())
+           .andExpect(jsonPath("$.email",   is("me@example.com")))
+           .andExpect(jsonPath("$.username",is("me")));
   }
 }
