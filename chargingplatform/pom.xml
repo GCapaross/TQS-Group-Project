@@ -31,12 +31,12 @@
 		<sonar.projectKey>GCapaross_TQS-Group-Project</sonar.projectKey>
 		<sonar.organization>gcapaross</sonar.organization>
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
-    <junit-platform-suite.version>1.12.0</junit-platform-suite.version>
+		<junit-platform-suite.version>1.12.0</junit-platform-suite.version>
 		<cucumber.version>7.21.1</cucumber.version>
 		<selenium.version>4.29.0</selenium.version>
 		<selenide.version>7.7.3</selenide.version>
 		<rest-assured.version>5.5.1</rest-assured.version>
-    <wdm.version>5.9.2</wdm.version>
+		<wdm.version>5.9.2</wdm.version>
 	</properties>
 
 	<dependencies>
@@ -134,17 +134,17 @@
 		</dependency>
 
 		<dependency>
-      <groupId>org.junit.platform</groupId>
-      <artifactId>junit-platform-suite</artifactId>
-      <version>${junit-platform-suite.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.junit.platform</groupId>
-      <artifactId>junit-platform-engine</artifactId>
-      <version>${junit-platform-suite.version}</version>
-      <scope>test</scope>
-    </dependency>
+			<groupId>org.junit.platform</groupId>
+			<artifactId>junit-platform-suite</artifactId>
+			<version>${junit-platform-suite.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.platform</groupId>
+			<artifactId>junit-platform-engine</artifactId>
+			<version>${junit-platform-suite.version}</version>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
 			<groupId>org.junit.platform</groupId>
 			<artifactId>junit-platform-commons</artifactId>
@@ -191,31 +191,31 @@
 			<scope>test</scope>
 		</dependency>
 
-    <dependency>
-      <groupId>io.github.bonigarcia</groupId>
-      <artifactId>webdrivermanager</artifactId>
-      <version>${wdm.version}</version>
-      <scope>test</scope>
-    </dependency>
+		<dependency>
+			<groupId>io.github.bonigarcia</groupId>
+			<artifactId>webdrivermanager</artifactId>
+			<version>${wdm.version}</version>
+			<scope>test</scope>
+		</dependency>
 
-    <dependency>
-      <groupId>org.seleniumhq.selenium</groupId>
-      <artifactId>selenium-grid</artifactId>
-      <version>${selenium.version}</version>
-      <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>org.bouncycastle</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>io.github.bonigarcia</groupId>
-      <artifactId>selenium-jupiter</artifactId>
-      <version>5.1.1</version>
-      <scope>test</scope>
-    </dependency>
+		<dependency>
+			<groupId>org.seleniumhq.selenium</groupId>
+			<artifactId>selenium-grid</artifactId>
+			<version>${selenium.version}</version>
+			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>org.bouncycastle</groupId>
+					<artifactId>*</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>io.github.bonigarcia</groupId>
+			<artifactId>selenium-jupiter</artifactId>
+			<version>5.1.1</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -228,8 +228,7 @@
 					<cloud>true</cloud>
 					<reportFormat>junit</reportFormat>
 					<reportFile>results/junit.xml</reportFile>
-          <skip>${xray.skip}</skip>
-          <xrayCloudBaseUrl>https://eu.xray.cloud.getxray.app</xrayCloudBaseUrl>
+					<xrayCloudBaseUrl>https://eu.xray.cloud.getxray.app</xrayCloudBaseUrl>
 				</configuration>
 			</plugin>
 			<plugin>
