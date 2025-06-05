@@ -181,12 +181,12 @@
       		        		<formats>
       		          			<format>XML</format>
       		        		</formats>
+							<excludes>
+        					    <exclude>nikev/group/project/chargingplatform/security/**</exclude>
+        					</excludes>
       		      		</configuration>
       		    	</execution>
       		  	</executions>
-			    <excludes>
-        		    <exclude>nikev/group/project/chargingplatform/security/**</exclude>
-        		</excludes>
 			</plugin>
 		</plugins>
 	</build>
