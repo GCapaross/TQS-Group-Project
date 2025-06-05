@@ -46,7 +46,6 @@ jobs:
           XRAYCLOUD_CLIENT_ID: ${{ secrets.XRAYCLOUD_CLIENT_ID }}
           XRAYCLOUD_CLIENT_SECRET: ${{ secrets.XRAYCLOUD_CLIENT_SECRET }}
           REVISION: ${{ github.ref_name}}
-          REVISION: ${{ github.ref_name}}
         run: |
           if [ -f results/junit.xml ]; then
             mvn \
