@@ -2,7 +2,9 @@ package nikev.group.project.chargingplatform.controller;
 
 import java.util.List;
 import nikev.group.project.chargingplatform.DTOs.SearchStationDTO;
+import nikev.group.project.chargingplatform.DTOs.StationCreateDTO;
 import nikev.group.project.chargingplatform.DTOs.StationDTO;
+import nikev.group.project.chargingplatform.DTOs.StationResponseDTO;
 import nikev.group.project.chargingplatform.model.Station;
 import nikev.group.project.chargingplatform.service.StationService;
 import org.springframework.beans.factory.annotation.Autowired;
