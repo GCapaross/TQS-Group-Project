@@ -51,4 +51,4 @@ jobs:
           -Dxray.clientId=${XRAYCLOUD_CLIENT_ID} \
           -Dxray.clientSecret=${XRAYCLOUD_CLIENT_SECRET} \
           -Dxray.revision=${REVISION} \
-          xray:import-results
+          xray:import-results --debug
