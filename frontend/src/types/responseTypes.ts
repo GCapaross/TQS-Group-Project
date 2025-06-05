@@ -2,16 +2,26 @@ export interface ChargingStation {
     id: number;
     name: string;
     location: string;
-    status: 'AVAILABLE' | 'IN_USE' | 'MAINTENANCE' | 'OUT_OF_SERVICE';
+    status: 'AVAILABLE' | 'OUT_OF_SERVICE';
     latitude: number;
     longitude: number;
-    maxSlots: number;
-    availableSlots: number;
     pricePerKwh: number;
     supportedConnectors: string[];
+    companyName: string;
+    workers: Worker[];
+    chargers: Charger[];
+}
+
+export interface Charger {
+    id: number;
+    status: 'AVAILABLE' | 'IN_USE' | 'OUT_OF_SERVICE';
     chargingSpeedKw: number;
-    carrierNetwork: string;
-    averageRating: number;
+}
+
+export interface Worker {
+    id: number;
+    username: string;
+    email: string;
 }
 
 export interface Booking {

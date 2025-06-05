@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import nikev.group.project.chargingplatform.model.Station;
+import nikev.group.project.chargingplatform.repository.ChargerRepository;
 import nikev.group.project.chargingplatform.repository.StationRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,6 +34,9 @@ public class StationServiceTest {
    */
   @Mock
   private StationRepository stationRepository;
+
+  @Mock
+  private ChargerRepository chargerRepository;
 
   @InjectMocks
   private StationService stationService;
@@ -220,7 +224,6 @@ public class StationServiceTest {
       0.0,
       0.0,
       new ArrayList<>(),
-      "9:00-17:00",
       null,
       new ArrayList<>()
     );
@@ -233,7 +236,6 @@ public class StationServiceTest {
       1.0,
       1.0,
       List.of("Type1", "Type2"),
-      "8:00-18:00",
       null,
       new ArrayList<>()
     );

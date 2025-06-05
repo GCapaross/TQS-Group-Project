@@ -74,7 +74,7 @@ const ChargingStationMap: React.FC = () => {
 
         if (connectorTypes.length > 0) {
             filtered = filtered.filter(station =>
-                connectorTypes.some(type => station.connectorTypes.includes(type))
+                connectorTypes.some(type => station.supportedConnectors.includes(type))
             );
         }
 
@@ -266,19 +266,13 @@ const ChargingStationMap: React.FC = () => {
                                             {station.location}
                                         </Typography>
                                         <Typography variant="body2">
-                                            Available Slots: {station.availableSlots}/{station.maxSlots}
-                                        </Typography>
-                                        <Typography variant="body2">
                                             Price: ${station.pricePerKwh}/kWh
                                         </Typography>
                                         <Typography variant="body2">
-                                            Speed: {station.chargingSpeedKw} kW
-                                        </Typography>
-                                        <Typography variant="body2">
-                                            Rating: {station.averageRating}/5
+                                            Speed: {station.chargers[0].chargingSpeedKw} kW
                                         </Typography>
                                         <Box sx={{ mt: 1, display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                                            {station.connectorTypes.map((type) => (
+                                            {station.supportedConnectors.map((type) => (
                                                 <Chip
                                                     key={type}
                                                     label={type}

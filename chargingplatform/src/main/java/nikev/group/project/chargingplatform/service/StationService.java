@@ -3,8 +3,16 @@ package nikev.group.project.chargingplatform.service;
 import jakarta.persistence.criteria.Predicate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+
 import nikev.group.project.chargingplatform.DTOs.SearchStationDTO;
+import nikev.group.project.chargingplatform.DTOs.StationDTO;
+import nikev.group.project.chargingplatform.DTOs.WorkerDTO;
+import nikev.group.project.chargingplatform.model.Charger;
+import nikev.group.project.chargingplatform.model.Company;
 import nikev.group.project.chargingplatform.model.Station;
+import nikev.group.project.chargingplatform.model.User;
+import nikev.group.project.chargingplatform.repository.ChargerRepository;
 import nikev.group.project.chargingplatform.repository.StationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,16 +23,29 @@ public class StationService {
   @Autowired
   private StationRepository stationRepository;
 
-  public List<Station> getAllStations() {
-    return stationRepository.findAll();
+  @Autowired
+  private ChargerRepository chargerRepository;
+
+  public List<StationDTO> getAllStations() {
+    List<Station> stations = stationRepository.findAll();
+    List<StationDTO> stationDTOs = new ArrayList<>();
+
+    for (Station station : stations) {
+      StationDTO stationDTO = convertToStationDTO(station);
+      stationDTOs.add(stationDTO);
+    }
+
+    return stationDTOs;
   }
 
-  public Station getStationById(Long id) {
-    return stationRepository
-      .findById(id)
-      .orElseThrow(() ->
-        new RuntimeException("Station not found with id: " + id)
-      );
+  public StationDTO getStationById(Long id) {
+    Optional<Station> stationOptional = stationRepository.findById(id);
+    if (stationOptional.isPresent()) {
+      StationDTO stationDTO = convertToStationDTO(stationOptional.get());
+      return stationDTO;
+    } else {
+      throw new RuntimeException("Station not found with id: " + id);
+    }
   }
 
   public List<Station> findNearbyStations(
@@ -142,19 +163,69 @@ public class StationService {
   }
 
   public Station updateStation(Long id, Station stationDetails) {
-    Station station = getStationById(id);
+    Station station = stationRepository.findById(id)
+      .orElseThrow(() -> new RuntimeException("Station not found with id: " + id));
     station.setName(stationDetails.getName());
     station.setLocation(stationDetails.getLocation());
     station.setLatitude(stationDetails.getLatitude());
     station.setLongitude(stationDetails.getLongitude());
     station.setPricePerKwh(stationDetails.getPricePerKwh());
     station.setSupportedConnectors(stationDetails.getSupportedConnectors());
-    station.setTimetable(stationDetails.getTimetable());
     return stationRepository.save(station);
   }
 
   public void deleteStation(Long id) {
-    Station stationToDelete = getStationById(id);
+    Station stationToDelete = stationRepository.findById(id)
+      .orElseThrow(() -> new RuntimeException("Station not found with id: " + id));
     stationRepository.delete(stationToDelete);
+  }
+
+  public boolean areAllChargersOutOfService(Long stationId) {
+    List<Charger> chargers = chargerRepository.findByStation_Id(stationId);
+    for (Charger charger : chargers) {
+      if (charger.getStatus() != Charger.ChargerStatus.OUT_OF_SERVICE) {
+        return false; 
+      }
+    }
+    return true; 
+  }
+
+  public StationDTO convertToStationDTO(Station station){
+    StationDTO stationDTO = new StationDTO();
+    stationDTO.setId(station.getId());
+    stationDTO.setName(station.getName());
+    stationDTO.setLocation(station.getLocation());
+    stationDTO.setLatitude(station.getLatitude());
+    stationDTO.setLongitude(station.getLongitude());
+    stationDTO.setPricePerKwh(station.getPricePerKwh());
+    stationDTO.setSupportedConnectors(station.getSupportedConnectors());
+    Company company = station.getCompany();
+    if (company != null) {
+      stationDTO.setCompanyName(company.getName());
+    } else {
+      stationDTO.setCompanyName(null);
+    }
+    List<User> workers = station.getWorkers();
+    if (workers == null) {
+      workers = new ArrayList<>();
+    } else {
+      for (User worker : workers) {
+        stationDTO.getWorkers().add(new WorkerDTO(worker.getId(), worker.getUsername(), worker.getEmail()));
+      }
+    }
+    
+    List<Charger> chargers = chargerRepository.findByStation_Id(station.getId());
+    if (chargers == null) {
+      chargers = new ArrayList<>();
+    } else{
+      stationDTO.setChargers(chargers);
+    }
+    if (areAllChargersOutOfService(station.getId()) || chargers.isEmpty()) {
+      stationDTO.setStatus("Out of Service");
+    } else {
+      stationDTO.setStatus("Available");
+    }
+
+    return stationDTO;
   }
 }

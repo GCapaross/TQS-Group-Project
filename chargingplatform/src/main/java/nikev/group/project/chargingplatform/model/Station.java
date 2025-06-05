@@ -36,8 +36,6 @@ public class Station {
     @CollectionTable(name = "station_supported_connectors", joinColumns = @JoinColumn(name = "station_id"))
     @Column(name = "connector_type")
     private List<String> supportedConnectors; 
-    
-    private String timetable;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "company_id")

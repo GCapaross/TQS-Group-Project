@@ -8,7 +8,8 @@ import {
   Button,
   Alert,
   CircularProgress,
-  Snackbar
+  Snackbar,
+  Grid
 } from '@mui/material';
 import { useAuth } from '../contexts/AuthContext';
 import BookingForm from '../components/BookingForm';
@@ -137,6 +138,48 @@ const BookingPage: React.FC = () => {
             </Button>
           </Box>
         </Box>
+        <Typography variant="h6" mt={4} gutterBottom>
+          Chargers
+        </Typography>
+        {station.chargers && station.chargers.length > 0 ? (
+          <Grid container spacing={3} mt={5}>
+            {station.chargers.map((charger) => (
+              <Grid key={charger.id}>
+                <Paper elevation={2} sx={{ p: 2, borderRadius: 2, textAlign: 'center' }}>
+                  <Typography variant="h6">{`Charger ${charger.id}`}</Typography>
+                  <Typography variant="body1">Status: {charger.status}</Typography>
+                  <Typography variant="body1">Speed: {charger.chargingSpeedKw} kW</Typography>
+                </Paper>
+              </Grid>
+            ))}
+          </Grid>
+        ) : (
+          <Typography variant="body2" color="text.secondary" mt={5}>
+            No chargers available.
+          </Typography>
+        )}
+
+        <Typography variant="h6" mt={4} gutterBottom>
+          Workers
+        </Typography>
+        {station.workers && station.workers.length > 0 ? (
+          <Grid container spacing={2}>
+            {station.workers.map((worker) => (
+              <Grid key={worker.id}>
+                <Paper elevation={2} sx={{ p: 2, borderRadius: 2 }}>
+                  <Typography variant="body1">{worker.username}</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {worker.email}
+                  </Typography>
+                </Paper>
+              </Grid>
+            ))}
+          </Grid>
+        ) : (
+          <Typography variant="body2" color="text.secondary" mb={2}>
+            No workers assigned to this station.
+          </Typography>
+        )}
       </Paper>
 
       <BookingForm
