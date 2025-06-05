@@ -228,7 +228,7 @@
 					<cloud>true</cloud>
 					<reportFormat>junit</reportFormat>
 					<reportFile>results/junit.xml</reportFile>
-          <cloudApiBaseUrl>https://eu.xray.cloud.getxray.app/api/v2</cloudApiBaseUrl>
+          			<cloudApiBaseUrl>https://eu.xray.cloud.getxray.app/api/v2</cloudApiBaseUrl>
 				</configuration>
 			</plugin>
 			<plugin>
