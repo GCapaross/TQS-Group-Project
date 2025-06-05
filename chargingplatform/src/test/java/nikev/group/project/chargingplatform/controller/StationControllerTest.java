@@ -11,14 +11,15 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import io.micrometer.core.instrument.MeterRegistry;
 // import io.prometheus.metrics.core.metrics.Counter;
 import io.micrometer.core.instrument.Counter; // ✅ Correct
+import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 import io.swagger.v3.core.util.Json;
 import java.util.*;
 import nikev.group.project.chargingplatform.DTOs.BookingRequestDTO;
 import nikev.group.project.chargingplatform.DTOs.SearchStationDTO;
+import nikev.group.project.chargingplatform.TestMetricConfig;
 import nikev.group.project.chargingplatform.model.Charger;
 import nikev.group.project.chargingplatform.model.Reservation;
 import nikev.group.project.chargingplatform.model.Station;
@@ -36,12 +37,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(StationController.class)
+@Import(TestMetricConfig.class)
 public class StationControllerTest {
 
   @Autowired
@@ -54,17 +57,7 @@ public class StationControllerTest {
   private JwtTokenProvider jwtTokenProvider;
 
   @MockitoBean
-  private MeterRegistry meterRegistry;  
-
-
-  @BeforeEach
-void setup() {
-    Counter mockCounter = mock(Counter.class);
-    Timer mockTimer = mock(Timer.class);
-
-    when(meterRegistry.counter(anyString(), any(String[].class))).thenReturn(mockCounter);
-    when(meterRegistry.timer(anyString(), any(String[].class))).thenReturn(mockTimer);
-}
+  private MeterRegistry meterRegistry;
 
   /* FUNCTION public ResponseEntity<List<Station>> getAllStations() */
   /**

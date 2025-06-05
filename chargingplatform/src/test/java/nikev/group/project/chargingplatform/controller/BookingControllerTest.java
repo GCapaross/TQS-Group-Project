@@ -11,11 +11,21 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import jakarta.servlet.http.Cookie;
 import jakarta.validation.constraints.NotNull;
+import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
+import javax.crypto.SecretKey;
 import nikev.group.project.chargingplatform.DTOs.BookingRequestDTO;
 import nikev.group.project.chargingplatform.model.Charger;
 import nikev.group.project.chargingplatform.model.Reservation;
@@ -30,7 +40,6 @@ import nikev.group.project.chargingplatform.security.JwtTokenProvider;
 import nikev.group.project.chargingplatform.service.BookingService;
 import nikev.group.project.chargingplatform.service.StationService;
 import nikev.group.project.chargingplatform.service.UserService;
-
 import org.flywaydb.core.internal.util.JsonUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -51,21 +60,9 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.security.Keys;
-
-import java.nio.charset.StandardCharsets;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-
-import javax.crypto.SecretKey;
-import io.micrometer.core.instrument.Counter;
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Timer;
 
 @WebMvcTest(BookingController.class)
-@ActiveProfiles("test") 
+@ActiveProfiles("test")
 public class BookingControllerTest {
 
   @Autowired
@@ -80,39 +77,35 @@ public class BookingControllerTest {
   @MockitoBean
   private JwtTokenProvider jwtTokenProvider;
 
-  @MockitoBean
-  private MeterRegistry meterRegistry;
-
   @Value("${JWT_SECRET}")
   private String jwtSecret;
 
-
-  public String getJwtForTestUser(){
+  public String getJwtForTestUser() {
     Date now = new Date();
     Date expiryDate = new Date(now.getTime() + 3600000);
     System.out.println("jwtSecret: " + jwtSecret);
     System.out.println("Bytes: " + jwtSecret.getBytes());
     SecretKey secretKey = Keys.hmacShaKeyFor(jwtSecret.getBytes());
     return Jwts.builder()
-                .setSubject("test")
-                .setIssuedAt(now)
-                .setExpiration(expiryDate)
-                .signWith(secretKey, SignatureAlgorithm.HS256)
-                .compact();
+      .setSubject("test")
+      .setIssuedAt(now)
+      .setExpiration(expiryDate)
+      .signWith(secretKey, SignatureAlgorithm.HS256)
+      .compact();
   }
 
   @BeforeEach
   void setUp() {
     when(jwtTokenProvider.validateToken(anyString())).thenReturn(true);
-    when(meterRegistry.counter(anyString(), anyString(), anyString())).thenReturn(mock(Counter.class));
-    when(meterRegistry.timer(anyString(), anyString(), anyString())).thenReturn(mock(Timer.class));
 
     Authentication authentication = new UsernamePasswordAuthenticationToken(
-            "test",
-            null,
-            Collections.singletonList(new SimpleGrantedAuthority("USER")) 
+      "test",
+      null,
+      Collections.singletonList(new SimpleGrantedAuthority("USER"))
     );
-    when(jwtTokenProvider.getAuthentication(anyString())).thenReturn(authentication);
+    when(jwtTokenProvider.getAuthentication(anyString())).thenReturn(
+      authentication
+    );
     when(userService.getUserIdByUsername(eq("test"))).thenReturn(1L);
   }
 
@@ -175,9 +168,9 @@ public class BookingControllerTest {
 
     String jwt = getJwtForTestUser();
 
-    when(
-      userService.getUserIdByUsername(anyString())
-    ).thenThrow(new RuntimeException("User not found"));
+    when(userService.getUserIdByUsername(anyString())).thenThrow(
+      new RuntimeException("User not found")
+    );
 
     when(
       bookingService.bookSlot(
@@ -473,7 +466,7 @@ public class BookingControllerTest {
     doThrow(new RuntimeException("Booking not found"))
       .when(bookingService)
       .cancelBooking(anyLong());
-    
+
     String jwt = getJwtForTestUser();
 
     try {
@@ -504,4 +497,4 @@ public class BookingControllerTest {
       e.printStackTrace();
     }
   }
-}   
+}
