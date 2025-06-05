@@ -16,6 +16,7 @@ import {
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { companyApi } from '../services/api';
 
 interface ChargerInput {
   id: number;
@@ -64,10 +65,8 @@ const CreateStation: React.FC = () => {
   useEffect(() => {
     const fetchCompanies = async () => {
       try {
-        const response = await axios.get<string[]>('http://localhost:8080/companies/names', {
-          headers: { Accept: '*/*' },
-        });
-        setCompanies(response.data);
+        const data = await companyApi.getNames();
+        setCompanies(data);
       } catch (err) {
         console.error('Error fetching company names:', err);
         setCompaniesError('Failed to load company names. Please try again later.');
@@ -149,7 +148,11 @@ const CreateStation: React.FC = () => {
 
     setSubmitting(true);
     try {
-      await axios.post('http://localhost:8080/api/charging-stations', payload, {
+      const BACKEND_HOST = import.meta.env.VITE_BACKEND_HOST;
+      const BACKEND_PORT = import.meta.env.VITE_BACKEND_PORT;
+
+      const API_BASE_URL = `http://${BACKEND_HOST}:${BACKEND_PORT}/api`;
+      await axios.post(`${API_BASE_URL}/charging-stations`, payload, {
         headers: { 'Content-Type': 'application/json' },
       });
       navigate('/stations');
