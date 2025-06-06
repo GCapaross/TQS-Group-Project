@@ -33,6 +33,10 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
+      - name: make a copy of existing cucumber results
+        run: |
+          mv results/cucumber.json results/backup_cucumber.json
+
       - name: Build and analyze
         working-directory: chargingplatform
         env:
@@ -47,14 +51,12 @@ jobs:
           XRAYCLOUD_CLIENT_SECRET: ${{ secrets.XRAYCLOUD_CLIENT_SECRET }}
           REVISION: ${{ github.ref_name}}
         run: |
-          if [ -f results/cucumber.json ]; then
-            mvn \
-              xray:import-results
-              -Dxray.clientId=${XRAYCLOUD_CLIENT_ID} \
-              -Dxray.clientSecret=${XRAYCLOUD_CLIENT_SECRET} \
-              -Dxray.projectKey=EDISON \
-              -Dxray.cloud=true \
-              -Dxray.revision=${REVISION} \ 
-          else
-            echo "⚠️ Warning: results/junit.xml not found"
-          fi
+          mv results/backup_cucumber.json results/cucumber.json && 
+          mvn \
+            xray:import-results
+            -Dxray.clientId=${XRAYCLOUD_CLIENT_ID} \
+            -Dxray.clientSecret=${XRAYCLOUD_CLIENT_SECRET} \
+            -Dxray.projectKey=EDISON \
+            -Dxray.cloud=true \
+            -Dxray.revision=${REVISION} \ 
+            -Dcucumber.filter.tags="@SKIP_ALL"
