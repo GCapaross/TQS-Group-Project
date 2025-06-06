@@ -71,6 +71,7 @@ jobs:
           XRAYCLOUD_CLIENT_SECRET: ${{ secrets.XRAYCLOUD_CLIENT_SECRET }}
           REVISION: ${{ github.ref_name}}
         run: |
+          echo ${{ secrets.XRAYCLOUD_CLIENT_ID }}; \
           TOKEN=$(curl -s -X POST \
             -H "Content-Type: application/json" \
             -d "{\"client_id\":\"$XRAYCLOUD_CLIENT_ID\",\"client_secret\":\"$XRAYCLOUD_CLIENT_SECRET\"}" \
@@ -79,7 +80,7 @@ jobs:
             -H "Authorization: Bearer $TOKEN" \
             -H "Content-Type: application/json" \
             --data @results/cucumber.json \
-            https://eu.xray.cloud.getxray.app/api/v2/import/execution/cucumber
+            https://xray.cloud.getxray.app/api/v2/import/execution/cucumber
           # run: |
           #   mvn -X \
           #   -Dxray.clientId=${XRAYCLOUD_CLIENT_ID} \
