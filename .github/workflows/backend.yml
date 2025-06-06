@@ -64,4 +64,5 @@ jobs:
             -Dxray.clientSecret=${XRAYCLOUD_CLIENT_SECRET} \
             -Dxray.projectKey=EDISON \
             -Dxray.cloud=true \
-            -Dxray.revision=${REVISION}
+            -Dxray.revision=${REVISION} \
+            --debug
