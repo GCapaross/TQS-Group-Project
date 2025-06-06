@@ -37,6 +37,8 @@
 		<selenide.version>7.7.3</selenide.version>
 		<rest-assured.version>5.5.1</rest-assured.version>
 		<wdm.version>5.9.2</wdm.version>
+		<xray.clientId>A7AB02702E3746E4A2D04395CC00E9DE</xray.clientId>
+		<xray.clientSecret>10b25a856cbee3b99f72018218526de18fef9e27eab92983bf61a3e1eb43f5cd</xray.clientSecret>
 	</properties>
 
 	<dependencies>
