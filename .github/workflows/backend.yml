@@ -34,6 +34,7 @@ jobs:
           restore-keys: ${{ runner.os }}-m2
 
       - name: make a copy of existing cucumber results
+        working-directory: chargingplatform
         run: |
           mv results/cucumber.json results/backup_cucumber.json
 
