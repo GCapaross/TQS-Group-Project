@@ -63,7 +63,7 @@ jobs:
           python3 -m json.tool results/cucumber.json > /dev/null && echo "Valid JSON" || echo "Invalid JSON"
           echo "=== JSON Size ==="
           wc -c results/cucumber.json
-          
+
       - name: Push results to Xray on Jira Cloud
         working-directory: chargingplatform
         env:
@@ -71,10 +71,20 @@ jobs:
           XRAYCLOUD_CLIENT_SECRET: ${{ secrets.XRAYCLOUD_CLIENT_SECRET }}
           REVISION: ${{ github.ref_name}}
         run: |
-          mvn -X \
-          -Dxray.clientId=${XRAYCLOUD_CLIENT_ID} \
-          -Dxray.clientSecret=${XRAYCLOUD_CLIENT_SECRET} \
-          -Dxray.projectKey=EDISON \
-          -Dxray.cloud=true \
-          -Dxray.revision=${REVISION} \
-          app.getxray:xray-maven-plugin:0.9.0:import-results --debug
+          TOKEN=$(curl -s -X POST \
+            -H "Content-Type: application/json" \
+            -d "{\"client_id\":\"$XRAYCLOUD_CLIENT_ID\",\"client_secret\":\"$XRAYCLOUD_CLIENT_SECRET\"}" \
+            https://xray.cloud.getxray.app/api/v2/authenticate | tr -d '"'); \
+          curl -v -X POST \
+            -H "Authorization: Bearer $TOKEN" \
+            -H "Content-Type: application/json" \
+            --data @results/cucumber.json \
+            https://eu.xray.cloud.getxray.app/api/v2/import/execution/cucumber
+          # run: |
+          #   mvn -X \
+          #   -Dxray.clientId=${XRAYCLOUD_CLIENT_ID} \
+          #   -Dxray.clientSecret=${XRAYCLOUD_CLIENT_SECRET} \
+          #   -Dxray.projectKey=EDISON \
+          #   -Dxray.cloud=true \
+          #   -Dxray.revision=${REVISION} \
+          #   app.getxray:xray-maven-plugin:0.9.0:import-results --debug
