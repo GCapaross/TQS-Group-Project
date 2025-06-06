@@ -11,4 +11,3 @@ Feature: User profile, register and login
 		When the user enters the email "test@example.com" and password "password"
 		And the user clicks on the login button
 		Then the user should be redirected to the homepage
-		

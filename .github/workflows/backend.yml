@@ -47,14 +47,14 @@ jobs:
           XRAYCLOUD_CLIENT_SECRET: ${{ secrets.XRAYCLOUD_CLIENT_SECRET }}
           REVISION: ${{ github.ref_name}}
         run: |
-          if [ -f results/junit.xml ]; then
+          if [ -f results/cucumber.json ]; then
             mvn \
+              xray:import-results
               -Dxray.clientId=${XRAYCLOUD_CLIENT_ID} \
               -Dxray.clientSecret=${XRAYCLOUD_CLIENT_SECRET} \
               -Dxray.projectKey=EDISON \
               -Dxray.cloud=true \
               -Dxray.revision=${REVISION} \ 
-              app.getxray:xray-maven-plugin:0.9.0:import-results --debug
           else
             echo "⚠️ Warning: results/junit.xml not found"
           fi
