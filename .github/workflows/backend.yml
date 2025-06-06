@@ -73,8 +73,6 @@ jobs:
         run: |
           run: |
             mvn -X \
-            -Dxray.clientId=${XRAYCLOUD_CLIENT_ID} \
-            -Dxray.clientSecret=${XRAYCLOUD_CLIENT_SECRET} \
             -Dxray.projectKey=EDISON \
             -Dxray.cloud=true \
             -Dxray.revision=${REVISION} \
