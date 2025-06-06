@@ -43,7 +43,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: mvn verify -B org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=GCapaross_TQS-Group-Project -Dxray.skip=true
+        run: |
+          mvn verify -B \
+            org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+            -Dsonar.projectKey=GCapaross_TQS-Group-Project \
+            -Dxray.skip=true \
+            -Dcucumber.filter.tags="@SKIP_ALL"
 
       - name: Push results to Xray on Jira Cloud
         working-directory: chargingplatform
@@ -59,5 +64,4 @@ jobs:
             -Dxray.clientSecret=${XRAYCLOUD_CLIENT_SECRET} \
             -Dxray.projectKey=EDISON \
             -Dxray.cloud=true \
-            -Dxray.revision=${REVISION} \ 
-            -Dcucumber.filter.tags="@SKIP_ALL"
+            -Dxray.revision=${REVISION}
