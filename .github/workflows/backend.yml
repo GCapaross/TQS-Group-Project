@@ -50,6 +50,11 @@ jobs:
             -Dxray.skip=true \
             -Dcucumber.filter.tags="@SKIP_ALL"
 
+      - name: make a copy of existing cucumber results
+        working-directory: chargingplatform
+        run: |
+          mv results/backup_cucumber.json results/cucumber.json 
+
       - name: Push results to Xray on Jira Cloud
         working-directory: chargingplatform
         env:
@@ -57,7 +62,10 @@ jobs:
           XRAYCLOUD_CLIENT_SECRET: ${{ secrets.XRAYCLOUD_CLIENT_SECRET }}
           REVISION: ${{ github.ref_name}}
         run: |
-          mv results/backup_cucumber.json results/cucumber.json && 
+          echo "Client ID is set: $([[ -n "$XRAYCLOUD_CLIENT_ID" ]] && echo "YES" || echo "NO")"; \
+          echo "Client Secret is set: $([[ -n "$XRAYCLOUD_CLIENT_SECRET" ]] && echo "YES" || echo "NO")"; \
+          echo "Client ID length: ${#XRAYCLOUD_CLIENT_ID}"; \
+          echo "Client Secret length: ${#XRAYCLOUD_CLIENT_SECRET}"; \
           mvn \
             xray:import-results
             -Dxray.clientId=${XRAYCLOUD_CLIENT_ID} \
