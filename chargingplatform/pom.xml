@@ -243,7 +243,6 @@
 					<cloud>true</cloud>
 					<reportFormat>cucumber</reportFormat>
 					<reportFile>results/cucumber.json</reportFile>
-          <cloudApiBaseUrl>https://eu.xray.cloud.getxray.app/api/v2</cloudApiBaseUrl>
 				</configuration>
 			</plugin>
 			<plugin>

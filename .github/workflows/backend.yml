@@ -71,6 +71,7 @@ jobs:
           XRAYCLOUD_CLIENT_SECRET: ${{ secrets.XRAYCLOUD_CLIENT_SECRET }}
           REVISION: ${{ github.ref_name}}
         run: |
+          run: |
             mvn -X \
             -Dxray.clientId=${XRAYCLOUD_CLIENT_ID} \
             -Dxray.clientSecret=${XRAYCLOUD_CLIENT_SECRET} \
