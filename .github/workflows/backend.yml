@@ -71,7 +71,6 @@ jobs:
           XRAYCLOUD_CLIENT_SECRET: ${{ secrets.XRAYCLOUD_CLIENT_SECRET }}
           REVISION: ${{ github.ref_name}}
         run: |
-          echo ${{ secrets.XRAYCLOUD_CLIENT_ID }}; \
           TOKEN=$(curl -s -X POST \
             -H "Content-Type: application/json" \
             -d "{\"client_id\":\"$XRAYCLOUD_CLIENT_ID\",\"client_secret\":\"$XRAYCLOUD_CLIENT_SECRET\"}" \
