@@ -74,6 +74,8 @@ public class WebConfig implements WebMvcConfigurer {
                         "/swagger-ui/**"
                     )
                     .permitAll()
+                    .requestMatchers("/actuator/**")
+                    .permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/bookings")
                     .authenticated()
                     .requestMatchers(HttpMethod.DELETE, "/api/bookings/{id}")
@@ -86,6 +88,7 @@ public class WebConfig implements WebMvcConfigurer {
                 UsernamePasswordAuthenticationFilter.class
             )
             .httpBasic(AbstractHttpConfigurer::disable);
+
         return http.build();
     }
 }
