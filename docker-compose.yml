@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   postgres:
@@ -32,15 +32,17 @@ services:
       HOSTNAME: ${HOSTNAME}
       FRONTEND_DOCKER_PORT: ${FRONTEND_DOCKER_PORT}
       SPRING_APPLICATION_JSON: '{
-          "spring.datasource.url" : "jdbc:postgresql://postgres:$POSTGRES_DOCKER_PORT/$POSTGRES_DB",
-          "spring.datasource.username" : "$POSTGRES_USER",
-          "spring.datasource.password" : "$POSTGRES_PASSWORD",
-          "spring.datasource.driver-class-name" : "org.postgresql.Driver",
-          "spring.jpa.hibernate.ddl-auto" : "update",
-          "spring.jpa.show-sql" : "true",
-          "spring.jpa.properties.hibernate.format_sql" : "true",
-          "spring.jpa.properties.hibernate.dialect" : "org.hibernate.dialect.PostgreSQLDialect",
-          "server.port" : "$BACKEND_DOCKER_PORT"
+        "spring.datasource.url" : "jdbc:postgresql://postgres:$POSTGRES_DOCKER_PORT/$POSTGRES_DB",
+        "spring.datasource.username" : "$POSTGRES_USER",
+        "spring.datasource.password" : "$POSTGRES_PASSWORD",
+        "spring.datasource.driver-class-name" : "org.postgresql.Driver",
+        "spring.jpa.hibernate.ddl-auto" : "update",
+        "spring.jpa.show-sql" : "true",
+        "spring.jpa.properties.hibernate.format_sql" : "true",
+        "spring.jpa.properties.hibernate.dialect" : "org.hibernate.dialect.PostgreSQLDialect",
+        "server.port" : "$BACKEND_DOCKER_PORT"
+        "frontend.host": "$HOSTNAME",
+        "frontend.port": "$FRONTEND_DOCKER_PORT"
         }'
     ports:
       - $BACKEND_LOCAL_PORT:$BACKEND_DOCKER_PORT
@@ -71,7 +73,7 @@ services:
     volumes:
       - ./chargingplatform/prometheus.yml:/etc/prometheus/prometheus.yml
     command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
+      - "--config.file=/etc/prometheus/prometheus.yml"
     depends_on:
       - backend
 
@@ -107,4 +109,4 @@ services:
 
 volumes:
   postgres_data:
-  grafana-storage: 
+  grafana-storage:
