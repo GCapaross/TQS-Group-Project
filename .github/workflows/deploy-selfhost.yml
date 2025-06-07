@@ -15,7 +15,7 @@ jobs:
 
       - name: Getting into the project directory
         run: |
-          cd /home/TQS-Group-Project
+          cd /home/sheltonagostinho/TQS-Group-Project
 
       - name: Criar arquivo .env
         run: |
@@ -35,7 +35,7 @@ jobs:
           FRONTEND_LOCAL_PORT=${{ secrets.FRONTEND_LOCAL_PORT }}
           FRONTEND_DOCKER_PORT=${{ secrets.FRONTEND_DOCKER_PORT }}
 
-          HOSTNAME=deti-tqs-09.ua.pt
+          HOSTNAME=${{ secrets.HOSTNAME }}
 
           JWT_SECRET=${{ secrets.JWT_SECRET }}
           JWT_EXPIRATION_MS=${{ secrets.JWT_EXPIRATION_MS }}
