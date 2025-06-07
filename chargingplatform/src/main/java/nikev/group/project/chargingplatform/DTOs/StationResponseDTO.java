@@ -1,18 +1,17 @@
 package nikev.group.project.chargingplatform.DTOs;
 
 import java.util.List;
-
-import nikev.group.project.chargingplatform.utils.Utils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import nikev.group.project.chargingplatform.model.Station;
 import nikev.group.project.chargingplatform.model.User;
+import nikev.group.project.chargingplatform.utils.Utils;
 
 @Getter
 @Setter
 @NoArgsConstructor
-public class StationResponseDTO implements  StationBasicDTO {
+public class StationResponseDTO implements StationBasicDTO {
 
     private Long id;
     private String name;

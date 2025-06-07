@@ -12,6 +12,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class WorkerDTO {
+
     private Long id;
     private String username;
     private String email;

@@ -1,16 +1,15 @@
 package nikev.group.project.chargingplatform.security;
 
+import io.jsonwebtoken.*;
+import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import java.sql.Time;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.TimeZone;
-
-import jakarta.annotation.PostConstruct;
+import javax.crypto.SecretKey;
 import nikev.group.project.chargingplatform.controller.BookingController;
-import io.jsonwebtoken.*;
-import io.jsonwebtoken.security.Keys;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,8 +19,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
-
-import javax.crypto.SecretKey;
 
 /**
  * Generates and validates JWT tokens.
@@ -45,7 +42,9 @@ public class JwtTokenProvider {
         secretKey = Keys.hmacShaKeyFor(jwtSecret.getBytes());
     }
 
-    private static final Logger log = LoggerFactory.getLogger(JwtTokenProvider.class);
+    private static final Logger log = LoggerFactory.getLogger(
+        JwtTokenProvider.class
+    );
 
     public String generateToken(Authentication authentication) {
         UserDetails userPrincipal = (UserDetails) authentication.getPrincipal();
@@ -56,25 +55,28 @@ public class JwtTokenProvider {
         log.info("Expiry Date: {}", expiryDate);
 
         return Jwts.builder()
-                .setSubject(userPrincipal.getUsername())
-                .setIssuedAt(now)
-                .setExpiration(expiryDate)
-                .signWith(secretKey, SignatureAlgorithm.HS256)
-                .compact();
+            .setSubject(userPrincipal.getUsername())
+            .setIssuedAt(now)
+            .setExpiration(expiryDate)
+            .signWith(secretKey, SignatureAlgorithm.HS256)
+            .compact();
     }
 
     public String getUsernameFromJwt(String token) {
         Claims claims = Jwts.parserBuilder()
-                .setSigningKey(secretKey)
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
+            .setSigningKey(secretKey)
+            .build()
+            .parseClaimsJws(token)
+            .getBody();
         return claims.getSubject();
     }
 
     public boolean validateToken(String token) {
         try {
-            Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token);
+            Jwts.parserBuilder()
+                .setSigningKey(secretKey)
+                .build()
+                .parseClaimsJws(token);
             return true;
         } catch (JwtException | IllegalArgumentException ex) {
             log.error("Invalid JWT token: {}", ex.getMessage());
@@ -84,8 +86,14 @@ public class JwtTokenProvider {
 
     public Authentication getAuthentication(String token) {
         String username = getUsernameFromJwt(token);
-        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-        return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        UserDetails userDetails = userDetailsService.loadUserByUsername(
+            username
+        );
+        return new UsernamePasswordAuthenticationToken(
+            userDetails,
+            null,
+            userDetails.getAuthorities()
+        );
     }
 
     public long getJwtExpirationMs() {

@@ -2,30 +2,30 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import Stations from "./pages/Stations";
-import ChargingStationMap from './pages/ChargingStationMap';
-import RegisterPage from './pages/RegisterPage';
-import LoginPage from './pages/LoginPage';
-import BookingPage from './pages/BookingPage';
-import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
-import { AuthProvider } from './contexts/AuthContext';
+import ChargingStationMap from "./pages/ChargingStationMap";
+import RegisterPage from "./pages/RegisterPage";
+import LoginPage from "./pages/LoginPage";
+import BookingPage from "./pages/BookingPage";
+import { CssBaseline, ThemeProvider, createTheme } from "@mui/material";
+import { AuthProvider } from "./contexts/AuthContext";
 import "./App.css";
 import CreateStation from "./pages/CreateStation";
 
 const theme = createTheme({
   palette: {
-    mode: 'light',
+    mode: "light",
     primary: {
-      main: '#1976d2',
+      main: "#1976d2",
     },
     secondary: {
-      main: '#dc004e',
+      main: "#dc004e",
     },
   },
   components: {
     MuiButton: {
       styleOverrides: {
         root: {
-          textTransform: 'none',
+          textTransform: "none",
           borderRadius: 8,
         },
       },
@@ -48,7 +48,10 @@ function App() {
                 <Route path="/map" element={<ChargingStationMap />} />
                 <Route path="/register" element={<RegisterPage />} />
                 <Route path="/login" element={<LoginPage />} />
-                <Route path="/stations/:stationId/book" element={<BookingPage />} />
+                <Route
+                  path="/stations/:stationId/book"
+                  element={<BookingPage />}
+                />
                 <Route path="/stations/create" element={<CreateStation />} />
               </Routes>
             </div>

@@ -1,11 +1,12 @@
 package nikev.group.project.chargingplatform.DTOs;
 
 public class LoginRequestDTO {
+
     private String email;
     private String password;
 
     public String getEmail() {
-      return email;
+        return email;
     }
 
     // public void setEmail(String email) {
@@ -13,7 +14,7 @@ public class LoginRequestDTO {
     // }
 
     public String getPassword() {
-      return password;
+        return password;
     }
     // public void setPassword(String password) {
     //     this.password = password;

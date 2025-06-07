@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   Button,
@@ -11,22 +11,31 @@ import {
   Typography,
   Alert,
   CircularProgress,
-} from '@mui/material';
-import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { ChargingStation } from '../types/responseTypes';
-import { useAuth } from '../contexts/AuthContext';
-import { QRCodeSVG } from 'qrcode.react';
+} from "@mui/material";
+import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import { ChargingStation } from "../types/responseTypes";
+import { useAuth } from "../contexts/AuthContext";
+import { QRCodeSVG } from "qrcode.react";
 
 interface BookingFormProps {
   station: ChargingStation;
   open: boolean;
   onClose: () => void;
-  onBook: (startTime: Date, endTime: Date, estimatedEnergy: number) => Promise<void>;
+  onBook: (
+    startTime: Date,
+    endTime: Date,
+    estimatedEnergy: number
+  ) => Promise<void>;
 }
 
-const BookingForm: React.FC<BookingFormProps> = ({ station, open, onClose, onBook }) => {
+const BookingForm: React.FC<BookingFormProps> = ({
+  station,
+  open,
+  onClose,
+  onBook,
+}) => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const [startTime, setStartTime] = useState<Date | null>(null);
@@ -52,33 +61,34 @@ const BookingForm: React.FC<BookingFormProps> = ({ station, open, onClose, onBoo
   const handleSubmit = async () => {
     if (!isAuthenticated) {
       onClose();
-      navigate('/login');
+      navigate("/login");
       return;
     }
 
     if (!startTime || !endTime) {
-      setError('Please select both start and end times');
+      setError("Please select both start and end times");
       return;
     }
 
     if (startTime >= endTime) {
-      setError('End time must be after start time');
+      setError("End time must be after start time");
       return;
     }
 
     if (startTime < new Date()) {
-      setError('Start time cannot be in the past');
+      setError("Start time cannot be in the past");
       return;
     }
 
-    const durationHours = (endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60);
+    const durationHours =
+      (endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60);
     if (durationHours > 4) {
-      setError('Maximum booking duration is 4 hours');
+      setError("Maximum booking duration is 4 hours");
       return;
     }
 
     if (estimatedEnergy <= 0) {
-      setError('Please enter estimated energy needed');
+      setError("Please enter estimated energy needed");
       return;
     }
 
@@ -90,19 +100,19 @@ const BookingForm: React.FC<BookingFormProps> = ({ station, open, onClose, onBoo
       setBookingId(crypto.randomUUID());
       setShowConfirmation(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to book time slot');
+      setError(err instanceof Error ? err.message : "Failed to book time slot");
     } finally {
       setLoading(false);
     }
   };
 
   const renderBookingConfirmation = () => (
-    <Box sx={{ p: 3, textAlign: 'center' }}>
+    <Box sx={{ p: 3, textAlign: "center" }}>
       <Typography variant="h5" gutterBottom>
         Booking Confirmed!
       </Typography>
       <Box sx={{ my: 3 }}>
-        <QRCodeSVG value={bookingId || ''} size={200} />
+        <QRCodeSVG value={bookingId || ""} size={200} />
       </Box>
       <Typography variant="body1" gutterBottom>
         Booking ID: {bookingId}
@@ -119,11 +129,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ station, open, onClose, onBoo
       <Typography variant="body1" gutterBottom>
         Estimated Energy: {estimatedEnergy} kWh
       </Typography>
-      <Button
-        variant="contained"
-        onClick={onClose}
-        sx={{ mt: 2 }}
-      >
+      <Button variant="contained" onClick={onClose} sx={{ mt: 2 }}>
         Close
       </Button>
     </Box>
@@ -152,7 +158,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ station, open, onClose, onBoo
                     value={startTime}
                     onChange={(newValue: Date | null) => setStartTime(newValue)}
                     minDateTime={new Date()}
-                    sx={{ width: '100%' }}
+                    sx={{ width: "100%" }}
                   />
                 </Box>
                 <Box sx={{ mb: 3 }}>
@@ -161,7 +167,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ station, open, onClose, onBoo
                     value={endTime}
                     onChange={(newValue: Date | null) => setEndTime(newValue)}
                     minDateTime={startTime || new Date()}
-                    sx={{ width: '100%' }}
+                    sx={{ width: "100%" }}
                   />
                 </Box>
               </LocalizationProvider>
@@ -188,7 +194,8 @@ const BookingForm: React.FC<BookingFormProps> = ({ station, open, onClose, onBoo
               Price per kWh: ${station.pricePerKwh}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Estimated Cost: ${(estimatedEnergy * station.pricePerKwh).toFixed(2)}
+              Estimated Cost: $
+              {(estimatedEnergy * station.pricePerKwh).toFixed(2)}
             </Typography>
           </Box>
         </Box>
@@ -202,13 +209,19 @@ const BookingForm: React.FC<BookingFormProps> = ({ station, open, onClose, onBoo
           variant="contained"
           disabled={loading || (!isAuthenticated && (!startTime || !endTime))}
           sx={{
-            background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
-            '&:hover': {
-              background: 'linear-gradient(45deg, #1976D2 30%, #1E88E5 90%)'
-            }
+            background: "linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)",
+            "&:hover": {
+              background: "linear-gradient(45deg, #1976D2 30%, #1E88E5 90%)",
+            },
           }}
         >
-          {loading ? <CircularProgress size={24} /> : isAuthenticated ? 'Book Now' : 'Login to Book'}
+          {loading ? (
+            <CircularProgress size={24} />
+          ) : isAuthenticated ? (
+            "Book Now"
+          ) : (
+            "Login to Book"
+          )}
         </Button>
       </DialogActions>
     </>
@@ -221,4 +234,4 @@ const BookingForm: React.FC<BookingFormProps> = ({ station, open, onClose, onBoo
   );
 };
 
-export default BookingForm; 
+export default BookingForm;
