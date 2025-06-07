@@ -10,11 +10,16 @@ const BASE_DATE = new Date(2027, 0, 1, 0, 0, 0);
 
 export const options = {
   stages: [
-    { duration: '30s', target: 10 },
-    { duration: '30s', target: 10 },
+    { duration: '2m', target: 20 },  // Ramp up to 20 VUs over 2 minutes
+    { duration: '5m', target: 20 },  // Stay at 20 VUs for 5 minutes
+    { duration: '2m', target: 40 },  // Ramp up to 40 VUs over 2 minutes
+    { duration: '5m', target: 40 },  // Stay at 40 VUs for 5 minutes
+    { duration: '2m', target: 60 },  // Ramp up to 60 VUs over 2 minutes
+    { duration: '4m', target: 60 },  // Stay at 60 VUs for 4 minutes
   ],
   thresholds: {
     'errors': ['rate<0.1'],
+    'http_req_duration': ['p(95)<2000'], // 95% of requests should be below 2s
   },
 };
 
@@ -101,12 +106,16 @@ export default function() {
     if (searchRes.status === 200) {
       const stations = searchRes.json();
       if (stations && stations.length > 0) {
-        // Use the calculated date for this VU and iteration
+        // Select a station based on VU number to distribute load
+        const stationIndex = __VU % stations.length;
+        const selectedStation = stations[stationIndex];
+        
+        // Calculate booking times
         const startTime = new Date(currentBookingDate);
         const endTime = new Date(startTime.getTime() + 3600000); // 1 hour duration
         
         const bookingPayload = {
-          stationId: stations[0].id,
+          stationId: selectedStation.id,
           startTime: formatDate(startTime),
           endTime: formatDate(endTime)
         };
