@@ -33,14 +33,29 @@ export default function() {
     accountType: 'user'
   };
   
-  const res = http.post(`${BASE_URL}/api/users/register`, JSON.stringify(payload), {
+  const registerRes = http.post(`${BASE_URL}/api/users/register`, JSON.stringify(payload), {
     headers: { 'Content-Type': 'application/json' },
   });
   
-  console.log(`Registration response: ${res.status} - ${res.body}`);
+  console.log(`Registration response: ${registerRes.status} - ${registerRes.body}`);
   
-  check(res, {
+  check(registerRes, {
     'registration successful': (r) => r.status === 200 || r.status === 409,
+  });
+
+  const loginPayload = {
+    email: payload.email,
+    password: payload.password
+  };
+
+  const loginRes = http.post(`${BASE_URL}/api/users/login`, JSON.stringify(loginPayload), {
+    headers: { 'Content-Type': 'application/json' },
+  });
+
+  console.log(`Login response: ${loginRes.status} - ${loginRes.body}`);
+
+  check(loginRes, {
+    'login successful': (r) => r.status === 200,
   });
   
   sleep(1);
