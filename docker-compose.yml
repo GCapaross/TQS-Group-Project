@@ -42,7 +42,7 @@ services:
         "spring.jpa.properties.hibernate.dialect" : "org.hibernate.dialect.PostgreSQLDialect",
         "server.port" : "$BACKEND_DOCKER_PORT"
         "frontend.host": "$HOSTNAME",
-        "frontend.port": "$FRONTEND_DOCKER_PORT"
+        "frontend.port": "$FRONTEND_LOCAL_PORT"
         }'
     ports:
       - $BACKEND_LOCAL_PORT:$BACKEND_DOCKER_PORT
