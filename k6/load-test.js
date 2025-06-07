@@ -5,6 +5,9 @@ import { Rate, Counter } from 'k6/metrics';
 const errorRate = new Rate('errors');
 const userCounter = new Counter('user_counter');
 
+// Base date for all bookings
+const BASE_DATE = new Date(2027, 0, 1, 0, 0, 0);
+
 export const options = {
   stages: [
     { duration: '30s', target: 10 },
@@ -27,6 +30,11 @@ function formatDate(date) {
 export default function() {
   userCount++;
   userCounter.add(1);
+  
+  // Calculate unique date for this VU based on VU number and iteration
+  const vuOffset = __VU * 24 * 3600000; // Each VU gets its own day
+  const iterOffset = __ITER * 2 * 3600000; // Each iteration adds 2 hours
+  const currentBookingDate = new Date(BASE_DATE.getTime() + vuOffset + iterOffset);
   
   const userId = `${__VU}_${__ITER}_${Date.now()}_${userCount}`;
   
@@ -93,13 +101,8 @@ export default function() {
     if (searchRes.status === 200) {
       const stations = searchRes.json();
       if (stations && stations.length > 0) {
-        // Start from tomorrow and space out bookings by days
-        // Each station has 2 chargers, so we can have 2 bookings per day
-        const now = new Date();
-        const daysToAdd = Math.floor(userCount / 2); // 2 bookings per day
-        const hourOffset = (userCount % 2) * 12; // First booking at 00:00, second at 12:00
-        
-        const startTime = new Date(now.getTime() + 86400000 + (daysToAdd * 86400000) + (hourOffset * 3600000));
+        // Use the calculated date for this VU and iteration
+        const startTime = new Date(currentBookingDate);
         const endTime = new Date(startTime.getTime() + 3600000); // 1 hour duration
         
         const bookingPayload = {
