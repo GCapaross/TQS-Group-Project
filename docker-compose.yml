@@ -102,6 +102,30 @@ services:
       - backend
       - postgres
 
+  k6:
+    image: grafana/k6:latest
+    container_name: chargingplatform-k6
+    volumes:
+      - ./k6:/scripts
+    ports:
+      - ${K6_LOCAL_PORT}:${K6_DOCKER_PORT}
+    environment:
+      - K6_OUT=influxdb=http://influxdb:8086/k6
+    depends_on:
+      - backend
+      - influxdb
+
+  influxdb:
+    image: influxdb:1.8
+    container_name: chargingplatform-influxdb
+    ports:
+      - ${INFLUXDB_LOCAL_PORT}:${INFLUXDB_DOCKER_PORT}
+    environment:
+      - INFLUXDB_DB=k6
+    volumes:
+      - influxdb-data:/var/lib/influxdb
+
 volumes:
   postgres_data:
-  grafana-storage: 
+  grafana-storage:
+  influxdb-data: 
