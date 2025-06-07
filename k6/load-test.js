@@ -93,9 +93,13 @@ export default function() {
     if (searchRes.status === 200) {
       const stations = searchRes.json();
       if (stations && stations.length > 0) {
-        // Start from tomorrow and add hours based on userCount
+        // Start from tomorrow and space out bookings by days
+        // Each station has 2 chargers, so we can have 2 bookings per day
         const now = new Date();
-        const startTime = new Date(now.getTime() + 86400000 + (userCount * 3600000)); // tomorrow + userCount hours
+        const daysToAdd = Math.floor(userCount / 2); // 2 bookings per day
+        const hourOffset = (userCount % 2) * 12; // First booking at 00:00, second at 12:00
+        
+        const startTime = new Date(now.getTime() + 86400000 + (daysToAdd * 86400000) + (hourOffset * 3600000));
         const endTime = new Date(startTime.getTime() + 3600000); // 1 hour duration
         
         const bookingPayload = {
