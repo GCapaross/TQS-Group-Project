@@ -21,10 +21,10 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
-    @Value("${HOSTNAME}")
+    @Value("${frontend.host}")
     private String hostname;
 
-    @Value("${FRONTEND_DOCKER_PORT}")
+    @Value("${frontend.port}")
     private String frontendDockerPort;
 
     @Autowired
