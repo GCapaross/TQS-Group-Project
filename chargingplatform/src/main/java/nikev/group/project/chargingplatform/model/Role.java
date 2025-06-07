@@ -6,5 +6,5 @@ package nikev.group.project.chargingplatform.model;
 public enum Role {
     USER,
     OPERATOR,
-    OWNER
+    OWNER,
 }

@@ -1,9 +1,8 @@
 package nikev.group.project.chargingplatform.DTOs;
 
-import java.util.List;
-
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,7 +19,7 @@ import nikev.group.project.chargingplatform.utils.Utils;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class StationCreateDTO implements  StationBasicDTO {
+public class StationCreateDTO implements StationBasicDTO {
 
     @NotBlank(message = "O nome da estação é obrigatório")
     private String name;
@@ -49,9 +48,9 @@ public class StationCreateDTO implements  StationBasicDTO {
     private List<Long> workerIds;
 
     /**
-    * Lista de chargers a serem criados junto com a estação.
-    * Cada ChargerDTO traz status e chargingSpeedKw (ID pode ser nulo na criação).
-    */
+     * Lista de chargers a serem criados junto com a estação.
+     * Cada ChargerDTO traz status e chargingSpeedKw (ID pode ser nulo na criação).
+     */
     private List<ChargerDTO> chargers;
 
     /**

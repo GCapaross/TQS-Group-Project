@@ -5,7 +5,11 @@ import nikev.group.project.chargingplatform.model.Station;
 import nikev.group.project.chargingplatform.model.User;
 
 public class Utils {
-    public static void updateStationsDTOs(Station station, StationBasicDTO dto) {
+
+    public static void updateStationsDTOs(
+        Station station,
+        StationBasicDTO dto
+    ) {
         dto.setName(station.getName());
         dto.setLocation(station.getLocation());
         dto.setLatitude(station.getLatitude());
@@ -16,10 +20,9 @@ public class Utils {
             dto.setCompanyName(station.getCompany().getName());
         }
         if (station.getWorkers() != null && !station.getWorkers().isEmpty()) {
-            dto.setWorkerIds(station.getWorkers()
-                                    .stream()
-                                    .map(User::getId)
-                                    .toList());
+            dto.setWorkerIds(
+                station.getWorkers().stream().map(User::getId).toList()
+            );
         }
     }
 }

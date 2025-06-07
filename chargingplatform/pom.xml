@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>3.4.4</version>
-		<relativePath/> <!-- lookup parent from repository -->
+		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>nikev.group.project</groupId>
 	<artifactId>chargingplatform</artifactId>
@@ -14,23 +15,29 @@
 	<name>chargingplatform</name>
 	<description>Demo project for Spring Boot</description>
 	<licenses>
-		<license/>
+		<license />
 	</licenses>
 	<developers>
-		<developer/>
+		<developer />
 	</developers>
 	<scm>
-		<connection/>
-		<developerConnection/>
-		<tag/>
-		<url/>
+		<connection />
+		<developerConnection />
+		<tag />
+		<url />
 	</scm>
 	<properties>
 		<java.version>21</java.version>
-    <sonar.projectKey>GCapaross_TQS-Group-Project</sonar.projectKey>
-    <sonar.organization>gcapaross</sonar.organization>
-    <sonar.host.url>https://sonarcloud.io</sonar.host.url>
-  </properties>
+		<sonar.projectKey>GCapaross_TQS-Group-Project</sonar.projectKey>
+		<sonar.organization>gcapaross</sonar.organization>
+		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
+		<junit-platform-suite.version>1.12.0</junit-platform-suite.version>
+		<cucumber.version>7.21.1</cucumber.version>
+		<selenium.version>4.29.0</selenium.version>
+		<selenide.version>7.7.3</selenide.version>
+		<rest-assured.version>5.5.1</rest-assured.version>
+		<wdm.version>5.9.2</wdm.version>
+	</properties>
 
 	<dependencies>
 		<dependency>
@@ -125,6 +132,31 @@
 			<artifactId>assertj-core</artifactId>
 			<scope>test</scope>
 		</dependency>
+
+		<dependency>
+			<groupId>org.junit.platform</groupId>
+			<artifactId>junit-platform-suite</artifactId>
+			<version>${junit-platform-suite.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.platform</groupId>
+			<artifactId>junit-platform-engine</artifactId>
+			<version>${junit-platform-suite.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.platform</groupId>
+			<artifactId>junit-platform-commons</artifactId>
+			<version>1.12.0</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>io.cucumber</groupId>
+			<artifactId>cucumber-spring</artifactId>
+			<version>${cucumber.version}</version>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security</artifactId>
@@ -134,6 +166,57 @@
 			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
 			<version>2.1.0</version>
 		</dependency>
+		<dependency>
+			<groupId>app.getxray</groupId>
+			<artifactId>xray-maven-plugin</artifactId>
+			<version>0.8.0</version>
+		</dependency>
+		<dependency>
+			<groupId>app.getxray</groupId>
+			<artifactId>xray-junit-extensions</artifactId>
+			<version>0.7.3</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>io.cucumber</groupId>
+			<artifactId>cucumber-java</artifactId>
+			<version>${cucumber.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>io.cucumber</groupId>
+			<artifactId>cucumber-junit-platform-engine</artifactId>
+			<version>${cucumber.version}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>io.github.bonigarcia</groupId>
+			<artifactId>webdrivermanager</artifactId>
+			<version>${wdm.version}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.seleniumhq.selenium</groupId>
+			<artifactId>selenium-grid</artifactId>
+			<version>${selenium.version}</version>
+			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>org.bouncycastle</groupId>
+					<artifactId>*</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>io.github.bonigarcia</groupId>
+			<artifactId>selenium-jupiter</artifactId>
+			<version>5.1.1</version>
+			<scope>test</scope>
+		</dependency>
+		
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-actuator</artifactId>
@@ -150,6 +233,16 @@
 
 	<build>
 		<plugins>
+			<plugin>
+				<groupId>app.getxray</groupId>
+				<artifactId>xray-maven-plugin</artifactId>
+				<version>0.9.0</version>
+				<configuration>
+					<cloud>true</cloud>
+					<reportFormat>cucumber</reportFormat>
+					<reportFile>results/cucumber.json</reportFile>
+				</configuration>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -174,7 +267,7 @@
 					</excludes>
 				</configuration>
 			</plugin>
-      <plugin>
+			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
 				<version>0.8.12</version>
@@ -185,20 +278,19 @@
 						</goals>
 					</execution>
 
-          <execution>
-            <id>report</id>
-            <goals>
-              <goal>report</goal>
-            </goals>
-            <configuration>
-              <formats>
-                <format>XML</format>
-              </formats>
-            </configuration>
-          </execution>
-        </executions>
+					<execution>
+						<id>report</id>
+						<goals>
+							<goal>report</goal>
+						</goals>
+						<configuration>
+							<formats>
+								<format>XML</format>
+							</formats>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
-
 </project>

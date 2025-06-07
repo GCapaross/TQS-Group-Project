@@ -276,7 +276,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ accountType }) => {
                 background: "linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)",
                 "&:hover": {
                   background:
-                    "linear-gradient(45deg, #1976D2 30%, #1E88E5 91%)",
+                    "linear-gradient(45deg, #1976D2 30%, #1E88E5 90%)",
                 },
               }}
             >

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Container,
@@ -13,13 +13,13 @@ import {
   Alert,
   Chip,
   Grid,
-} from '@mui/material';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+} from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 interface ChargerInput {
   id: number;
-  status: 'AVAILABLE' | 'IN_USE' | 'OUT_OF_SERVICE';
+  status: "AVAILABLE" | "IN_USE" | "OUT_OF_SERVICE";
   chargingSpeedKw: number;
 }
 
@@ -37,19 +37,20 @@ interface NewStationPayload {
 }
 
 const CreateStation: React.FC = () => {
-  const [name, setName] = useState('');
-  const [location, setLocation] = useState('');
-  const [latitude, setLatitude] = useState<number | ''>('');
-  const [longitude, setLongitude] = useState<number | ''>('');
-  const [pricePerKwh, setPricePerKwh] = useState<number | ''>('');
-  const [supportedConnectorsInput, setSupportedConnectorsInput] = useState(''); // comma-separated
-  const [timetable, setTimetable] = useState('');
-  const [companyName, setCompanyName] = useState('');
-  const [workerIdsInput, setWorkerIdsInput] = useState(''); // comma-separated
+  const [name, setName] = useState("");
+  const [location, setLocation] = useState("");
+  const [latitude, setLatitude] = useState<number | "">("");
+  const [longitude, setLongitude] = useState<number | "">("");
+  const [pricePerKwh, setPricePerKwh] = useState<number | "">("");
+  const [supportedConnectorsInput, setSupportedConnectorsInput] = useState(""); // comma-separated
+  const [timetable, setTimetable] = useState("");
+  const [companyName, setCompanyName] = useState("");
+  const [workerIdsInput, setWorkerIdsInput] = useState(""); // comma-separated
 
-  const [chargerIdInput, setChargerIdInput] = useState<number | ''>('');
-  const [chargerStatusInput, setChargerStatusInput] = useState<ChargerInput['status']>('AVAILABLE');
-  const [chargerSpeedInput, setChargerSpeedInput] = useState<number | ''>('');
+  const [chargerIdInput, setChargerIdInput] = useState<number | "">("");
+  const [chargerStatusInput, setChargerStatusInput] =
+    useState<ChargerInput["status"]>("AVAILABLE");
+  const [chargerSpeedInput, setChargerSpeedInput] = useState<number | "">("");
   const [chargers, setChargers] = useState<ChargerInput[]>([]);
 
   const [companies, setCompanies] = useState<string[]>([]);
@@ -64,13 +65,18 @@ const CreateStation: React.FC = () => {
   useEffect(() => {
     const fetchCompanies = async () => {
       try {
-        const response = await axios.get<string[]>('http://localhost:8080/companies/names', {
-          headers: { Accept: '*/*' },
-        });
+        const response = await axios.get<string[]>(
+          "http://localhost:8080/companies/names",
+          {
+            headers: { Accept: "*/*" },
+          }
+        );
         setCompanies(response.data);
       } catch (err) {
-        console.error('Error fetching company names:', err);
-        setCompaniesError('Failed to load company names. Please try again later.');
+        console.error("Error fetching company names:", err);
+        setCompaniesError(
+          "Failed to load company names. Please try again later."
+        );
       } finally {
         setCompaniesLoading(false);
       }
@@ -81,8 +87,8 @@ const CreateStation: React.FC = () => {
 
   const handleAddCharger = () => {
     if (
-      chargerIdInput === '' ||
-      chargerSpeedInput === '' ||
+      chargerIdInput === "" ||
+      chargerSpeedInput === "" ||
       Number(chargerSpeedInput) <= 0
     ) {
       return;
@@ -94,14 +100,14 @@ const CreateStation: React.FC = () => {
       chargingSpeedKw: Number(chargerSpeedInput),
     };
 
-    setChargers(prev => [...prev, newCharger]);
-    setChargerIdInput('');
-    setChargerStatusInput('AVAILABLE');
-    setChargerSpeedInput('');
+    setChargers((prev) => [...prev, newCharger]);
+    setChargerIdInput("");
+    setChargerStatusInput("AVAILABLE");
+    setChargerSpeedInput("");
   };
 
   const handleRemoveCharger = (index: number) => {
-    setChargers(prev => prev.filter((_, i) => i !== index));
+    setChargers((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -111,28 +117,28 @@ const CreateStation: React.FC = () => {
     if (
       !name.trim() ||
       !location.trim() ||
-      latitude === '' ||
-      longitude === '' ||
-      pricePerKwh === '' ||
+      latitude === "" ||
+      longitude === "" ||
+      pricePerKwh === "" ||
       !supportedConnectorsInput.trim() ||
       !timetable.trim() ||
       !companyName.trim()
     ) {
-      setSubmitError('Please fill in all required fields.');
+      setSubmitError("Please fill in all required fields.");
       return;
     }
 
     const supportedConnectors = supportedConnectorsInput
-      .split(',')
-      .map(s => s.trim())
-      .filter(s => s.length > 0);
+      .split(",")
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
 
     const workerIds = workerIdsInput
-      .split(',')
-      .map(w => w.trim())
-      .filter(w => w !== '')
-      .map(w => Number(w))
-      .filter(n => !isNaN(n));
+      .split(",")
+      .map((w) => w.trim())
+      .filter((w) => w !== "")
+      .map((w) => Number(w))
+      .filter((n) => !isNaN(n));
 
     const payload: NewStationPayload = {
       name: name.trim(),
@@ -149,20 +155,29 @@ const CreateStation: React.FC = () => {
 
     setSubmitting(true);
     try {
-      await axios.post('http://localhost:8080/api/charging-stations', payload, {
-        headers: { 'Content-Type': 'application/json' },
+      await axios.post("http://localhost:8080/api/charging-stations", payload, {
+        headers: { "Content-Type": "application/json" },
       });
-      navigate('/stations');
+      navigate("/stations");
     } catch (err) {
-      console.error('Error creating station:', err);
-      setSubmitError('Failied to create station. Please check your input and try again.');
+      console.error("Error creating station:", err);
+      setSubmitError(
+        "Failied to create station. Please check your input and try again."
+      );
       setSubmitting(false);
     }
   };
 
   if (companiesLoading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "50vh",
+        }}
+      >
         <CircularProgress />
       </Box>
     );
@@ -191,7 +206,7 @@ const CreateStation: React.FC = () => {
           fullWidth
           label="Name"
           value={name}
-          onChange={e => setName(e.target.value)}
+          onChange={(e) => setName(e.target.value)}
           sx={{ mb: 2 }}
         />
 
@@ -199,7 +214,7 @@ const CreateStation: React.FC = () => {
           fullWidth
           label="Location"
           value={location}
-          onChange={e => setLocation(e.target.value)}
+          onChange={(e) => setLocation(e.target.value)}
           sx={{ mb: 2 }}
         />
 
@@ -208,7 +223,9 @@ const CreateStation: React.FC = () => {
           label="Latitude"
           type="number"
           value={latitude}
-          onChange={e => setLatitude(e.target.value === '' ? '' : Number(e.target.value))}
+          onChange={(e) =>
+            setLatitude(e.target.value === "" ? "" : Number(e.target.value))
+          }
           sx={{ mb: 2 }}
         />
 
@@ -217,7 +234,9 @@ const CreateStation: React.FC = () => {
           label="Longitude"
           type="number"
           value={longitude}
-          onChange={e => setLongitude(e.target.value === '' ? '' : Number(e.target.value))}
+          onChange={(e) =>
+            setLongitude(e.target.value === "" ? "" : Number(e.target.value))
+          }
           sx={{ mb: 2 }}
         />
 
@@ -226,7 +245,9 @@ const CreateStation: React.FC = () => {
           label="Price Per kWh"
           type="number"
           value={pricePerKwh}
-          onChange={e => setPricePerKwh(e.target.value === '' ? '' : Number(e.target.value))}
+          onChange={(e) =>
+            setPricePerKwh(e.target.value === "" ? "" : Number(e.target.value))
+          }
           sx={{ mb: 2 }}
         />
 
@@ -235,7 +256,7 @@ const CreateStation: React.FC = () => {
           label="Supported Connectors (vírgula-separados)"
           placeholder="ex: Type2, CHAdeMO, CCS"
           value={supportedConnectorsInput}
-          onChange={e => setSupportedConnectorsInput(e.target.value)}
+          onChange={(e) => setSupportedConnectorsInput(e.target.value)}
           sx={{ mb: 2 }}
         />
 
@@ -244,7 +265,7 @@ const CreateStation: React.FC = () => {
           label="Timetable"
           placeholder="ex: 08:00-18:00"
           value={timetable}
-          onChange={e => setTimetable(e.target.value)}
+          onChange={(e) => setTimetable(e.target.value)}
           sx={{ mb: 2 }}
         />
 
@@ -254,9 +275,9 @@ const CreateStation: React.FC = () => {
             labelId="company-select-label"
             value={companyName}
             label="Company"
-            onChange={e => setCompanyName(e.target.value)}
+            onChange={(e) => setCompanyName(e.target.value)}
           >
-            {companies.map(company => (
+            {companies.map((company) => (
               <MenuItem key={company} value={company}>
                 {company}
               </MenuItem>
@@ -269,7 +290,7 @@ const CreateStation: React.FC = () => {
           label="Worker IDs (vírgula-separados)"
           placeholder="ex: 1, 2, 3"
           value={workerIdsInput}
-          onChange={e => setWorkerIdsInput(e.target.value)}
+          onChange={(e) => setWorkerIdsInput(e.target.value)}
           sx={{ mb: 3 }}
         />
 
@@ -284,7 +305,11 @@ const CreateStation: React.FC = () => {
               label="Charger ID"
               type="number"
               value={chargerIdInput}
-              onChange={e => setChargerIdInput(e.target.value === '' ? '' : Number(e.target.value))}
+              onChange={(e) =>
+                setChargerIdInput(
+                  e.target.value === "" ? "" : Number(e.target.value)
+                )
+              }
             />
           </Grid>
           <Grid>
@@ -294,7 +319,11 @@ const CreateStation: React.FC = () => {
                 labelId="charger-status-label"
                 value={chargerStatusInput}
                 label="Status"
-                onChange={e => setChargerStatusInput(e.target.value as ChargerInput['status'])}
+                onChange={(e) =>
+                  setChargerStatusInput(
+                    e.target.value as ChargerInput["status"]
+                  )
+                }
               >
                 <MenuItem value="AVAILABLE">AVAILABLE</MenuItem>
                 <MenuItem value="CHARGING">CHARGING</MenuItem>
@@ -308,12 +337,16 @@ const CreateStation: React.FC = () => {
               label="Speed (kW)"
               type="number"
               value={chargerSpeedInput}
-              onChange={e => setChargerSpeedInput(e.target.value === '' ? '' : Number(e.target.value))}
+              onChange={(e) =>
+                setChargerSpeedInput(
+                  e.target.value === "" ? "" : Number(e.target.value)
+                )
+              }
             />
           </Grid>
         </Grid>
 
-        <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+        <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
           <Button variant="outlined" onClick={handleAddCharger}>
             Adicionar Charger
           </Button>
@@ -332,14 +365,14 @@ const CreateStation: React.FC = () => {
           </Box>
         )}
 
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
           <Button
             type="submit"
             variant="contained"
             color="primary"
             disabled={submitting}
           >
-            {submitting ? 'Creating...' : 'Create Station'}
+            {submitting ? "Creating..." : "Create Station"}
           </Button>
         </Box>
       </Box>

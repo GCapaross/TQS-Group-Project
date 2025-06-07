@@ -28,6 +28,8 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+//@Requirement("EDISON-1..")
+
 @WebMvcTest(UserController.class)
 @Import(TestMetricConfig.class)
 public class UserControllerTest {
