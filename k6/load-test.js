@@ -4,7 +4,6 @@ import { Rate, Counter } from 'k6/metrics';
 
 const errorRate = new Rate('errors');
 const userCounter = new Counter('user_counter');
-const dateCounter = new Counter('date_counter');
 
 export const options = {
   stages: [
@@ -24,19 +23,18 @@ function formatDate(date) {
   return date.toISOString();
 }
 
-function getFutureDate() {
+function getFutureDate(days, hours) {
   const date = new Date();
-  // Start from tomorrow
-  date.setDate(date.getDate() + 1);
-  // Add hours based on the global counter
-  const hoursToAdd = dateCounter.add(4); // Increment by 4 hours each time
-  date.setHours(date.getHours() + hoursToAdd);
+  date.setDate(date.getDate() + days);
+  date.setHours(date.getHours() + hours);
   return date;
 }
 
 export default function() {
   userCount++;
-  const userId = userCounter.add(1);
+  userCounter.add(1);
+  
+  const userId = `${__VU}_${__ITER}_${Date.now()}_${userCount}`;
   
   const payload = {
     username: `testuser_${userId}`,
@@ -101,7 +99,12 @@ export default function() {
     if (searchRes.status === 200) {
       const stations = searchRes.json();
       if (stations && stations.length > 0) {
-        const startTime = getFutureDate();
+        // Calculate days and hours based on userCount
+        const days = Math.floor(userCount / 8); // 8 bookings per day (24/3 hours)
+        const hours = (userCount % 8) * 3; // 3 hours apart
+        
+        // Start from tomorrow and add calculated days and hours
+        const startTime = getFutureDate(days + 1, hours);
         const endTime = new Date(startTime.getTime() + 3600000); // 1 hour duration
         
         const bookingPayload = {
@@ -115,17 +118,6 @@ export default function() {
         const bookingRes = http.post(`${BASE_URL}/api/bookings`, JSON.stringify(bookingPayload), { headers });
         console.log(`Booking response: ${bookingRes.status} - ${bookingRes.body}`);
         
-        let bookingId = null;
-        if (bookingRes.status === 200) {
-          try {
-            const bookingData = bookingRes.json();
-            bookingId = bookingData.id;
-            console.log(`Successfully created booking with ID: ${bookingId}`);
-          } catch (e) {
-            console.log('Could not parse booking response');
-          }
-        }
-        
         if (bookingRes.status !== 200) {
           console.log(`Booking response headers: ${JSON.stringify(bookingRes.headers)}`);
           try {
@@ -134,54 +126,14 @@ export default function() {
           } catch (e) {
             console.log('Could not parse error response');
           }
-          
-          // Try a different station if the first one fails
-          if (stations.length > 1) {
-            const alternativePayload = {
-              ...bookingPayload,
-              stationId: stations[1].id
-            };
-            
-            console.log(`Trying alternative station. New payload: ${JSON.stringify(alternativePayload)}`);
-            
-            const alternativeRes = http.post(`${BASE_URL}/api/bookings`, JSON.stringify(alternativePayload), { headers });
-            console.log(`Alternative booking response: ${alternativeRes.status} - ${alternativeRes.body}`);
-            
-            if (alternativeRes.status === 200) {
-              try {
-                const bookingData = alternativeRes.json();
-                bookingId = bookingData.id;
-                console.log(`Successfully created booking with ID: ${bookingId}`);
-              } catch (e) {
-                console.log('Could not parse alternative booking response');
-              }
-            }
-            
-            check(alternativeRes, {
-              'alternative booking successful': (r) => r.status === 200,
-            });
-            
-            if (alternativeRes.status !== 200) {
-              errorRate.add(1);
-            }
-          } else {
-            errorRate.add(1);
-          }
-        } else {
-          check(bookingRes, {
-            'booking successful': (r) => r.status === 200,
-          });
         }
         
-        // Cleanup: Cancel the booking if it was successfully created
-        if (bookingId) {
-          console.log(`Attempting to cancel booking ${bookingId}`);
-          const cancelRes = http.delete(`${BASE_URL}/api/bookings/${bookingId}`, { headers });
-          console.log(`Cancel response: ${cancelRes.status} - ${cancelRes.body}`);
-          
-          check(cancelRes, {
-            'cancel successful': (r) => r.status === 200,
-          });
+        check(bookingRes, {
+          'booking successful': (r) => r.status === 200,
+        });
+        
+        if (bookingRes.status !== 200) {
+          errorRate.add(1);
         }
       }
     }
