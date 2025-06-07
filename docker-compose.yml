@@ -40,7 +40,7 @@ services:
         "spring.jpa.show-sql" : "true",
         "spring.jpa.properties.hibernate.format_sql" : "true",
         "spring.jpa.properties.hibernate.dialect" : "org.hibernate.dialect.PostgreSQLDialect",
-        "server.port" : "$BACKEND_DOCKER_PORT"
+        "server.port" : "$BACKEND_DOCKER_PORT",
         "frontend.host": "$HOSTNAME",
         "frontend.port": "$FRONTEND_LOCAL_PORT"
         }'
