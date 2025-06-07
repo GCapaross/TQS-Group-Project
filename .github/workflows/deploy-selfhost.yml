@@ -15,7 +15,7 @@ jobs:
 
       - name: Getting into the project directory
         run: |
-          cd .
+          cd /home/TQS-Group-Project
 
       - name: Criar arquivo .env
         run: |
