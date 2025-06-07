@@ -52,6 +52,9 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: chargingplatform-frontend
+    environment:
+      - VITE_BACKEND_HOST=${HOSTNAME}
+      - VITE_BACKEND_PORT=${BACKEND_DOCKER_PORT}
     depends_on:
       - backend
     volumes:

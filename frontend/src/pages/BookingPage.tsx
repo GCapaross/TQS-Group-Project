@@ -71,7 +71,7 @@ const BookingPage: React.FC = () => {
       setBookingError(null);
       const updated = await chargingStationApi.getById(parseInt(stationId));
       setStation(updated);
-      setIsBookingFormOpen(false);
+      // setIsBookingFormOpen(false);
     } catch (err: unknown) {
       if (err instanceof AxiosError) {
         if (err.response?.status === 400) {
