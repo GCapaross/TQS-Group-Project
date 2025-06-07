@@ -80,6 +80,8 @@ public class WebConfig implements WebMvcConfigurer {
                     .authenticated()
                     .requestMatchers(HttpMethod.DELETE, "/api/bookings/{id}")
                     .authenticated()
+                    .requestMatchers(HttpMethod.GET, "/api/users/me")
+                    .authenticated()
                     .anyRequest()
                     .permitAll()
             )
@@ -88,7 +90,6 @@ public class WebConfig implements WebMvcConfigurer {
                 UsernamePasswordAuthenticationFilter.class
             )
             .httpBasic(AbstractHttpConfigurer::disable);
-
         return http.build();
     }
 }

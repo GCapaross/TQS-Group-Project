@@ -1,7 +1,10 @@
 import axios from "axios";
 import { ChargingStation, Booking } from "../types/responseTypes";
 
-const API_BASE_URL = "http://localhost:8080/api";
+const BACKEND_HOST = import.meta.env.VITE_BACKEND_HOST ?? "localhost";
+const BACKEND_PORT = import.meta.env.VITE_BACKEND_PORT ?? "8080";
+
+const API_BASE_URL = `http://${BACKEND_HOST}:${BACKEND_PORT}/api`;
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
@@ -64,6 +67,15 @@ export const bookingApi = {
 
   cancel: async (id: number): Promise<Booking> => {
     const response = await api.post<Booking>(`/bookings/${id}/cancel`);
+    return response.data;
+  },
+};
+
+export const companyApi = {
+  getNames: async (): Promise<string[]> => {
+    const response = await api.get<string[]>("/companies/names", {
+      headers: { Accept: "*/*" },
+    });
     return response.data;
   },
 };
