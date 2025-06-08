@@ -7,6 +7,7 @@ import static org.mockito.Mockito.*;
 import java.util.Optional;
 
 import nikev.group.project.chargingplatform.DTOs.RegisterRequestDTO;
+import nikev.group.project.chargingplatform.model.Role;
 import nikev.group.project.chargingplatform.model.User;
 import nikev.group.project.chargingplatform.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -142,5 +143,23 @@ public class UserServiceTest {
     assertThrows(RuntimeException.class, () ->
       userService.login(testUser.getEmail(), "password")
     );
+  }
+
+  @Test
+  void whenRegisteringOperator_thenUserIsCreatedWithOperatorType() {
+    // Arrange
+    registerRequestDTO.setAccountType("operator");
+    when(userRepository.findByEmail(any())).thenReturn(Optional.empty());
+    when(userRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+    // Act
+    User registeredUser = userService.registerUser(registerRequestDTO);
+
+    // Assert
+    assertNotNull(registeredUser);
+    assertEquals(registerRequestDTO.getEmail(), registeredUser.getEmail());
+    assertEquals(registerRequestDTO.getUsername(), registeredUser.getUsername());
+    assertEquals(Role.OPERATOR, registeredUser.getRole());
+    verify(userRepository).save(any(User.class));
   }
 }

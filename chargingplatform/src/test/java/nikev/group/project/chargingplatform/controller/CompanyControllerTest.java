@@ -46,7 +46,7 @@ class CompanyControllerTest {
         );
         when(companyRepository.findAll()).thenReturn(companies);
 
-        mockMvc.perform(get("/companies/names").accept(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get("/api/companies/names").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(2)))
                 .andExpect(jsonPath("$[0]", is("Nike")))
@@ -58,7 +58,7 @@ class CompanyControllerTest {
     void whenGetNamesAndNoCompanies_thenReturnEmptyList() throws Exception {
         when(companyRepository.findAll()).thenReturn(List.of());
 
-        mockMvc.perform(get("/companies/names").accept(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get("/api/companies/names").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(0)));
     }
@@ -82,7 +82,7 @@ class CompanyControllerTest {
         );
         when(companyRepository.findAll()).thenReturn(companies);
 
-        mockMvc.perform(get("/companies/names").accept(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get("/api/companies/names").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(3)))
                 .andExpect(jsonPath("$[0]", is("Nike")))

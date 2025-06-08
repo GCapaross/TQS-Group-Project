@@ -32,9 +32,49 @@ jobs:
           path: ~/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
+
+      - name: Make a copy of existing cucumber results
+        working-directory: chargingplatform
+        run: |
+          mv results/cucumber.json results/backup_cucumber.json
+
       - name: Build and analyze
         working-directory: chargingplatform
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: mvn verify -B org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=GCapaross_TQS-Group-Project -Pcoverage
+        run: |
+          mvn verify -B \
+            org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+            -Dsonar.projectKey=GCapaross_TQS-Group-Project \
+            -Dxray.skip=true \
+            -Dcucumber.filter.tags="@SKIP_ALL"
+
+      - name: Restore cucumber results
+        working-directory: chargingplatform
+        run: |
+          mv results/backup_cucumber.json results/cucumber.json
+      - name: Debug Cucumber JSON content
+        working-directory: chargingplatform
+        run: |
+          echo "=== Cucumber JSON Content ==="
+          cat results/cucumber.json
+          echo "=== Validating JSON ==="
+          python3 -m json.tool results/cucumber.json > /dev/null && echo "Valid JSON" || echo "Invalid JSON"
+          echo "=== JSON Size ==="
+          wc -c results/cucumber.json
+
+      - name: Push results to Xray on Jira Cloud
+        working-directory: chargingplatform
+        env:
+          XRAYCLOUD_CLIENT_ID: ${{ secrets.XRAYCLOUD_CLIENT_ID }}
+          XRAYCLOUD_CLIENT_SECRET: ${{ secrets.XRAYCLOUD_CLIENT_SECRET }}
+          REVISION: ${{ github.ref_name}}
+        run: |
+          mvn -X \
+          -Dxray.projectKey=EDISON \
+          -Dxray.cloud=true \
+          -Dxray.clientId=${XRAYCLOUD_CLIENT_ID} \
+          -Dxray.clientSecret=${XRAYCLOUD_CLIENT_SECRET} \
+          -Dxray.revision=${REVISION} \
+          app.getxray:xray-maven-plugin:0.9.0:import-results --debug

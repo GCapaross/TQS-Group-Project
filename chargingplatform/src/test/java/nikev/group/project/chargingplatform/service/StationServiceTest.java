@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.*;
 
 import jakarta.persistence.criteria.Predicate;
@@ -26,6 +27,7 @@ import nikev.group.project.chargingplatform.repository.StationRepository;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -538,4 +540,81 @@ public class StationServiceTest {
         assertEquals("Out of Service", dto.getStatus());
     }
 
+    @Test
+    void testCreateStation_withChargers_thenChargersSaved() {
+      // 1) prepare company lookup
+      Company fakeCompany = new Company();
+      fakeCompany.setName("CompX");
+      when(companyRepository.findByName("CompX"))
+          .thenReturn(Optional.of(fakeCompany));
+    
+      // 2) prepare stationRepository.save(...) to return a Station with an ID
+      Station savedStation = new Station();
+      savedStation.setId(99L);
+      when(stationRepository.save(any(Station.class)))
+          .thenReturn(savedStation);
+    
+      // 3) build DTO with two ChargerDTO entries
+      ChargerDTO dto1 = new ChargerDTO(1L, Charger.ChargerStatus.AVAILABLE, 50.0);
+      ChargerDTO dto2 = new ChargerDTO(2L, Charger.ChargerStatus.OUT_OF_SERVICE, 11.0);
+      StationCreateDTO createDto = new StationCreateDTO();
+      createDto.setName("StationA");
+      createDto.setLocation("LocA");
+      createDto.setLatitude(1.0);
+      createDto.setLongitude(2.0);
+      createDto.setPricePerKwh(3.3);
+      createDto.setSupportedConnectors(List.of("Type1"));
+      createDto.setCompanyName("CompX");
+      createDto.setWorkerIds(null);             // no workers
+      createDto.setChargers(List.of(dto1, dto2));
+    
+      // 4) call the service
+      stationService.createStation(createDto);
+    
+      // 5) verify using an ArgumentMatcher instead of a captor
+      verify(chargerRepository).saveAll(argThat((List<Charger> list) -> {
+        assertEquals(2, list.size());
+        // first charger mapping
+        assertEquals(Charger.ChargerStatus.AVAILABLE, list.get(0).getStatus());
+        assertEquals(50.0, list.get(0).getChargingSpeedKw());
+        assertSame(savedStation, list.get(0).getStation());
+        // second charger mapping
+        assertEquals(Charger.ChargerStatus.OUT_OF_SERVICE, list.get(1).getStatus());
+        assertEquals(11.0, list.get(1).getChargingSpeedKw());
+        assertSame(savedStation, list.get(1).getStation());
+        return true;
+      }));
+
+    }
+
+    @Test
+    void testSearchStationsByConnectors() {
+      SearchStationDTO dto = new SearchStationDTO();
+      dto.setSupportedConnectors(List.of("TypeX"));
+    
+      Station s = new Station(1L, "S1", "Loc1", 0,0, 1.0,
+          List.of("TypeX"), null, List.of());
+      when(stationRepository.findAll(ArgumentMatchers.<Specification<Station>>any()))
+        .thenReturn(List.of(s));
+    
+      List<Station> result = stationService.searchStations(dto);
+      assertEquals(1, result.size());
+      assertTrue(result.get(0).getSupportedConnectors().contains("TypeX"));
+    }
+
+    @Test
+    void testSearchStationsByPriceRange() {
+      SearchStationDTO dto = new SearchStationDTO();
+      dto.setMinPricePerKwh(2.0);
+      dto.setMaxPricePerKwh(5.0);
+    
+      Station s = new Station(2L, "S2", "Loc2", 0,0, 3.0,
+          List.of(), null, List.of());
+      when(stationRepository.findAll(ArgumentMatchers.<Specification<Station>>any()))
+        .thenReturn(List.of(s));
+    
+      List<Station> result = stationService.searchStations(dto);
+      assertEquals(1, result.size());
+      assertEquals(3.0, result.get(0).getPricePerKwh());
+    }
 }

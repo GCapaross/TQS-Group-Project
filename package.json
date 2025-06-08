@@ -8,10 +8,10 @@
     "format-code": "npx lint-staged"
   },
   "lint-staged": {
-    "*.{ts,tsx,js,jsx,html,css}": [
-      "cd frontend && prettier --write"
+    "frontend/src/**/*.{ts,tsx,js,jsx,html,css}": [
+      "prettier --write"
     ],
-    "*.java": [
+    "chargingplatform/src/main/java/**/*.java": [
       "prettier --plugin=prettier-plugin-java --write"
     ]
   },

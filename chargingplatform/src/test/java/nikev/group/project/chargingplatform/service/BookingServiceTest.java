@@ -28,14 +28,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 public class BookingServiceTest {
 
-  @Mock
+    @Mock
   private ReservationRepository reservationRepository;
 
-  @Mock
+    @Mock
   private StationRepository chargingStationRepository;
 
-  @Mock
-  private UserRepository userRepository;
+    @Mock
+    private UserRepository userRepository;
 
   @Mock
   private StationRepository stationRepository;
@@ -43,21 +43,21 @@ public class BookingServiceTest {
   @Mock
   private ChargerRepository chargerRepository;
 
-  @InjectMocks
-  private BookingService bookingService;
+    @InjectMocks
+    private BookingService bookingService;
 
   private Station station;
   Charger stationCharger;
-  private User user;
-  private LocalDateTime startTime;
-  private LocalDateTime endTime;
+    private User user;
+    private LocalDateTime startTime;
+    private LocalDateTime endTime;
   private Reservation reservation;
 
-  @BeforeEach
-  void setUp() {
-    // Setup test data
+    @BeforeEach
+    void setUp() {
+        // Setup test data
     station = new Station();
-    station.setId(1L);
+        station.setId(1L);
     station.setName("Test Station");
     station.setLocation("Test Location");
     station.setLatitude(40.7128);
@@ -71,10 +71,10 @@ public class BookingServiceTest {
       station
     );
 
-    user = new User();
-    user.setId(1L);
+        user = new User();
+        user.setId(1L);
     user.setUsername("Test User");
-    user.setEmail("test@example.com");
+        user.setEmail("test@example.com");
 
     reservation = new Reservation();
     reservation.setId(1L);
@@ -83,9 +83,9 @@ public class BookingServiceTest {
     reservation.setStartDate(startTime);
     reservation.setEndDate(endTime);
 
-    startTime = LocalDateTime.now().plusHours(1);
-    endTime = startTime.plusHours(2);
-  }
+        startTime = LocalDateTime.now().plusHours(1);
+        endTime = startTime.plusHours(2);
+    }
 
   // @Test
   // void whenBookingValidSlot_thenBookingIsCreated() {
@@ -337,7 +337,7 @@ public class BookingServiceTest {
    * When get reservatiom
    * then return reservation
    */
-  @Test
+    @Test
   public void whenFetchingBookingAssociatedToUser_thenReturnReservation() {
     when(reservationRepository.findById(anyLong())).thenReturn(
       Optional.of(reservation)
@@ -372,7 +372,7 @@ public class BookingServiceTest {
    * When booking a slot to station with id 1 by the user with id 1
    * then throw RuntimeException
    */
-  @Test
+    @Test
   public void whenBookingSlotWithUnexistentUser_thenRuntimeExceptionIsThrown() {
     when(stationRepository.findById(anyLong())).thenReturn(
       Optional.of(station)
@@ -400,10 +400,10 @@ public class BookingServiceTest {
       reservationRepository.findOverlappingReservations(anyLong(), any(), any())
     ).thenReturn(Collections.emptyList());
 
-    assertThrows(RuntimeException.class, () ->
-      bookingService.bookSlot(1L, 1L, startTime, endTime)
-    );
-  }
+        assertThrows(RuntimeException.class, () -> 
+            bookingService.bookSlot(1L, 1L, startTime, endTime)
+        );
+    }
 
   /**
    * (No slots available)
@@ -411,7 +411,7 @@ public class BookingServiceTest {
    * When booking a slot to the station to the slot 14h30 and 15h30
    * then throw RuntimeException
    */
-  @Test
+    @Test
   public void whenBookingSlotWithNoAvailableSlots_thenRuntimeExceptionIsThrown() {
     when(stationRepository.findById(anyLong())).thenReturn(
       Optional.of(station)
@@ -443,10 +443,10 @@ public class BookingServiceTest {
       )
     );
 
-    assertThrows(RuntimeException.class, () ->
-      bookingService.bookSlot(1L, 1L, startTime, endTime)
-    );
-  }
+        assertThrows(RuntimeException.class, () -> 
+            bookingService.bookSlot(1L, 1L, startTime, endTime)
+        );
+    }
 
   /**
    * (Charger out of service)
@@ -455,7 +455,7 @@ public class BookingServiceTest {
    * When booking a slot to the station to the slot startTime and endTime
    * then throw RuntimeException
    */
-  @Test
+    @Test
   public void whenBookingSlotWithOutOfServiceCharger_thenRuntimeExceptionIsThrown() {
     when(stationRepository.findById(anyLong())).thenReturn(
       Optional.of(station)
@@ -484,10 +484,10 @@ public class BookingServiceTest {
       List.of(new Reservation(1L, user, station, startTime, endTime))
     );
 
-    assertThrows(RuntimeException.class, () ->
-      bookingService.bookSlot(1L, 1L, startTime, endTime)
-    );
-  }
+        assertThrows(RuntimeException.class, () -> 
+            bookingService.bookSlot(1L, 1L, startTime, endTime)
+        );
+    }
 
   /**
    * (Free station)
@@ -615,7 +615,7 @@ public class BookingServiceTest {
    * Given no overlap with gap between the Bookings
    * Then should return 1
    */
-  @Test
+    @Test
   public void whenNoOverlapWithGapBetweenBookings_thenReturnOne() {
     Reservation reservation1 = new Reservation(
       1L,
@@ -704,7 +704,7 @@ public class BookingServiceTest {
    * Given no reservations and maxCapacity of 2
    * Then should return true
    */
-  @Test
+    @Test
   public void whenNoReservationsWithTwoSlots_thenReturnTrue() {
     assertThat(bookingService.hasAvailableSlot(new ArrayList<>(), 2), is(true));
   }

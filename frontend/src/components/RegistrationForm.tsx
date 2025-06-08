@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   TextField,
@@ -10,28 +10,28 @@ import {
   InputAdornment,
   IconButton,
   Alert,
-  Fade
-} from '@mui/material';
+  Fade,
+} from "@mui/material";
 import {
   Person as PersonIcon,
   Email as EmailIcon,
   Lock as LockIcon,
   Visibility as VisibilityIcon,
-  VisibilityOff as VisibilityOffIcon
-} from '@mui/icons-material';
-import { api } from '../services/api';
+  VisibilityOff as VisibilityOffIcon,
+} from "@mui/icons-material";
+import { api } from "../services/api";
 
 interface RegistrationFormProps {
-  accountType: 'user' | 'operator';
+  accountType: "user" | "operator";
 }
 
 const RegistrationForm: React.FC<RegistrationFormProps> = ({ accountType }) => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    username: '',
-    email: '',
-    password: '',
-    confirmPassword: ''
+    username: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showPassword, setShowPassword] = useState(false);
@@ -39,73 +39,77 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ accountType }) => {
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-    
+
     if (!formData.username.trim()) {
-      newErrors.username = 'Username is required';
+      newErrors.username = "Username is required";
     }
-    
+
     if (!formData.email.trim()) {
-      newErrors.email = 'Email is required';
+      newErrors.email = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email is invalid';
+      newErrors.email = "Email is invalid";
     }
-    
+
     if (!formData.password) {
-      newErrors.password = 'Password is required';
+      newErrors.password = "Password is required";
     } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
+      newErrors.password = "Password must be at least 6 characters";
     }
-    
+
     if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
+      newErrors.confirmPassword = "Passwords do not match";
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
-    
+
     try {
-      const response = await api.post('/users/register', {
+      const response = await api.post("/users/register", {
         ...formData,
-        accountType
+        accountType,
       });
 
       if (response.status === 200) {
-        navigate('/login');
+        navigate("/login");
       } else {
         const data = await response.data;
-        setErrors({ submit: data.message || 'Registration failed' });
+        setErrors({ submit: data.message || "Registration failed" });
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      setErrors({ submit: `An error occurred during registration: ${errorMessage}` });
+      console.log("Registration error:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
+      setErrors({
+        submit: `An error occurred during registration: ${errorMessage}`,
+      });
     }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   return (
     <Box
       sx={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
-        pt: { xs: 8, sm: 10 }
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
+        pt: { xs: 8, sm: 10 },
       }}
     >
       <Container maxWidth="sm">
@@ -113,10 +117,10 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ accountType }) => {
           elevation={3}
           sx={{
             p: 4,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            borderRadius: 4
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            borderRadius: 4,
           }}
         >
           <Typography
@@ -124,18 +128,18 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ accountType }) => {
             variant="h4"
             sx={{
               mb: 3,
-              fontWeight: 'bold',
-              background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
-              backgroundClip: 'text',
-              textFillColor: 'transparent',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent'
+              fontWeight: "bold",
+              background: "linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)",
+              backgroundClip: "text",
+              textFillColor: "transparent",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
             }}
           >
-            Create {accountType === 'user' ? 'User' : 'Operator'} Account
+            Create {accountType === "user" ? "User" : "Operator"} Account
           </Typography>
 
-          <Box component="form" onSubmit={handleSubmit} sx={{ width: '100%' }}>
+          <Box component="form" onSubmit={handleSubmit} sx={{ width: "100%" }}>
             <TextField
               margin="normal"
               required
@@ -185,7 +189,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ accountType }) => {
               fullWidth
               name="password"
               label="Password"
-              type={showPassword ? 'text' : 'password'}
+              type={showPassword ? "text" : "password"}
               id="password"
               autoComplete="new-password"
               value={formData.password}
@@ -205,7 +209,11 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ accountType }) => {
                       onClick={() => setShowPassword(!showPassword)}
                       edge="end"
                     >
-                      {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                      {showPassword ? (
+                        <VisibilityOffIcon />
+                      ) : (
+                        <VisibilityIcon />
+                      )}
                     </IconButton>
                   </InputAdornment>
                 ),
@@ -218,7 +226,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ accountType }) => {
               fullWidth
               name="confirmPassword"
               label="Confirm Password"
-              type={showConfirmPassword ? 'text' : 'password'}
+              type={showConfirmPassword ? "text" : "password"}
               id="confirmPassword"
               value={formData.confirmPassword}
               onChange={handleChange}
@@ -234,10 +242,16 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ accountType }) => {
                   <InputAdornment position="end">
                     <IconButton
                       aria-label="toggle confirm password visibility"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      onClick={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }
                       edge="end"
                     >
-                      {showConfirmPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                      {showConfirmPassword ? (
+                        <VisibilityOffIcon />
+                      ) : (
+                        <VisibilityIcon />
+                      )}
                     </IconButton>
                   </InputAdornment>
                 ),
@@ -260,10 +274,11 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ accountType }) => {
                 mt: 3,
                 mb: 2,
                 py: 1.5,
-                background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
-                '&:hover': {
-                  background: 'linear-gradient(45deg, #1976D2 30%, #1E88E5 90%)'
-                }
+                background: "linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)",
+                "&:hover": {
+                  background:
+                    "linear-gradient(45deg, #1976D2 30%, #1E88E5 90%)",
+                },
               }}
             >
               Create Account
@@ -275,4 +290,4 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ accountType }) => {
   );
 };
 
-export default RegistrationForm; 
+export default RegistrationForm;
