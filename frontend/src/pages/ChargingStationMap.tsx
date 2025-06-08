@@ -211,6 +211,7 @@ const ChargingStationMap: React.FC = () => {
         }}
       >
         <MapContainer
+          id="map"
           center={userLocation}
           zoom={13}
           style={{ height: "100%", width: "100%" }}
@@ -261,7 +262,7 @@ const ChargingStationMap: React.FC = () => {
                       Speed:{" "}
                       {station.chargers.length > 0
                         ? station.chargers[0].chargingSpeedKw
-                        : "N/A"}{" "}
+                        : "N/A"}
                       kW
                     </Typography>
                     <Box
@@ -287,6 +288,7 @@ const ChargingStationMap: React.FC = () => {
                       fullWidth
                       sx={{ mt: 2 }}
                       onClick={() => handleStationClick(station.id)}
+                      id="book-button"
                     >
                       Book Now
                     </Button>

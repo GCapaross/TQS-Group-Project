@@ -11,6 +11,8 @@ import io.cucumber.java.en.When;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import nikev.group.project.chargingplatform.DTOs.RegisterRequestDTO;
@@ -20,10 +22,12 @@ import nikev.group.project.chargingplatform.DTOs.StationResponseDTO;
 import nikev.group.project.chargingplatform.model.User;
 import nikev.group.project.chargingplatform.repository.ChargerRepository;
 import nikev.group.project.chargingplatform.repository.CompanyRepository;
+import nikev.group.project.chargingplatform.repository.ReservationRepository;
 import nikev.group.project.chargingplatform.repository.StationRepository;
 import nikev.group.project.chargingplatform.repository.UserRepository;
 import nikev.group.project.chargingplatform.model.Charger;
 import nikev.group.project.chargingplatform.model.Company;
+import nikev.group.project.chargingplatform.model.Reservation;
 import nikev.group.project.chargingplatform.model.Station;
 import nikev.group.project.chargingplatform.service.StationService;
 import nikev.group.project.chargingplatform.service.UserService;
@@ -32,6 +36,7 @@ import org.checkerframework.checker.units.qual.t;
 import org.junit.Ignore;
 import org.junit.jupiter.api.Disabled;
 import org.openqa.selenium.By;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -43,6 +48,9 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+
+
+import org.openqa.selenium.interactions.Actions;
 
 
 public class ReservationSteps {
@@ -66,6 +74,8 @@ public class ReservationSteps {
     private ChargerRepository chargerRepository;
     @Autowired
     private UserRepository UserRepository;
+    @Autowired
+    private ReservationRepository reservationRepository;
 
     public ReservationSteps() {
         driver = Hooks.driver;
@@ -149,70 +159,165 @@ public class ReservationSteps {
                 });
         }
     }
+// @Given("a reservation for tomorrow from 14h00 until 14h30 exists")
+    @Given("a reservation for {string} from {int}h{int} until {int}h{int} exists")
+    public void a_reservation_exists(
+        String date,
+        Integer startHours, Integer startMinutes,
+        Integer endHours, Integer endMinutes
+    ) {
+        // Create a reservation for tomorrow from 14:00 to 14:30
+        LocalDate reservationDate = string_to_date(date);
+        LocalDateTime startDate = reservationDate.atTime(startHours, startMinutes);
+        LocalDateTime endDate = reservationDate.atTime(endHours, endMinutes);
 
+        StationDTO station = stationService.getAllStations().get(0);
+        Station stationEntity = stationRepository.findById(station.getId())
+            .orElseThrow(() -> new RuntimeException("Station not found"));
+        
+        Reservation reservation = new Reservation();
+        reservation.setStartDate(startDate);
+        reservation.setEndDate(endDate);
+        reservation.setStation(stationEntity);
+        reservation = reservationRepository.save(reservation);
+    }
+
+
+/*
+Given I am on Book page                                                  # nikev.group.project.chargingplatform.FunctionalTests.ReservationSteps.i_am_on_book_page()
+org.hibernate.LazyInitializationException: Could not initialize proxy [nikev.group.project.chargingplatform.model.Company#3] - no session
+at org.hibernate.proxy.AbstractLazyInitializer.initialize(AbstractLazyInitializer.java:174)
+at org.hibernate.proxy.AbstractLazyInitializer.getImplementation(AbstractLazyInitializer.java:328)
+at org.hibernate.proxy.pojo.bytebuddy.ByteBuddyInterceptor.intercept(ByteBuddyInterceptor.java:44)
+at org.hibernate.proxy.ProxyConfiguration$InterceptorDispatcher.intercept(ProxyConfiguration.java:102)
+at nikev.group.project.chargingplatform.model.Company$HibernateProxy$Mt9qqYWP.getName(Unknown Source)
+at nikev.group.project.chargingplatform.service.StationService.convertToStationDTO(StationService.java:285)
+at nikev.group.project.chargingplatform.service.StationService.getAllStations(StationService.java:55)
+at nikev.group.project.chargingplatform.FunctionalTests.ReservationSteps.i_am_on_book_page(ReservationSteps.java:187)
+at ✽.I am on Book page(classpath:nikev/group/project/chargingplatform/1_EDISON-3_EDISON-162.feature:26)
+*/
     @Given("I am on Book page")
     public void i_am_on_book_page() {
-        StationDTO station = stationService.getAllStations().get(0);
+        Station station = stationRepository.findAll().get(0);
         driver.get(BASE_URL + "/stations/" + station.getId() + "/book");
-        try {
-            Thread.sleep(10_000L); // Wait for the page to load
-        } catch (Exception e) {}
     }
 
     @Given("I am on Map View") 
     public void i_am_on_map_view() {
         driver.get(BASE_URL + "/map");
-        try {
-            Thread.sleep(50_000L); // Wait for the page to load
-        } catch (Exception e) {}
-    }
+        // Wait for the map to load
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("map"))); // adjust to your map's ID or class
+        WebElement mapElement = driver.findElement(By.id("map")); // adjust to your map's ID or class
 
+        WebElement zoomOutButton = driver.findElement(By.className("leaflet-control-zoom-out"));
+        for (int i = 0; i < 6; i++) {
+            zoomOutButton.click();
+            try {
+                Thread.sleep(500); // wait for the map to update
+            } catch (InterruptedException e) {}
+        }
+    }
+    
     @Given("I click on book button")
     public void i_click_on_book_button() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
+        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
+        WebElement bookButton = driver.findElement(By.id("book-button"));
+        bookButton.click();
+    }
+    
+    @Given("I click on station {int}") 
+    public void i_click_on_station(Integer stationIdx) {
+        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
+        List<WebElement> marker = driver.findElements(By.className("leaflet-marker-icon"));
+
+        marker.get(stationIdx).click();
+        driver.findElement(By.id("book-button")).click();
     }
 
     @Given("set Start Date to {string} at {int}h{int}")
-    public void set_start_date() {
+    public void set_start_date(String startDate, Integer hours, Integer minutes) {
         // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
+        LocalDate reservationDate = string_to_date(startDate);
+        // start-date and end-date
+        WebElement startDateInput = driver.findElement(By.id("start-date"));
+        startDateInput.clear();
+
+        LocalDateTime startDateTime = reservationDate.atTime(hours, minutes);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
+        String startDateTimeFormatted = startDateTime.format(formatter);
+        startDateInput.sendKeys(startDateTimeFormatted);
     }
 
     @Given("set End Date to {string} at {int}h{int}")
-    public void set_end_date(String date, Integer hours, Integer minutes) {
-        LocalDate reservationDate = string_to_date(date);
+    public void set_end_date(String endDate, Integer hours, Integer minutes) {
+        LocalDate reservationDate = string_to_date(endDate);
         // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
+        WebElement endDateInput = driver.findElement(By.id("end-date"));
+        // endDateInput.clear();
+        // endDateInput.sendKeys(reservationDate.toString() + "T" + String.format("%02d:%02d", hours, minutes));
+        LocalDateTime endDateTime = reservationDate.atTime(hours, minutes);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
+        String endDateTimeFormatted = endDateTime.format(formatter);
+        endDateInput.clear();
+        endDateInput.sendKeys(endDateTimeFormatted);
     }
 
-    @Given("set Estimated Energy Needed to {int}")
-    public void set_estimated_energy_needed_to(Integer int1) {
-        // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
+    @Given("set Estimated Energy Needed to {string}")
+    public void set_estimated_energy_needed_to(String energy) {
+        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
+        WebElement energyInput = driver.findElement(By.id("estimated-energy"));
+        energyInput.clear();
+        energyInput.sendKeys(energy);
     }
 
     @When("I click book now")
     public void i_click_book_now() {
         // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
+        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
+        WebElement bookNowButton = driver.findElement(By.id("book-button"));
+        bookNowButton.click();
+        // Wait for the confirmation popup to appear
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("confirmation-id")));
     }
-
-
+    
+    @Then("I get redirected to book page")
+    public void then_i_get_redirected_to_book_page() {
+        String currentUrl = driver.getCurrentUrl();
+        assertThat(currentUrl).contains("/book");
+    }
+    
     @Then("confirmation popup appears")
     public void confirmation_popup_appears() {
         // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
+        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
+        WebElement confirmationPopup = driver.findElement(By.id("confirmation-button"));
+        assertThat(confirmationPopup.isDisplayed()).isTrue();
     }
+
     @Then("booking fails")
     public void booking_fails() {
         // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
+        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));	
+        WebElement errorMessage = driver.findElement(By.id("error-message"));
+        assertThat(errorMessage.isDisplayed()).isTrue();
     }
 
 
+
     private LocalDate string_to_date(String date) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'string_to_date'");
+        switch (date) {
+            case "yesterday":
+                return LocalDate.now().minusDays(1);
+            case "today":
+                return LocalDate.now();
+            case "tomorrow":
+                return LocalDate.now().plusDays(1);
+            default:
+                break;
+        }
+        // If the date is not a special case, parse it as a LocalDate
+        return null;
     }
 }

@@ -27,9 +27,7 @@ public class Hooks {
     @After
     public void cleanUp() {
         if (null != driver) {
-            driver.close();
             driver.quit();
         }
     }
-
 }
