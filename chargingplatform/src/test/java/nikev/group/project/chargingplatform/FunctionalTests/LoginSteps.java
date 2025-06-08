@@ -28,36 +28,26 @@ import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 
 public class LoginSteps {
-
     private WebDriver driver;
-    private static final String BASE_URL = "http://localhost:5173";
+    private String frontendHost = "localhost";
+    private String frontendPort = "5173";
 
-    @Before
-    public void setUp() {
-        WebDriverManager.chromedriver().setup();
-        ChromeOptions options = new ChromeOptions();
+    private static String BASE_URL;
 
-        options.addArguments("--no-sandbox");
-        options.addArguments("--disable-dev-shm-usage");
-        options.addArguments("--disable-gpu");
-        options.addArguments("--remote-debugging-port=9222");
-        options.addArguments("--window-size=1920,1080");
-        driver = new ChromeDriver(options);
-    }
-
-    @After
-    public void closeUp() {
-        driver.close();
+    public LoginSteps() {
+        driver = Hooks.driver;
+        BASE_URL = "http://" + frontendHost + ":" + frontendPort;
     }
 
     @Autowired
     private UserService userService;
 
     @Given("an account with email {string} and password {string}")
-    public void givenTheUserIsOnTheHomepage(String email, String password) {
+    public void givenARegisteredUser(String email, String password) {
         RegisterRequestDTO request = new RegisterRequestDTO(
             "John Doe",
             password,
@@ -70,6 +60,8 @@ public class LoginSteps {
 
     @And("the user is on the login page")
     public void andTheUserIsOnTheLoginPage() {
+        System.out.println("\n\nNavigating to login page: " + BASE_URL + "/login");
+        System.out.println("Driver is initialized: " + (driver != null) + "\n\n");
         driver.get(BASE_URL + "/login");
     }
 

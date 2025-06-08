@@ -258,7 +258,11 @@ const ChargingStationMap: React.FC = () => {
                       Price: ${station.pricePerKwh}/kWh
                     </Typography>
                     <Typography variant="body2">
-                      Speed: {station.chargers[0].chargingSpeedKw} kW
+                      Speed:{" "}
+                      {station.chargers.length > 0
+                        ? station.chargers[0].chargingSpeedKw
+                        : "N/A"}{" "}
+                      kW
                     </Typography>
                     <Box
                       sx={{
