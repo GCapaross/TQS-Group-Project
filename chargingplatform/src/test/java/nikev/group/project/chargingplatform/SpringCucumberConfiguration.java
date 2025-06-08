@@ -1,7 +1,6 @@
-package nikev.group.project.chargingplatform.FunctionalTests;
+package nikev.group.project.chargingplatform;
 
 import io.cucumber.spring.CucumberContextConfiguration;
-import nikev.group.project.chargingplatform.TestcontainersConfiguration;
 
 import org.junit.Ignore;
 import org.junit.jupiter.api.Disabled;
@@ -18,7 +17,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @TestPropertySource(properties = "server.port=8080")
 @Testcontainers
 @ActiveProfiles("test") 
-@Import(TestcontainersConfiguration.class)
+@Import({TestcontainersConfiguration.class, TestMetricConfig.class})
 public class SpringCucumberConfiguration {
 
   @DynamicPropertySource
