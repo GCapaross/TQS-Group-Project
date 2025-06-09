@@ -84,6 +84,25 @@ public class UserServiceTest {
   }
 
   /**
+   * Given a User with username "Test User"
+   * When an another user tries to register with the username "Test User"
+   * Then RuntimeException is thrown
+   */
+  @Test
+  void whenRegisteringExistingUsername_thenThrowsException() {
+    // Arrange
+    when(userRepository.findByEmail(any())).thenReturn(Optional.empty());
+    when(userRepository.findByUsername(testUser.getUsername())).thenReturn(
+      Optional.of(testUser)
+    );
+
+    // Act & Assert
+    assertThrows(RuntimeException.class, () ->
+      userService.registerUser(registerRequestDTO)
+    );
+  }
+
+  /**
    * Given an email that has a users associated
    * When user tries to login with that email and the correct passowrd
    * Then the user associated with that email is returned
@@ -162,4 +181,35 @@ public class UserServiceTest {
     assertEquals(Role.OPERATOR, registeredUser.getRole());
     verify(userRepository).save(any(User.class));
   }
+
+  @Test
+  void whenGettingExistingUserByUsername_thenReturnsUser() {
+    // Arrange
+    when(userRepository.findByUsername(testUser.getUsername()))
+      .thenReturn(Optional.of(testUser));
+
+    // Act
+    User found = userService.getUserByUsername(testUser.getUsername());
+
+    // Assert
+    assertNotNull(found);
+    assertEquals(testUser.getEmail(), found.getEmail());
+    assertEquals(testUser.getUsername(), found.getUsername());
+    verify(userRepository).findByUsername(testUser.getUsername());
+  }
+
+  @Test
+  void whenGettingNonexistentUserByUsername_thenThrowsException() {
+    // Arrange
+    String missingUsername = "missing";
+    when(userRepository.findByUsername(missingUsername))
+      .thenReturn(Optional.empty());
+
+    // Act & Assert
+    assertThrows(RuntimeException.class, () ->
+      userService.getUserByUsername(missingUsername)
+    );
+    verify(userRepository).findByUsername(missingUsername);
+  }
+
 }

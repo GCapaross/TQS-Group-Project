@@ -2,6 +2,8 @@ package nikev.group.project.chargingplatform.IntegrationTests;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import io.cucumber.spring.CucumberContextConfiguration;
@@ -20,6 +22,11 @@ public class UserControllerSteps {
   private ResponseEntity<String> response;
   private String jwtToken;       // will hold the raw cookie value
   private final ObjectMapper mapper = new ObjectMapper();
+
+  @Given("the application is running")
+  public void the_application_is_running() {
+    // This step is implicit in the Cucumber context configuration.
+  }
 
   @When("I send a POST to {string} with body")
   public void i_send_post_with_body(String path, DataTable table) {
@@ -74,12 +81,18 @@ public class UserControllerSteps {
 
   @Then("the response should contain:")
   public void the_response_should_contain(DataTable table) throws Exception {
-    JsonNode json = mapper.readTree(response.getBody());
-    // each column header asserts presence of that field
-    for (String field : table.asList()) {
-      assertThat(json.has(field))
-        .as("JSON must have field '" + field + "'")
-        .isTrue();
+    var map = table.asMaps().get(0);
+    String responseBody = response.getBody();
+    JsonNode jsonResponse = mapper.readTree(responseBody);
+    for (var entry : map.entrySet()) {
+      String key = entry.getKey();
+      String expectedValue = entry.getValue();
+      JsonNode actualValueNode = jsonResponse.path(key);
+      if (actualValueNode.isMissingNode()) {
+        throw new IllegalStateException("Key '" + key + "' not found in response");
+      }
+      String actualValue = actualValueNode.asText();
+      assertThat(actualValue).isEqualTo(expectedValue);
     }
   }
 

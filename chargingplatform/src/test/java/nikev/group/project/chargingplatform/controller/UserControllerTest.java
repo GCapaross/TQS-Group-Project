@@ -156,6 +156,39 @@ public class UserControllerTest {
     }
   }
 
+  @Test
+  public void whenRegisteringExistingUsername_then400(){
+    RegisterRequestDTO registerRequest = new RegisterRequestDTO();
+    registerRequest.setEmail("test@example.com");
+    registerRequest.setPassword("password123");
+    registerRequest.setConfirmPassword("password123");
+    registerRequest.setUsername("test");
+    registerRequest.setAccountType("user");
+
+    User user = new User();
+    user.setEmail("test2@example.com");
+    user.setPassword("password123");
+    user.setUsername("test");
+    user.setRole(Role.USER);
+
+    when(userService.registerUser(any(RegisterRequestDTO.class))).thenThrow(
+      new RuntimeException("Username already exists")
+    );
+
+    try {
+      mockMvc
+        .perform(
+          post("/api/users/register")
+            .contentType("application/json")
+            .content(JsonUtils.toJson(user))
+        )
+        .andExpect(status().isBadRequest());
+    } catch (Exception e) {
+      // Handle exception if needed
+    }
+
+  }
+
   /**
    * When request body is missing required fields (email, password, name)
    * Then bad request is returned
@@ -316,6 +349,7 @@ public class UserControllerTest {
 
     // 4) stub service calls your controller will make
     when(userService.getUserIdByUsername("me")).thenReturn(1L);
+    when(userService.getUserByUsername("me")).thenReturn(user);
 
     // 5) generate a JWT so your filter sees a cookie
     String jwt = getJwtForTestUser();

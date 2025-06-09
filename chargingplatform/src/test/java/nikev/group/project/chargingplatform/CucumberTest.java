@@ -24,7 +24,6 @@ import org.springframework.test.context.TestPropertySource;
 @SelectClasspathResource("nikev/group/project/chargingplatform")
 @ConfigurationParameter(
   key = GLUE_PROPERTY_NAME,
-  value = "nikev.group.project.chargingplatform.FunctionalTests," +
-          "nikev.group.project.chargingplatform.IntegrationTests"  
+  value = "nikev.group.project.chargingplatform"  
 )
 public class CucumberTest {}

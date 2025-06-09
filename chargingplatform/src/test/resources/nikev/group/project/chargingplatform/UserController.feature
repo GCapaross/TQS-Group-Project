@@ -13,9 +13,10 @@ Feature: User registration and login via API
     Examples:
       | email             | password  | confirmPassword | username | type   | registerStatus |
       | new1@test.com     | pwd123    | pwd123          | newuser1 | user   | 200            |
-      | new2@test.com     | pwd123    | pwd123          | newuser1 | operator   | 200            |
-      | new3@test.com     | pwd123    | 321wdp          | newuser2 | user   | 400            |
-      | new1@test.com     | pwd123    | pwd123          | newuser2 | user   | 400            |
+      | new2@test.com     | pwd123    | pwd123          | newuser2 | operator   | 200            |
+      | new3@test.com     | pwd123    | 321wdp          | newuser3 | user   | 400            |
+      | new1@test.com     | pwd123    | pwd123          | newuser1 | user   | 400            |
+      | new4@test.com     | pwd123    | pwd123          | newuser1 | user   | 400            |
 
   @login
   Scenario Outline: Logging in
@@ -41,5 +42,5 @@ Feature: User registration and login via API
     When I send a GET to "/api/users/me"
     Then the response status should be 200
     And the response should contain:
-      | email    | username |
-      | new1@test.com | pwd123 |
+      | email         | username |
+      | new1@test.com | newuser1 |

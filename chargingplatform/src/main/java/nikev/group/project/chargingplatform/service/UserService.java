@@ -23,6 +23,12 @@ public class UserService {
         if (existingUser.isPresent()) {
             throw new RuntimeException("Email already registered");
         }
+        Optional<User> existingUsername = userRepository.findByUsername(
+            registerRequest.getUsername()
+        );
+        if (existingUsername.isPresent()) {
+            throw new RuntimeException("Username already taken");
+        }
 
         User newUser = new User();
         newUser.setUsername(registerRequest.getUsername());
@@ -37,6 +43,7 @@ public class UserService {
             newUser.setRole(Role.OPERATOR);
         }
         System.out.println("Saving new user: " + newUser.getEmail());
+        System.out.println("Password: " + newUser.getPassword());
         return userRepository.save(newUser);
     }
 
@@ -45,6 +52,8 @@ public class UserService {
             .findByEmail(email)
             .orElseThrow(() -> new RuntimeException("User not found"));
 
+        System.out.println("Attempting to login user: " + user.getEmail() + " with password: " + password);
+        System.out.println("Stored password: " + user.getPassword());
         if (!password.equals(user.getPassword())) {
             throw new RuntimeException("Invalid password");
         }
@@ -56,6 +65,12 @@ public class UserService {
         return userRepository
             .findByUsername(username)
             .map(User::getId)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+    }
+
+    public User getUserByUsername(String email) {
+        return userRepository
+            .findByUsername(email)
             .orElseThrow(() -> new RuntimeException("User not found"));
     }
 }
