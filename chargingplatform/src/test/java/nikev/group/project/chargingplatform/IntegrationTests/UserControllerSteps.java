@@ -20,7 +20,7 @@ public class UserControllerSteps {
   private TestRestTemplate rest;
 
   private ResponseEntity<String> response;
-  private String jwtToken;       // will hold the raw cookie value
+  public static String jwtToken;       // will hold the raw cookie value
   private final ObjectMapper mapper = new ObjectMapper();
 
   @When("I send a POST to {string} with body")
@@ -49,6 +49,39 @@ public class UserControllerSteps {
     response = rest.exchange(path, HttpMethod.POST,
       new HttpEntity<>(body.toString(), headers),
       String.class);
+  }
+
+  @When("I send an authenticated POST to {string} with body")
+  public void i_send_auth_post_with_body(String path, DataTable table) {
+    var map = table.asMaps().get(0);
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
+    // add JWT cookie if present
+    if (jwtToken != null) {
+      headers.add(HttpHeaders.COOKIE, "JWT_TOKEN=" + jwtToken);
+    }
+    // build JSON body from the table columns
+    StringBuilder body = new StringBuilder("{");
+    for (var entry : map.entrySet()) {
+      if (entry.getValue() != null) {
+        body.append("\"")
+            .append(entry.getKey())
+            .append("\":\"")
+            .append(entry.getValue())
+            .append("\",");
+      }
+    }
+    // remove trailing comma, close object
+    if (body.charAt(body.length() - 1) == ',') {
+      body.setLength(body.length() - 1);
+    }
+    body.append("}");
+    response = rest.exchange(
+      path,
+      HttpMethod.POST,
+      new HttpEntity<>(body.toString(), headers),
+      String.class
+    );
   }
 
   @Then("I save the JWT cookie")
