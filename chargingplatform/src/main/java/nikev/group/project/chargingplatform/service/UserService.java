@@ -36,15 +36,11 @@ public class UserService {
         newUser.setPassword(registerRequest.getPassword());
 
         if (registerRequest.getAccountType().equals("user")) {
-            System.out.println("Setting user role to USER");
             newUser.setRole(Role.USER);
         } else if (registerRequest.getAccountType().equals("operator")) {
-            System.out.println("Setting user role to OPERATOR");
             newUser.setRole(Role.OPERATOR);
         }
 
-        System.out.println("Saving new user: " + newUser.getEmail());
-        System.out.println("Password: " + newUser.getPassword());
         return userRepository.save(newUser);
     }
 
@@ -53,8 +49,6 @@ public class UserService {
             .findByEmail(email)
             .orElseThrow(() -> new RuntimeException("User not found"));
 
-        System.out.println("Attempting to login user: " + user.getEmail() + " with password: " + password);
-        System.out.println("Stored password: " + user.getPassword());
         if (!password.equals(user.getPassword())) {
             throw new RuntimeException("Invalid password");
         }

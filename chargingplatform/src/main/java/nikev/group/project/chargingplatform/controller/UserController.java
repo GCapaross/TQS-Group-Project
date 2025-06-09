@@ -14,7 +14,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -82,7 +81,6 @@ public class UserController {
                 );
                 return ResponseEntity.badRequest().build();
             }
-            System.out.println("Registering user: " + user.getEmail());
             User registeredUser = userService.registerUser(user);
             sample.stop(
                 Timer.builder("app_registration_latency")
@@ -112,7 +110,6 @@ public class UserController {
                 loginRequest.getEmail(),
                 loginRequest.getPassword()
             );
-            System.out.println("User logged in: " + user.getEmail());
 
             Authentication auth = new UsernamePasswordAuthenticationToken(
                 user,
