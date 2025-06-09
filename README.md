@@ -12,6 +12,14 @@ PowerNest offers people a fast and easy way to charge their electric cars, allow
 * ### API documentation
 * ### Product Specification Report
 * ### Quality Manual
+* ### Continuation and development of more frontend tests
+* ### Report updated
+* ### Workload tests
+* ### Corrected deployment
+* ### New sequence diagrams
+* ### Actuator
+* ### Health status
+* ### Grafana dashboard upgrade
 
 ## The Team
 * **Product Owner​**: 113682​ - Gabriel Santos
@@ -62,3 +70,55 @@ $ cd TQS-Group-Project
 $ docker compose up -d --build
 ```
 *You can access the site at [localhost:5173/](http://localhost:5173/)*
+
+
+
+
+# Regarding some of the changes made from thursday to monday (after presentation)
+
+## Continuation and development of more frontend tests
+Regarding this part we completed and added more cucumber tests imeplemented together with XRAY.
+
+
+## Workload tests
+Workload tests were done with prometheus and k6 for the logins, the registers, and also for the booking service and booking a reservation, tested with 400+ VU's, and 20 minutes of overloading requests. There was a logic error in the booking reservation due to not being able to have overlapping bookings, but it was corrected and also the objective was just to see how the server would handle, so gladly they fail if overbooked (they don't fail anymore, the logic tracks the year, in case we run the test again).
+
+![Workload Tests Dashboard](docs/workload/k6dashboard.png)
+
+![Workload Tests Graphs](docs/workload/k6graphs.png)
+
+![Workload Tests Run Example](docs/workload/k6tests_ran.png)
+
+![Workload Report](docs/workload/reportworkload.png)
+
+![Workload Summary](docs/workload/k6summary.png)
+
+
+## Corrected deployment
+The deployment was just a clone, but now we corrected the runner and setup of secrets that we were having errros on the presentation day.
+Grafana, Nagios, the tests, and any other variables and ports were corrected according to the deployment.
+
+![Machine running](docs/runners.png)
+
+## New sequence diagrams
+
+![Sequence diagram 1](docs/Sequencediagram1.png)
+
+![Sequence diagram 2](docs/sequencediagram2.png)
+
+
+## Actuator
+## Health status
+
+Actuator	Exposes endpoints for monitoring (e.g., /actuator/health)
+Health status	Indicates if the app and its dependencies are running correctly
+
+For example when running docker, some services don't appear just running but appear "healthy"
+
+
+## Grafana dashboard upgrade
+Was better implemented and exported the configuration to the deployment.
+
+![Grafana dashboard](docs/grafana.png)
+
+Booking requests, some default spring parameters, registers, etc...
