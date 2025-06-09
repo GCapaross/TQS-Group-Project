@@ -22,7 +22,7 @@ public class Hooks {
     @Autowired
     private ChargerRepository chargerRepository;
     @Autowired
-    private UserRepository UserRepository;
+    private UserRepository userRepository;
     @Autowired
     private ReservationRepository reservationRepository;
     @Autowired
@@ -53,7 +53,7 @@ public class Hooks {
         chargerRepository.deleteAll();
         stationRepository.deleteAll();
         companies.deleteAll();
-        UserRepository.deleteAll();
+        userRepository.deleteAll();
         WebDriverManager.chromedriver().setup();
     }
 }

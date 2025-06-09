@@ -19,6 +19,7 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import jakarta.transaction.Transactional;
+import net.bytebuddy.asm.Advice.Local;
 import nikev.group.project.chargingplatform.DTOs.RegisterRequestDTO;
 import nikev.group.project.chargingplatform.DTOs.StationCreateDTO;
 import nikev.group.project.chargingplatform.DTOs.StationDTO;
@@ -56,8 +57,6 @@ public class ReservationSteps {
     @Autowired
     private ChargerRepository chargerRepository;
     @Autowired
-    private UserRepository UserRepository;
-    @Autowired
     private ReservationRepository reservationRepository;
 
     public ReservationSteps() {
@@ -91,7 +90,7 @@ public class ReservationSteps {
     public void that_the_following_stations_exists_in_the_database(io.cucumber.datatable.DataTable dataTable) {
         Company company = new Company();
         company.setName("TestCompany");
-        company = companies.save(company);
+        companies.save(company);
 
         List<List<String>> rawRows = dataTable.asLists(String.class);
         for (List<String> row : rawRows) {
@@ -159,7 +158,7 @@ public class ReservationSteps {
         reservation.setStartDate(startDate);
         reservation.setEndDate(endDate);
         reservation.setStation(stationEntity);
-        reservation = reservationRepository.save(reservation);
+        reservationRepository.save(reservation);
     }
 
     @Given("I am on Book page")
@@ -171,10 +170,8 @@ public class ReservationSteps {
     @Given("I am on Map View") 
     public void i_am_on_map_view() {
         driver.get(BASE_URL + "/map");
-        // Wait for the map to load
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("map"))); // adjust to your map's ID or class
-        WebElement mapElement = driver.findElement(By.id("map")); // adjust to your map's ID or class
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("map")));
 
         WebElement zoomOutButton = driver.findElement(By.className("leaflet-control-zoom-out"));
         for (int i = 0; i < 6; i++) {
@@ -218,9 +215,7 @@ public class ReservationSteps {
     public void set_end_date(String date, Integer hours, Integer minutes) {
         LocalDate reservationDate = string_to_date(date);
 
-        // Write code here that turns the phrase above into concrete actions
         WebElement endDateInput = driver.findElement(By.id("end-date"));
-        // endDateInput.clear();
         LocalDateTime endDateTime = reservationDate.atTime(hours, minutes);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd-yyyyhhmma");
         String endDateTimeFormatted = endDateTime.format(formatter);
@@ -277,6 +272,9 @@ public class ReservationSteps {
             case "tomorrow":
                 parsedDate = LocalDate.now().plusDays(1);
                 break;
+            default:
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+                parsedDate = LocalDate.parse(date, formatter);
         }
         return parsedDate;
     }

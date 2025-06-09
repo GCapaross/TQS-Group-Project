@@ -16,13 +16,8 @@ import io.cucumber.java.en.When;
 
 public class StationMapSteps {
     private WebDriver driver;
-    private String frontendHost = "localhost";
-    private String frontendPort = "5173";
-    private static String BASE_URL;
-
     public StationMapSteps() {
         driver = Hooks.driver;
-        BASE_URL = "http://" + frontendHost + ":" + frontendPort;
     }
 
     @When("I set supported connectors to {string}")
@@ -42,7 +37,6 @@ public class StationMapSteps {
     @When("I set minimum charge speed to {int}")
     public void i_set_minimum_charge_speed_to(Integer chargeSpeed) {
         WebElement chargeSpeedElement = driver.findElement(By.id("min-charge-slider"));
-        WebElement inputElement = chargeSpeedElement.findElement(By.tagName("input"));
 
         // Use JavaScript to set the value of the input element
         JavascriptExecutor js = (JavascriptExecutor) driver;
