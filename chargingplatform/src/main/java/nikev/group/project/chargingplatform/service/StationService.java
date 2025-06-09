@@ -312,9 +312,9 @@ public class StationService {
             stationDTO.setChargers(chargers);
         }
         if (areAllChargersOutOfService(station.getId()) || chargers.isEmpty()) {
-            stationDTO.setStatus("OUT OF SERVICE");
+            stationDTO.setStatus("Out of Service");
         } else {
-            stationDTO.setStatus("AVAILABLE");
+            stationDTO.setStatus("Available");
         }
 
         return stationDTO;

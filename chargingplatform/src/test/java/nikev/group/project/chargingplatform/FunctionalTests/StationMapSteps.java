@@ -50,12 +50,6 @@ public class StationMapSteps {
                 break;
             }
         }
-
-        // try {
-        //     Thread.sleep(500_000); // Wait for the markers to load
-        // } catch (InterruptedException e) {
-        //     e.printStackTrace();
-        // }
     }
 
     @When("I set minimum charge speed to {int}")
