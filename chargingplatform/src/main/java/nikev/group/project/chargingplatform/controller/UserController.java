@@ -26,6 +26,9 @@ public class UserController {
     private static final String APPLICATION_TAG = "application";
     private static final String REGISTRATION_LATENCY = "app_registration_latency";
     private static final String LOGIN_LATENCY = "app_login_latency";
+    private static final String STATUS_TAG = "status";
+    private static final String STATUS_FAILURE = "failure";
+    private static final String STATUS_SUCCESS = "success";
 
     @Autowired
     private UserService userService;
@@ -33,9 +36,7 @@ public class UserController {
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
 
-    @Autowired
-    private MeterRegistry meterRegistry;
-
+    private final MeterRegistry meterRegistry;
     private final Counter userRegistrationCounter;
     private final Counter loginCounter;
 
@@ -71,7 +72,7 @@ public class UserController {
             ) {
                 sample.stop(
                     Timer.builder(REGISTRATION_LATENCY)
-                        .tag("status", "failure")
+                        .tag(STATUS_TAG, STATUS_FAILURE)
                         .register(meterRegistry)
                 );
                 return ResponseEntity.badRequest().build();
@@ -80,14 +81,14 @@ public class UserController {
             User registeredUser = userService.registerUser(user);
             sample.stop(
                 Timer.builder(REGISTRATION_LATENCY)
-                    .tag("status", "success")
+                    .tag(STATUS_TAG, STATUS_SUCCESS)
                     .register(meterRegistry)
             );
             return ResponseEntity.ok(registeredUser);
         } catch (RuntimeException e) {
             sample.stop(
                 Timer.builder(REGISTRATION_LATENCY)
-                    .tag("status", "failure")
+                    .tag(STATUS_TAG, STATUS_FAILURE)
                     .register(meterRegistry)
             );
             return ResponseEntity.badRequest().build();
@@ -123,7 +124,7 @@ public class UserController {
 
             sample.stop(
                 Timer.builder(LOGIN_LATENCY)
-                    .tag("status", "success")
+                    .tag(STATUS_TAG, STATUS_SUCCESS)
                     .register(meterRegistry)
             );
             return ResponseEntity.ok()
@@ -132,7 +133,7 @@ public class UserController {
         } catch (RuntimeException e) {
             sample.stop(
                 Timer.builder(LOGIN_LATENCY)
-                    .tag("status", "failure")
+                    .tag(STATUS_TAG, STATUS_FAILURE)
                     .register(meterRegistry)
             );
             System.out.println("Login failed: " + e.getMessage());
