@@ -19,7 +19,6 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import jakarta.transaction.Transactional;
-import net.bytebuddy.asm.Advice.Local;
 import nikev.group.project.chargingplatform.DTOs.RegisterRequestDTO;
 import nikev.group.project.chargingplatform.DTOs.StationCreateDTO;
 import nikev.group.project.chargingplatform.DTOs.StationDTO;
@@ -32,7 +31,6 @@ import nikev.group.project.chargingplatform.repository.ChargerRepository;
 import nikev.group.project.chargingplatform.repository.CompanyRepository;
 import nikev.group.project.chargingplatform.repository.ReservationRepository;
 import nikev.group.project.chargingplatform.repository.StationRepository;
-import nikev.group.project.chargingplatform.repository.UserRepository;
 import nikev.group.project.chargingplatform.service.StationService;
 import nikev.group.project.chargingplatform.service.UserService;
 
@@ -178,7 +176,9 @@ public class ReservationSteps {
             zoomOutButton.click();
             try {
                 Thread.sleep(500); // wait for the map to update
-            } catch (InterruptedException e) {}
+            } catch (InterruptedException e) {
+                // No need to handle exception
+            }
         }
     }
     

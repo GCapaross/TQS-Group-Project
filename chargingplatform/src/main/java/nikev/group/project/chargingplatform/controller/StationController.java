@@ -45,7 +45,6 @@ public class StationController {
 
     @GetMapping
     public ResponseEntity<List<StationDTO>> getAllStations() {
-        List<StationDTO> stations = stationService.getAllStations();
         return ResponseEntity.ok(stationService.getAllStations());
     }
 
