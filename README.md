@@ -122,3 +122,4 @@ Was better implemented and exported the configuration to the deployment.
 ![Grafana dashboard](docs/grafana.png)
 
 Booking requests, some default spring parameters, registers, etc...
+The api requests and counts are made, just having a problem of no data when deploying
