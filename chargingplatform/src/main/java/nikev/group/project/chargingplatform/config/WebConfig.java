@@ -35,7 +35,12 @@ public class WebConfig implements WebMvcConfigurer {
         CorsConfiguration configuration = new CorsConfiguration();
 
         configuration.setAllowedOriginPatterns(
-            List.of("http://" + hostname + ":" + frontendDockerPort)
+            List.of(
+                "http://" + hostname + ":" + frontendDockerPort,
+                "http://" + hostname + ":" + frontendDockerPort + "/",
+                "http://" + hostname,
+                "http://" + hostname + "/"
+            )
         );
         configuration.setAllowedMethods(
             List.of("GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS")
