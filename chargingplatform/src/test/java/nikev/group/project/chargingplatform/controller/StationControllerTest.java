@@ -165,6 +165,27 @@ public class StationControllerTest {
     }
   }
 
+  @Test
+  void whenGetStationByIdAndIdIsNull_thenReturnBadRequest() {
+    try {
+      mockMvc
+        .perform(get("/api/charging-stations/null"))
+        .andExpect(status().isBadRequest());
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
+  @Test
+  void whenGetStationByIdAndIdIsNegative_thenReturnBadRequest() {
+    try {
+      mockMvc
+        .perform(get("/api/charging-stations/-1"))
+        .andExpect(status().isBadRequest());
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
+
   /*
    * FUNCTION public ResponseEntity<List<Station>> getNearbyStations(double
    * latitude, double longitude, double radiusKm)

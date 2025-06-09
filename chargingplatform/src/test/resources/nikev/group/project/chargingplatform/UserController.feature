@@ -36,7 +36,7 @@ Feature: User registration and login via API
     Then the response status should be 200
     And I save the JWT cookie
 
-    When I send a GET to "/api/users/me"
+    When I send an authenticated GET to "/api/users/me"
     Then the response status should be 200
     And the response should contain:
       | email         | username |

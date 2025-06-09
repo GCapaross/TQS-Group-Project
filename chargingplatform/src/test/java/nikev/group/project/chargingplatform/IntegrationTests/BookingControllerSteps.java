@@ -42,7 +42,7 @@ public class BookingControllerSteps {
     if (setCookie == null) {
       throw new IllegalStateException("JWT_TOKEN cookie must be present");
     }
-    UserControllerSteps.jwtToken = setCookie.split(";")[0].split("=")[1];
+    IntegrationSteps.jwtToken = setCookie.split(";")[0].split("=")[1];
 
     userSetupDone = true;
   }

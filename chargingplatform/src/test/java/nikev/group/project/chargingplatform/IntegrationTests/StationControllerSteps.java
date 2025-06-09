@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -27,6 +28,7 @@ public class StationControllerSteps {
 
     private ResponseEntity<String> response;
     private final ObjectMapper mapper = new ObjectMapper();
+    private Long savedStationId; 
 
     @Given("a company named {string} exists")
     public void a_company_named_exists(String companyName) {
@@ -34,7 +36,7 @@ public class StationControllerSteps {
         if (companyRepository.findByName(companyName).isEmpty()) {
             Company company = new Company();
             company.setName(companyName);
-            Company responseComp = companyRepository.save(company);
+            companyRepository.save(company);
             assertThat(companyRepository.findByName(companyName)).isPresent();
         }
     }
@@ -79,6 +81,14 @@ public class StationControllerSteps {
         response = rest.exchange(path, HttpMethod.POST, entity, String.class);
     }
 
+    @When("I send a GET to {string} to retrieve all stations")
+    public void i_send_get_to_retrieve_all_stations(String path) {
+        if (path.contains("{id}")){
+            path = path.replace("{id}", savedStationId.toString());
+        }
+        response = rest.exchange(path, HttpMethod.GET, HttpEntity.EMPTY, String.class);
+    }
+
     @Then("the station creation response status should be {int}")
     public void the_response_status_after_station_creation_should_be(Integer expectedStatus) {
         assertThat(response.getStatusCode().value()).isEqualTo(expectedStatus);
@@ -106,5 +116,11 @@ public class StationControllerSteps {
                 assertThat(node.asText()).isEqualTo(expected);
             }
         }
+    }
+
+    @And("I save the station id")
+    public void i_save_the_station_id() throws Exception {
+      JsonNode json = mapper.readTree(response.getBody());
+      savedStationId = json.get("id").asLong();
     }
 }

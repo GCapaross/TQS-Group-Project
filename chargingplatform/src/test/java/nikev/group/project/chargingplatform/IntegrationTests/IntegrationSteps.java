@@ -14,7 +14,7 @@ import org.springframework.http.*;
 
 import static org.assertj.core.api.Assertions.*;
 
-public class UserControllerSteps {
+public class IntegrationSteps {
 
   @Autowired
   private TestRestTemplate rest;
@@ -95,8 +95,8 @@ public class UserControllerSteps {
     jwtToken = setCookie.split(";")[0].split("=")[1];
   }
 
-  @When("I send a GET to {string}")
-  public void i_send_get_to(String path) {
+  @When("I send an authenticated GET to {string}")
+  public void i_send_auth_get_to(String path) {
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.APPLICATION_JSON);
     if (jwtToken != null) {
@@ -107,8 +107,14 @@ public class UserControllerSteps {
       String.class);
   }
 
+  @When("I send a GET to {string}")
+  public void i_send_get_to(String path) {
+    response = rest.exchange(path, HttpMethod.GET, HttpEntity.EMPTY, String.class);
+  }
+
   @Then("the response should contain:")
   public void the_response_should_contain(DataTable table) throws Exception {
+    System.out.println("Response: " + response.getBody());
     var map = table.asMaps().get(0);
     String responseBody = response.getBody();
     JsonNode jsonResponse = mapper.readTree(responseBody);
@@ -122,6 +128,14 @@ public class UserControllerSteps {
       String actualValue = actualValueNode.asText();
       assertThat(actualValue).isEqualTo(expectedValue);
     }
+  }
+
+  @Then("the response should contain an array with length {int}")
+  public void the_response_should_contain_array_with_length(Integer expectedLength) throws Exception {
+    String responseBody = response.getBody();
+    JsonNode jsonResponse = mapper.readTree(responseBody);
+    assertThat(jsonResponse.isArray()).isTrue();
+    assertThat(jsonResponse.size()).isEqualTo(expectedLength);
   }
 
   @Then("the response status should be {int}")
