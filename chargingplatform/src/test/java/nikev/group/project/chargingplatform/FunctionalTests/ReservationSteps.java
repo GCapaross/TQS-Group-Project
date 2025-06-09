@@ -84,15 +84,6 @@ public class ReservationSteps {
         BASE_URL = "http://" + frontendHost + ":" + frontendPort;
     }
 
-    @After
-    public void closeUp() {
-        driver.quit();
-        reservationRepository.deleteAll();
-        chargerRepository.deleteAll();
-        stationRepository.deleteAll();
-        companies.deleteAll();
-        UserRepository.deleteAll();
-    }
 
     @Given("my credentials are {string} and {string}")
     public void my_credentials_are_and(String email, String password) {
@@ -128,9 +119,8 @@ public class ReservationSteps {
             double latitude = Double.parseDouble(row.get(1));
             double longitude = Double.parseDouble(row.get(2));
             double pricePerKwh = 0.13d;
-            List<String> supportedConnectors = List.of(row.get(3).split(","));
-            List<String> chargersSpeed = List.of(row.get(4).split(","));
-
+            List<String> chargersSpeed = List.of(row.get(3).split(","));
+            List<String> supportedConnectors = List.of(row.get(4).split(","));
 
             StationCreateDTO station = new StationCreateDTO(
                 name,
@@ -152,14 +142,20 @@ public class ReservationSteps {
                 .orElseThrow(() -> new RuntimeException("Station not found after creation"));
             
             chargersSpeed.stream()
-                .map(speed -> {
+                .forEach(speed -> {
                     Charger charger = new Charger();
                     charger.setStatus(Charger.ChargerStatus.AVAILABLE);
                     charger.setChargingSpeedKw(Double.parseDouble(speed));
                     charger.setStation(createdStation);
                     charger = chargerRepository.save(charger);
-                    return charger;
                 });
+            chargerRepository.flush();
+
+            List<Charger> chargers = chargerRepository.findByStation_Id(createdStation.getId());
+            chargers.forEach(charger -> {
+                System.out.println("Charger ID: " + charger.getId() + ", Speed: " + charger.getChargingSpeedKw() + 
+                    ", Status: " + charger.getStatus());
+            });
         }
     }
 
