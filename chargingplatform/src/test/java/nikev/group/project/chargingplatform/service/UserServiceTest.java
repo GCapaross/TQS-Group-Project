@@ -16,6 +16,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.transaction.TransactionSystemException;
 
 @ExtendWith(MockitoExtension.class)
 public class UserServiceTest {
@@ -78,9 +79,10 @@ public class UserServiceTest {
     when(userRepository.findByEmail(any())).thenReturn(Optional.of(testUser));
 
     // Act & Assert
-    assertThrows(RuntimeException.class, () ->
+    RuntimeException exception = assertThrows(RuntimeException.class, () ->
       userService.registerUser(registerRequestDTO)
     );
+    assertEquals("Email already registered", exception.getMessage());
   }
 
   /**
@@ -97,9 +99,10 @@ public class UserServiceTest {
     );
 
     // Act & Assert
-    assertThrows(RuntimeException.class, () ->
+    RuntimeException exception = assertThrows(RuntimeException.class, () ->
       userService.registerUser(registerRequestDTO)
     );
+    assertEquals("Username already taken", exception.getMessage());
   }
 
   /**
@@ -137,13 +140,10 @@ public class UserServiceTest {
       Optional.of(testUser)
     );
 
-    User loginUser = new User();
-    loginUser.setEmail(testUser.getEmail());
-    loginUser.setPassword("IncorrectPassword");
-    // Act & Assert
-    assertThrows(RuntimeException.class, () ->
-      userService.login(loginUser.getEmail(), "wrongPassword")
+    RuntimeException exception = assertThrows(RuntimeException.class, () ->
+      userService.login(testUser.getEmail(), "wrongPassword")
     );
+    assertEquals("Invalid password", exception.getMessage());
   }
 
   /**
@@ -158,10 +158,10 @@ public class UserServiceTest {
       Optional.empty()
     );
 
-    // Act & Assert
-    assertThrows(RuntimeException.class, () ->
+    RuntimeException exception = assertThrows(RuntimeException.class, () ->
       userService.login(testUser.getEmail(), "password")
     );
+    assertEquals("User not found", exception.getMessage());
   }
 
   @Test
@@ -206,10 +206,52 @@ public class UserServiceTest {
       .thenReturn(Optional.empty());
 
     // Act & Assert
-    assertThrows(RuntimeException.class, () ->
+    RuntimeException exception = assertThrows(RuntimeException.class, () ->
       userService.getUserByUsername(missingUsername)
     );
+    assertEquals("User not found", exception.getMessage());
     verify(userRepository).findByUsername(missingUsername);
   }
 
+  @Test
+  void whenGettingUserIdByUsername_thenReturnsId() {
+    // Arrange
+    when(userRepository.findByUsername(testUser.getUsername()))
+      .thenReturn(Optional.of(testUser));
+
+    // Act
+    Long userId = userService.getUserIdByUsername(testUser.getUsername());
+
+    // Assert
+    assertEquals(testUser.getId(), userId);
+    verify(userRepository).findByUsername(testUser.getUsername());
+  }
+
+  @Test
+  void whenGettingUserIdByNonexistentUsername_thenThrowsException() {
+    // Arrange
+    String missingUsername = "missing";
+    when(userRepository.findByUsername(missingUsername))
+      .thenReturn(Optional.empty());
+
+    // Act & Assert
+    RuntimeException exception = assertThrows(RuntimeException.class, () ->
+      userService.getUserIdByUsername(missingUsername)
+    );
+    assertEquals("User not found", exception.getMessage());
+    verify(userRepository).findByUsername(missingUsername);
+  }
+
+
+  @Test
+  void whenRepositoryThrowsException_thenExceptionIsPropagated() {
+    // Arrange
+    when(userRepository.findByEmail(any())).thenReturn(Optional.empty());
+    when(userRepository.save(any())).thenThrow(new TransactionSystemException("Database error"));
+
+    // Act & Assert
+    assertThrows(TransactionSystemException.class, () ->
+      userService.registerUser(registerRequestDTO)
+    );
+  }
 }
