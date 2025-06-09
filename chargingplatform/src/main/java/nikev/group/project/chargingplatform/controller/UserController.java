@@ -22,6 +22,11 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/users")
 public class UserController {
 
+    private static final String APPLICATION_NAME = "chargingplatform";
+    private static final String APPLICATION_TAG = "application";
+    private static final String REGISTRATION_LATENCY = "app_registration_latency";
+    private static final String LOGIN_LATENCY = "app_login_latency";
+
     @Autowired
     private UserService userService;
 
@@ -33,8 +38,6 @@ public class UserController {
 
     private final Counter userRegistrationCounter;
     private final Counter loginCounter;
-    private final Timer registrationTimer;
-    private final Timer loginTimer;
 
     public UserController(MeterRegistry meterRegistry) {
         this.meterRegistry = meterRegistry;
@@ -42,19 +45,11 @@ public class UserController {
             "app_users_registered_total"
         )
             .description("Total number of user registrations")
-            .tag("application", "chargingplatform")
+            .tag(APPLICATION_TAG, APPLICATION_NAME)
             .register(meterRegistry);
         this.loginCounter = Counter.builder("app_logins_total")
             .description("Total number of login attempts")
-            .tag("application", "chargingplatform")
-            .register(meterRegistry);
-        this.registrationTimer = Timer.builder("app_registration_latency")
-            .description("User registration latency in seconds")
-            .tag("application", "chargingplatform")
-            .register(meterRegistry);
-        this.loginTimer = Timer.builder("app_login_latency")
-            .description("Login latency in seconds")
-            .tag("application", "chargingplatform")
+            .tag(APPLICATION_TAG, APPLICATION_NAME)
             .register(meterRegistry);
     }
 
@@ -75,22 +70,23 @@ public class UserController {
                 !user.getPassword().equals(user.getConfirmPassword())
             ) {
                 sample.stop(
-                    Timer.builder("app_registration_latency")
+                    Timer.builder(REGISTRATION_LATENCY)
                         .tag("status", "failure")
                         .register(meterRegistry)
                 );
                 return ResponseEntity.badRequest().build();
             }
+            System.out.println("Registering user: " + user.getEmail());
             User registeredUser = userService.registerUser(user);
             sample.stop(
-                Timer.builder("app_registration_latency")
+                Timer.builder(REGISTRATION_LATENCY)
                     .tag("status", "success")
                     .register(meterRegistry)
             );
             return ResponseEntity.ok(registeredUser);
         } catch (RuntimeException e) {
             sample.stop(
-                Timer.builder("app_registration_latency")
+                Timer.builder(REGISTRATION_LATENCY)
                     .tag("status", "failure")
                     .register(meterRegistry)
             );
@@ -126,7 +122,7 @@ public class UserController {
                 .build();
 
             sample.stop(
-                Timer.builder("app_login_latency")
+                Timer.builder(LOGIN_LATENCY)
                     .tag("status", "success")
                     .register(meterRegistry)
             );
@@ -135,7 +131,7 @@ public class UserController {
                 .body(user);
         } catch (RuntimeException e) {
             sample.stop(
-                Timer.builder("app_login_latency")
+                Timer.builder(LOGIN_LATENCY)
                     .tag("status", "failure")
                     .register(meterRegistry)
             );
