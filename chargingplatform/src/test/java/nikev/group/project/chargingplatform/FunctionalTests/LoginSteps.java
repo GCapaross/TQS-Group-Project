@@ -2,33 +2,21 @@ package nikev.group.project.chargingplatform.FunctionalTests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.cucumber.java.After;
-import io.cucumber.java.Before;
+import java.time.Duration;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-import io.github.bonigarcia.wdm.WebDriverManager;
-import java.time.Duration;
-
 import nikev.group.project.chargingplatform.DTOs.RegisterRequestDTO;
-import nikev.group.project.chargingplatform.model.User;
 import nikev.group.project.chargingplatform.service.UserService;
-
-import org.junit.Ignore;
-import org.junit.jupiter.api.Disabled;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.firefox.FirefoxDriver;
-import org.openqa.selenium.firefox.FirefoxOptions;
-import org.openqa.selenium.firefox.FirefoxProfile;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 
 
 public class LoginSteps {

@@ -1,7 +1,7 @@
 package nikev.group.project.chargingplatform.FunctionalTests;
 
-import static org.hamcrest.MatcherAssert.*;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasSize;
 
 import java.time.Duration;
 import java.util.List;
@@ -10,22 +10,9 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.bidi.log.JavascriptLogEntry;
-import org.openqa.selenium.support.ui.Select;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.actuate.autoconfigure.metrics.MetricsProperties.Web;
 
-import ch.qos.logback.core.joran.action.Action;
-import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-import nikev.group.project.chargingplatform.repository.ChargerRepository;
-import nikev.group.project.chargingplatform.repository.CompanyRepository;
-import nikev.group.project.chargingplatform.repository.ReservationRepository;
-import nikev.group.project.chargingplatform.repository.StationRepository;
-import nikev.group.project.chargingplatform.repository.UserRepository;
-import nikev.group.project.chargingplatform.service.StationService;
-import nikev.group.project.chargingplatform.service.UserService;
 
 public class StationMapSteps {
     private WebDriver driver;

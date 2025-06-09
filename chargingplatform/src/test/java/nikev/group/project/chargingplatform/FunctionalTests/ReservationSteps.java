@@ -2,57 +2,38 @@ package nikev.group.project.chargingplatform.FunctionalTests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.cucumber.java.After;
-import io.cucumber.java.Before;
-import io.cucumber.java.en.And;
-import io.cucumber.java.en.Given;
-import io.cucumber.java.en.Then;
-import io.cucumber.java.en.When;
-import io.github.bonigarcia.wdm.WebDriverManager;
-import jakarta.transaction.Transactional;
-
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import io.cucumber.java.en.Given;
+import io.cucumber.java.en.Then;
+import io.cucumber.java.en.When;
+import jakarta.transaction.Transactional;
 import nikev.group.project.chargingplatform.DTOs.RegisterRequestDTO;
 import nikev.group.project.chargingplatform.DTOs.StationCreateDTO;
 import nikev.group.project.chargingplatform.DTOs.StationDTO;
 import nikev.group.project.chargingplatform.DTOs.StationResponseDTO;
-import nikev.group.project.chargingplatform.model.User;
+import nikev.group.project.chargingplatform.model.Charger;
+import nikev.group.project.chargingplatform.model.Company;
+import nikev.group.project.chargingplatform.model.Reservation;
+import nikev.group.project.chargingplatform.model.Station;
 import nikev.group.project.chargingplatform.repository.ChargerRepository;
 import nikev.group.project.chargingplatform.repository.CompanyRepository;
 import nikev.group.project.chargingplatform.repository.ReservationRepository;
 import nikev.group.project.chargingplatform.repository.StationRepository;
 import nikev.group.project.chargingplatform.repository.UserRepository;
-import nikev.group.project.chargingplatform.model.Charger;
-import nikev.group.project.chargingplatform.model.Company;
-import nikev.group.project.chargingplatform.model.Reservation;
-import nikev.group.project.chargingplatform.model.Station;
 import nikev.group.project.chargingplatform.service.StationService;
 import nikev.group.project.chargingplatform.service.UserService;
-
-import org.checkerframework.checker.units.qual.t;
-import org.junit.Ignore;
-import org.junit.jupiter.api.Disabled;
-import org.openqa.selenium.By;
-import org.openqa.selenium.Keys;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.firefox.FirefoxDriver;
-import org.openqa.selenium.firefox.FirefoxOptions;
-import org.openqa.selenium.firefox.FirefoxProfile;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-
-
-import org.openqa.selenium.interactions.Actions;
 
 
 public class ReservationSteps {
