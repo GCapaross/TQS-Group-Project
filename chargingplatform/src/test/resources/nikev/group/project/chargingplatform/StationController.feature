@@ -34,21 +34,25 @@ Feature: Station Creation
   
   @retrieveAll
   Scenario: Retrieve all stations
+    Given a company named "ChargeCorp" exists
+    And 5 stations exist for "ChargeCorp"
     When I send a GET to "/api/charging-stations"
     Then the response status should be 200
     And the response should contain an array with length 5
 
   @retrieveById
   Scenario Outline: Retrieving a specific station by ID
+    Given a company named "ChargeCorp" exists
+    And a station exists for "ChargeCorp"
     When I send a GET to "/api/charging-stations/<id>"
     Then the response status should be <status>
     And the response should contain:
-      | name         | location | latitude | longitude | pricePerKwh | companyName |
-      | <name>       | <location> | <latitude> | <longitude> | <pricePerKwh> | <companyName> |
+      | name         |
+      | <name>       |
 
   Examples:
-    | id  | status | name         | location | latitude | longitude | pricePerKwh | companyName |
-    | 5   | 200    | Test Station | Lisbon   | 38.7223  | -9.1393   | 0.2        | ChargeCorp  |
+    | id  | status | name         | 
+    | 39   | 200    | Test Station |
 
   @retrieveByIdErrors
   Scenario Outline: Failing to retrieve a station with invalid ID

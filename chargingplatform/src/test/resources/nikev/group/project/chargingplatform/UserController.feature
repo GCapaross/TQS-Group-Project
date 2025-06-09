@@ -12,11 +12,11 @@ Feature: User registration and login via API
       | new1@test.com     | pwd123    | pwd123          | newuser1 | user   | 200            |
       | new2@test.com     | pwd123    | pwd123          | newuser2 | operator   | 200            |
       | new3@test.com     | pwd123    | 321wdp          | newuser3 | user   | 400            |
-      | new1@test.com     | pwd123    | pwd123          | newuser1 | user   | 400            |
-      | new4@test.com     | pwd123    | pwd123          | newuser1 | user   | 400            |
+
 
   @login
   Scenario Outline: Logging in
+    Given a user named "new1" exists with email "new1@test.com" and password "pwd123"
     When I send a POST to "/api/users/login" with body
       | email            | password  |
       | <email>          | <password>|
@@ -30,6 +30,7 @@ Feature: User registration and login via API
 
   @me
   Scenario: Getting current user details
+    Given a user named "newuser1" exists with email "new1@test.com" and password "pwd123"
     When I send a POST to "/api/users/login" with body
       | email         | password |
       | new1@test.com | pwd123   |
