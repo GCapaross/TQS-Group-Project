@@ -49,6 +49,12 @@ jobs:
           PROMETHEUS_LOCAL_PORT=${{ secrets.PROMETHEUS_LOCAL_PORT }}
           PROMETHEUS_DOCKER_PORT=${{ secrets.PROMETHEUS_DOCKER_PORT }}
 
+          K6_LOCAL_PORT=${{ secrets.K6_LOCAL_PORT }}
+          K6_DOCKER_PORT=${{ secrets.K6_DOCKER_PORT }}
+
+          INFLUXDB_LOCAL_PORT=${{ secrets.INFLUXDB_LOCAL_PORT }}
+          INFLUXDB_DOCKER_PORT=${{ secrets.INFLUXDB_DOCKER_PORT }}
+          
           NAGIOSADMIN_USER=${{ secrets.NAGIOSADMIN_USER }}
           NAGIOSADMIN_PASS=${{ secrets.NAGIOSADMIN_PASS }}
           NAGIOS_LOCAL_PORT=${{ secrets.NAGIOS_LOCAL_PORT }}
