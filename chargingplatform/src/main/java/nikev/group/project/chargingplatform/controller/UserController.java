@@ -91,7 +91,6 @@ public class UserController {
             );
             return ResponseEntity.ok(registeredUser);
         } catch (RuntimeException e) {
-            System.out.println("Registration failed: " + e.getMessage());
             sample.stop(
                 Timer.builder("app_registration_latency")
                     .tag("status", "failure")
