@@ -14,7 +14,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 @CucumberContextConfiguration
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
-@TestPropertySource(properties = "server.port=8000")
+@TestPropertySource(properties = "server.port=8080")
 @Testcontainers
 @ActiveProfiles("test") 
 @Import({TestcontainersConfiguration.class, TestMetricConfig.class})
