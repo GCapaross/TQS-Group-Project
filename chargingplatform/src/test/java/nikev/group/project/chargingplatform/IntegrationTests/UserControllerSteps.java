@@ -23,11 +23,6 @@ public class UserControllerSteps {
   private String jwtToken;       // will hold the raw cookie value
   private final ObjectMapper mapper = new ObjectMapper();
 
-  @Given("the application is running")
-  public void the_application_is_running() {
-    // This step is implicit in the Cucumber context configuration.
-  }
-
   @When("I send a POST to {string} with body")
   public void i_send_post_with_body(String path, DataTable table) {
     var map = table.asMaps().get(0);

@@ -1,8 +1,5 @@
 Feature: User registration and login via API
 
-  Background:
-    Given the application is running
-
   @register
   Scenario Outline: Registering users
     When I send a POST to "/api/users/register" with body

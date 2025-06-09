@@ -33,24 +33,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class LoginSteps {
 
     private WebDriver driver;
-    private static final String BASE_URL = "http://localhost:5173";
+    private String frontendHost = "localhost";
+    private String frontendPort = "5173";
 
-    @Before
-    public void setUp() {
-        WebDriverManager.chromedriver().setup();
-        ChromeOptions options = new ChromeOptions();
+    private static String BASE_URL;
 
-        options.addArguments("--no-sandbox");
-        options.addArguments("--disable-dev-shm-usage");
-        options.addArguments("--disable-gpu");
-        options.addArguments("--remote-debugging-port=9222");
-        options.addArguments("--window-size=1920,1080");
-        driver = new ChromeDriver(options);
-    }
-
-    @After
-    public void closeUp() {
-        driver.close();
+    public LoginSteps() {
+        driver = Hooks.driver;
+        BASE_URL = "http://" + frontendHost + ":" + frontendPort;
     }
 
     @Autowired
