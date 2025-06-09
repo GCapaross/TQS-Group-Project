@@ -185,20 +185,6 @@ public class ReservationSteps {
         reservation = reservationRepository.save(reservation);
     }
 
-
-/*
-Given I am on Book page                                                  # nikev.group.project.chargingplatform.FunctionalTests.ReservationSteps.i_am_on_book_page()
-org.hibernate.LazyInitializationException: Could not initialize proxy [nikev.group.project.chargingplatform.model.Company#3] - no session
-at org.hibernate.proxy.AbstractLazyInitializer.initialize(AbstractLazyInitializer.java:174)
-at org.hibernate.proxy.AbstractLazyInitializer.getImplementation(AbstractLazyInitializer.java:328)
-at org.hibernate.proxy.pojo.bytebuddy.ByteBuddyInterceptor.intercept(ByteBuddyInterceptor.java:44)
-at org.hibernate.proxy.ProxyConfiguration$InterceptorDispatcher.intercept(ProxyConfiguration.java:102)
-at nikev.group.project.chargingplatform.model.Company$HibernateProxy$Mt9qqYWP.getName(Unknown Source)
-at nikev.group.project.chargingplatform.service.StationService.convertToStationDTO(StationService.java:285)
-at nikev.group.project.chargingplatform.service.StationService.getAllStations(StationService.java:55)
-at nikev.group.project.chargingplatform.FunctionalTests.ReservationSteps.i_am_on_book_page(ReservationSteps.java:187)
-at ✽.I am on Book page(classpath:nikev/group/project/chargingplatform/1_EDISON-3_EDISON-162.feature:26)
-*/
     @Given("I am on Book page")
     public void i_am_on_book_page() {
         Station station = stationRepository.findAll().get(0);
