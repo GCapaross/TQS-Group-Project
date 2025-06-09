@@ -115,7 +115,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
         <QRCodeSVG value={bookingId || ""} size={200} />
       </Box>
       <Typography variant="body1" gutterBottom>
-        Booking ID: {bookingId}
+        <span id="booking-id">Booking ID: {bookingId}</span>
       </Typography>
       <Typography variant="body1" gutterBottom>
         Station: {station.name}
@@ -159,10 +159,16 @@ const BookingForm: React.FC<BookingFormProps> = ({
                     onChange={(newValue: Date | null) => setStartTime(newValue)}
                     minDateTime={new Date()}
                     sx={{ width: "100%" }}
+                    slotProps={{
+                      textField: { id: "start-date" },
+                    }}
                   />
                 </Box>
                 <Box sx={{ mb: 3 }}>
                   <DateTimePicker
+                    slotProps={{
+                      textField: { id: "end-date" },
+                    }}
                     label="End Time"
                     value={endTime}
                     onChange={(newValue: Date | null) => setEndTime(newValue)}
@@ -179,12 +185,13 @@ const BookingForm: React.FC<BookingFormProps> = ({
                 value={estimatedEnergy}
                 onChange={(e) => setEstimatedEnergy(Number(e.target.value))}
                 sx={{ mb: 3 }}
+                id="estimated-energy"
               />
             </>
           )}
 
           {error && (
-            <Alert severity="error" sx={{ mt: 2 }}>
+            <Alert severity="error" sx={{ mt: 2 }} id="error-message">
               {error}
             </Alert>
           )}
@@ -207,6 +214,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
         <Button
           onClick={handleSubmit}
           variant="contained"
+          id="confirmation-button"
           disabled={loading || (!isAuthenticated && (!startTime || !endTime))}
           sx={{
             background: "linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)",

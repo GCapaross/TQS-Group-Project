@@ -14,7 +14,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -23,19 +22,23 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/users")
 public class UserController {
 
+    private static final String APPLICATION_NAME = "chargingplatform";
+    private static final String APPLICATION_TAG = "application";
+    private static final String REGISTRATION_LATENCY = "app_registration_latency";
+    private static final String LOGIN_LATENCY = "app_login_latency";
+    private static final String STATUS_TAG = "status";
+    private static final String STATUS_FAILURE = "failure";
+    private static final String STATUS_SUCCESS = "success";
+
     @Autowired
     private UserService userService;
 
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
 
-    @Autowired
-    private MeterRegistry meterRegistry;
-
+    private final MeterRegistry meterRegistry;
     private final Counter userRegistrationCounter;
     private final Counter loginCounter;
-    private final Timer registrationTimer;
-    private final Timer loginTimer;
 
     public UserController(MeterRegistry meterRegistry) {
         this.meterRegistry = meterRegistry;
@@ -43,19 +46,11 @@ public class UserController {
             "app_users_registered_total"
         )
             .description("Total number of user registrations")
-            .tag("application", "chargingplatform")
+            .tag(APPLICATION_TAG, APPLICATION_NAME)
             .register(meterRegistry);
         this.loginCounter = Counter.builder("app_logins_total")
             .description("Total number of login attempts")
-            .tag("application", "chargingplatform")
-            .register(meterRegistry);
-        this.registrationTimer = Timer.builder("app_registration_latency")
-            .description("User registration latency in seconds")
-            .tag("application", "chargingplatform")
-            .register(meterRegistry);
-        this.loginTimer = Timer.builder("app_login_latency")
-            .description("Login latency in seconds")
-            .tag("application", "chargingplatform")
+            .tag(APPLICATION_TAG, APPLICATION_NAME)
             .register(meterRegistry);
     }
 
@@ -76,8 +71,8 @@ public class UserController {
                 !user.getPassword().equals(user.getConfirmPassword())
             ) {
                 sample.stop(
-                    Timer.builder("app_registration_latency")
-                        .tag("status", "failure")
+                    Timer.builder(REGISTRATION_LATENCY)
+                        .tag(STATUS_TAG, STATUS_FAILURE)
                         .register(meterRegistry)
                 );
                 return ResponseEntity.badRequest().build();
@@ -85,15 +80,15 @@ public class UserController {
             System.out.println("Registering user: " + user.getEmail());
             User registeredUser = userService.registerUser(user);
             sample.stop(
-                Timer.builder("app_registration_latency")
-                    .tag("status", "success")
+                Timer.builder(REGISTRATION_LATENCY)
+                    .tag(STATUS_TAG, STATUS_SUCCESS)
                     .register(meterRegistry)
             );
             return ResponseEntity.ok(registeredUser);
         } catch (RuntimeException e) {
             sample.stop(
-                Timer.builder("app_registration_latency")
-                    .tag("status", "failure")
+                Timer.builder(REGISTRATION_LATENCY)
+                    .tag(STATUS_TAG, STATUS_FAILURE)
                     .register(meterRegistry)
             );
             return ResponseEntity.badRequest().build();
@@ -112,7 +107,6 @@ public class UserController {
                 loginRequest.getEmail(),
                 loginRequest.getPassword()
             );
-            System.out.println("User logged in: " + user.getEmail());
 
             Authentication auth = new UsernamePasswordAuthenticationToken(
                 user,
@@ -129,8 +123,8 @@ public class UserController {
                 .build();
 
             sample.stop(
-                Timer.builder("app_login_latency")
-                    .tag("status", "success")
+                Timer.builder(LOGIN_LATENCY)
+                    .tag(STATUS_TAG, STATUS_SUCCESS)
                     .register(meterRegistry)
             );
             return ResponseEntity.ok()
@@ -138,8 +132,8 @@ public class UserController {
                 .body(user);
         } catch (RuntimeException e) {
             sample.stop(
-                Timer.builder("app_login_latency")
-                    .tag("status", "failure")
+                Timer.builder(LOGIN_LATENCY)
+                    .tag(STATUS_TAG, STATUS_FAILURE)
                     .register(meterRegistry)
             );
             System.out.println("Login failed: " + e.getMessage());
@@ -149,12 +143,8 @@ public class UserController {
 
     @GetMapping("/me")
     public ResponseEntity<User> getCurrentUser() {
-        Authentication authentication = SecurityContextHolder.getContext()
-            .getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return ResponseEntity.status(401).build();
-        }
-        User user = (User) authentication.getPrincipal();
-        return ResponseEntity.ok(user);
+      Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+      User me = userService.getUserByUsername(auth.getName());
+      return ResponseEntity.ok(me);
     }
 }
