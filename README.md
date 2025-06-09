@@ -4,6 +4,8 @@
 A PowerNest oferece às pessoas uma forma rápida e fácil de carregar os seus carros elétricos, permitindo bookings antecipados das estações de carregamento, gestão dos bookings e até flexibilidade na procura de estações disponíveis para uso imediato.
 
 ## Alterações após a apresentação
+### Testes de integração com cucumber
+### ...
 
 ## Equipa
 * **Product Owner​**: 113682​ - Gabriel Santos
