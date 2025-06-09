@@ -5,7 +5,7 @@ A PowerNest oferece às pessoas uma forma rápida e fácil de carregar os seus c
 
 ## Alterações após a apresentação
 * ### Testes de integração com cucumber
-### ...
+* ### ...
 
 ## Equipa
 * **Product Owner​**: 113682​ - Gabriel Santos
