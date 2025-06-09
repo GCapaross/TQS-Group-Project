@@ -42,6 +42,7 @@ public class UserService {
             System.out.println("Setting user role to OPERATOR");
             newUser.setRole(Role.OPERATOR);
         }
+
         System.out.println("Saving new user: " + newUser.getEmail());
         System.out.println("Password: " + newUser.getPassword());
         return userRepository.save(newUser);

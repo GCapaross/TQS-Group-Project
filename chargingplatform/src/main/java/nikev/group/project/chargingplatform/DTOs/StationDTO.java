@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import nikev.group.project.chargingplatform.model.Charger;
 
 @Data
@@ -13,6 +14,7 @@ import nikev.group.project.chargingplatform.model.Charger;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 public class StationDTO {
 
     private Long id;

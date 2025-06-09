@@ -8,12 +8,18 @@ import nikev.group.project.chargingplatform.DTOs.SearchStationDTO;
 import nikev.group.project.chargingplatform.DTOs.StationCreateDTO;
 import nikev.group.project.chargingplatform.DTOs.StationDTO;
 import nikev.group.project.chargingplatform.DTOs.StationResponseDTO;
-import nikev.group.project.chargingplatform.DTOs.StationWithChargerSpeedsDTO;
 import nikev.group.project.chargingplatform.model.Station;
 import nikev.group.project.chargingplatform.service.StationService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/charging-stations")
@@ -22,7 +28,6 @@ public class StationController {
     private final StationService stationService;
     private final MeterRegistry meterRegistry;
     private final Counter stationCreationCounter;
-    private final Timer stationCreationTimer;
 
     public StationController(
         StationService stationService,
@@ -34,12 +39,6 @@ public class StationController {
             "app_stations_created_total"
         )
             .description("Total number of stations created")
-            .tag("application", "chargingplatform")
-            .register(meterRegistry);
-        this.stationCreationTimer = Timer.builder(
-            "app_stations_creation_latency"
-        )
-            .description("Station creation latency in seconds")
             .tag("application", "chargingplatform")
             .register(meterRegistry);
     }

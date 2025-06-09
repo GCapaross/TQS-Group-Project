@@ -164,6 +164,7 @@ const BookingPage: React.FC = () => {
                     "linear-gradient(45deg, #1976D2 30%, #1E88E5 90%)",
                 },
               }}
+              id="book-button"
             >
               Book Now
             </Button>
