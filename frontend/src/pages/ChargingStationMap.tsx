@@ -88,16 +88,22 @@ const ChargingStationMap: React.FC = () => {
   // Apply filters whenever filter states change
   useEffect(() => {
     let filtered = [...stations];
+    console.log("initial: ", stations);
 
     if (supportedConnectors.length > 0) {
       filtered = filtered.filter((station) =>
-        supportedConnectors.some((type) =>
-          station.supportedConnectors.includes(type)
-        )
+        supportedConnectors.some((type) => {
+          console.log("Station supports: ", station.supportedConnectors);
+          console.log("User wants: #" + type + "#");
+
+          const result = station.supportedConnectors.includes(type);
+          return result;
+        })
       );
     }
 
     if (minChargingSpeed > 0) {
+      console.log("Filtered before charging speed:", filtered);
       filtered = filtered.filter((station) =>
         station.chargers.some(
           (charger) => charger.chargingSpeedKw >= minChargingSpeed
@@ -105,6 +111,7 @@ const ChargingStationMap: React.FC = () => {
       );
     }
 
+    console.log("Filtered after:", filtered);
     setFilteredStations(filtered);
   }, [stations, supportedConnectors, minChargingSpeed]);
 
@@ -166,6 +173,7 @@ const ChargingStationMap: React.FC = () => {
             <FormControl fullWidth>
               <InputLabel>Connector Types</InputLabel>
               <Select
+                id="filter-connectors"
                 multiple
                 value={supportedConnectors}
                 onChange={(e) =>
@@ -196,6 +204,9 @@ const ChargingStationMap: React.FC = () => {
               max={350}
               step={10}
               valueLabelDisplay="auto"
+              slotProps={{
+                root: { id: "min-charge-slider" },
+              }}
             />
           </Grid>
         </Grid>
@@ -211,6 +222,7 @@ const ChargingStationMap: React.FC = () => {
         }}
       >
         <MapContainer
+          id="map"
           center={userLocation}
           zoom={13}
           style={{ height: "100%", width: "100%" }}
@@ -258,7 +270,11 @@ const ChargingStationMap: React.FC = () => {
                       Price: ${station.pricePerKwh}/kWh
                     </Typography>
                     <Typography variant="body2">
-                      Speed: {station.chargers[0].chargingSpeedKw} kW
+                      Speed:{" "}
+                      {station.chargers.length > 0
+                        ? station.chargers[0].chargingSpeedKw
+                        : "N/A"}
+                      kW
                     </Typography>
                     <Box
                       sx={{
@@ -283,6 +299,7 @@ const ChargingStationMap: React.FC = () => {
                       fullWidth
                       sx={{ mt: 2 }}
                       onClick={() => handleStationClick(station.id)}
+                      id="book-button"
                     >
                       Book Now
                     </Button>

@@ -1,0 +1,53 @@
+Info on DB
+Station in Coimbra with 3 chargers (chargin speed: 30, 40, 50) that support all CCS and Type2
+Station in Porto with 3 chargers (charging speed 30, 50, 70) that support all CCS and Type1
+Station in Lisboa with 1 charger (30) that support all CCS
+
+Pre-condition
+Logged In
+
+Given I am on home page
+When I click on "Map View"
+Then 3 Stations appear
+
+Given I am on Map View
+When I  set minimum charge speed to 40
+Then 2 Stations appear
+
+Given I am on Map View
+When I set minimun charge speed to 40
+And I set supported connectors to Type 1
+Then 1 Station appear
+
+-------------------------------------------------------------------
+Test make reservation
+
+Given I am on Map View
+When I click on station 1
+Then I get redirected to book page
+
+Given I am on Book page
+And I click on book button
+And set Start Date to tomorrow at 14h00
+And set End Date to tommorrow at 14h30
+And set Estimated Energy Needed to 120
+When I click book now
+Then confirmation popup appears
+
+Given I am on Book page
+And I click on book button
+And set Start Date to tomorrow at 14h00
+And set End Date to tommorrow at 19h00
+And set Estimated Energy Needed to 120
+When I click book now
+Then booking fails
+
+Given I am on Book page
+And a reservation for tomorrow from 14h00 until 14h30 exists
+And a reservation for tomorrow from 14h30 until 15h00 exists
+And I click on book button
+And set Start Date to tomorrow at 14h15
+And set End Date to tommorrow at 14h45
+And set Estimated Energy Needed to 120
+When I click book now
+Then confirmation popup appears
