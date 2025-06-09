@@ -74,6 +74,10 @@ public class StationController {
 
     @GetMapping("/{id}")
     public ResponseEntity<StationDTO> getStationById(@PathVariable Long id) {
+        if (id == null || id <= 0) {
+            return ResponseEntity.badRequest().build();
+        }
+
         try {
             StationDTO station = stationService.getStationById(id);
             return ResponseEntity.ok(station);
