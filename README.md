@@ -5,7 +5,11 @@ A PowerNest oferece às pessoas uma forma rápida e fácil de carregar os seus c
 
 ## Alterações após a apresentação
 * ### Testes de integração com cucumber
-* ### ...
+* ### Continuous delivery funcional
+* ### Testes de carga
+* ### Conclusão do setup do Xray
+* ### Heahlth status do compose
+* ### Documentação da API
 
 ## Equipa
 * **Product Owner​**: 113682​ - Gabriel Santos
