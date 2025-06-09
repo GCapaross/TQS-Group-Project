@@ -3,9 +3,6 @@ Feature: Station Creation
   I want to create new charging stations via the API
   So that they are persisted in the system
 
-  Background:
-    Given the application is running
-
   Scenario: Successfully creating a new station
     Given a company named "ChargeCorp" exists
     When I send a POST to "/api/charging-stations" to create a station with body
