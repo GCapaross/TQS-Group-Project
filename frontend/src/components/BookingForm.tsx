@@ -160,14 +160,14 @@ const BookingForm: React.FC<BookingFormProps> = ({
                     minDateTime={new Date()}
                     sx={{ width: "100%" }}
                     slotProps={{
-                      textField: { id: "start-time" },
+                      textField: { id: "start-date" },
                     }}
                   />
                 </Box>
                 <Box sx={{ mb: 3 }}>
                   <DateTimePicker
                     slotProps={{
-                      textField: { id: "end-time" },
+                      textField: { id: "end-date" },
                     }}
                     label="End Time"
                     value={endTime}

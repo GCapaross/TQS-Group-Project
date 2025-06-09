@@ -9,6 +9,8 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import io.github.bonigarcia.wdm.WebDriverManager;
+import jakarta.transaction.Transactional;
+
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -85,6 +87,7 @@ public class ReservationSteps {
     @After
     public void closeUp() {
         driver.quit();
+        reservationRepository.deleteAll();
         chargerRepository.deleteAll();
         stationRepository.deleteAll();
         companies.deleteAll();
@@ -159,14 +162,14 @@ public class ReservationSteps {
                 });
         }
     }
-// @Given("a reservation for tomorrow from 14h00 until 14h30 exists")
+
+    @Transactional  
     @Given("a reservation for {string} from {int}h{int} until {int}h{int} exists")
     public void a_reservation_exists(
         String date,
         Integer startHours, Integer startMinutes,
         Integer endHours, Integer endMinutes
     ) {
-        // Create a reservation for tomorrow from 14:00 to 14:30
         LocalDate reservationDate = string_to_date(date);
         LocalDateTime startDate = reservationDate.atTime(startHours, startMinutes);
         LocalDateTime endDate = reservationDate.atTime(endHours, endMinutes);
@@ -237,49 +240,44 @@ at ✽.I am on Book page(classpath:nikev/group/project/chargingplatform/1_EDISON
 
     @Given("set Start Date to {string} at {int}h{int}")
     public void set_start_date(String startDate, Integer hours, Integer minutes) {
-        // Write code here that turns the phrase above into concrete actions
         LocalDate reservationDate = string_to_date(startDate);
         // start-date and end-date
         WebElement startDateInput = driver.findElement(By.id("start-date"));
         startDateInput.clear();
 
         LocalDateTime startDateTime = reservationDate.atTime(hours, minutes);
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd-yyyyhhmma");
         String startDateTimeFormatted = startDateTime.format(formatter);
         startDateInput.sendKeys(startDateTimeFormatted);
     }
 
     @Given("set End Date to {string} at {int}h{int}")
-    public void set_end_date(String endDate, Integer hours, Integer minutes) {
-        LocalDate reservationDate = string_to_date(endDate);
+    public void set_end_date(String date, Integer hours, Integer minutes) {
+        LocalDate reservationDate = string_to_date(date);
+
         // Write code here that turns the phrase above into concrete actions
         WebElement endDateInput = driver.findElement(By.id("end-date"));
         // endDateInput.clear();
-        // endDateInput.sendKeys(reservationDate.toString() + "T" + String.format("%02d:%02d", hours, minutes));
         LocalDateTime endDateTime = reservationDate.atTime(hours, minutes);
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd-yyyyhhmma");
         String endDateTimeFormatted = endDateTime.format(formatter);
         endDateInput.clear();
         endDateInput.sendKeys(endDateTimeFormatted);
     }
 
-    @Given("set Estimated Energy Needed to {string}")
-    public void set_estimated_energy_needed_to(String energy) {
+    @Given("set Estimated Energy Needed to {int}")
+    public void set_estimated_energy_needed_to(Integer energy) {
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
         WebElement energyInput = driver.findElement(By.id("estimated-energy"));
         energyInput.clear();
-        energyInput.sendKeys(energy);
+        energyInput.sendKeys(energy.toString());
     }
 
     @When("I click book now")
     public void i_click_book_now() {
-        // Write code here that turns the phrase above into concrete actions
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
-        WebElement bookNowButton = driver.findElement(By.id("book-button"));
+        WebElement bookNowButton = driver.findElement(By.id("confirmation-button"));
         bookNowButton.click();
-        // Wait for the confirmation popup to appear
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("confirmation-id")));
     }
     
     @Then("I get redirected to book page")
@@ -290,15 +288,13 @@ at ✽.I am on Book page(classpath:nikev/group/project/chargingplatform/1_EDISON
     
     @Then("confirmation popup appears")
     public void confirmation_popup_appears() {
-        // Write code here that turns the phrase above into concrete actions
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
-        WebElement confirmationPopup = driver.findElement(By.id("confirmation-button"));
+        WebElement confirmationPopup = driver.findElement(By.id("booking-id"));
         assertThat(confirmationPopup.isDisplayed()).isTrue();
     }
 
     @Then("booking fails")
     public void booking_fails() {
-        // Write code here that turns the phrase above into concrete actions
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));	
         WebElement errorMessage = driver.findElement(By.id("error-message"));
         assertThat(errorMessage.isDisplayed()).isTrue();
@@ -307,17 +303,18 @@ at ✽.I am on Book page(classpath:nikev/group/project/chargingplatform/1_EDISON
 
 
     private LocalDate string_to_date(String date) {
+        LocalDate parsedDate = null;
         switch (date) {
             case "yesterday":
-                return LocalDate.now().minusDays(1);
+                parsedDate = LocalDate.now().minusDays(1);
+                break;
             case "today":
-                return LocalDate.now();
+                parsedDate = LocalDate.now();
+                break;
             case "tomorrow":
-                return LocalDate.now().plusDays(1);
-            default:
+                parsedDate = LocalDate.now().plusDays(1);
                 break;
         }
-        // If the date is not a special case, parse it as a LocalDate
-        return null;
+        return parsedDate;
     }
 }
